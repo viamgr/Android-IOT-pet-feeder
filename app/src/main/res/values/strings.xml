@@ -16,4 +16,5 @@
     <string name="retry">retry</string>
     <string name="connected">connected</string>
     <string name="wifi_timeout">Wifi Timout</string>
+    <string name="connecting_wifi_manually">Connecting Wifi Manually</string>
 </resources>

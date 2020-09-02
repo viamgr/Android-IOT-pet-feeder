@@ -1,16 +1,18 @@
 package com.viam.feeder.wifi
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.livedata.Event
 
-class WifiViewModel : ViewModel() {
+class WifiViewModel @ViewModelInject constructor() : ViewModel() {
     companion object {
         const val CURRENT_STATUS_DISABLED = -1
         const val CURRENT_STATUS_CONNECTING = 0
         const val CURRENT_STATUS_DONE = 1
         const val CURRENT_STATUS_RETRY = 2
+        const val CURRENT_STATUS_MANUALLY = 3
     }
 
     private val _wifiState = MutableLiveData<Int>(CURRENT_STATUS_CONNECTING)

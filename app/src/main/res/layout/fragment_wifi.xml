@@ -40,6 +40,18 @@
             app:layout_constraintTop_toBottomOf="@id/enable_wifi_text" />
 
         <TextView
+            android:id="@+id/manually"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/connecting_wifi_manually"
+            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_MANUALLY}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone" />
+
+        <TextView
             android:id="@+id/connecting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
