@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Feeder</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="connecting_wifi">Wifi Connecting</string>
+    <string name="wifi_is_disabled">Wifi Is Disabled! Enable It</string>
+    <string name="enable_wifi">Enable Wifi</string>
+    <string name="wifi_setting">Wifi Setting</string>
+    <string name="retry">retry</string>
+    <string name="connected">connected</string>
+    <string name="wifi_timeout">Wifi Timout</string>
+</resources>
