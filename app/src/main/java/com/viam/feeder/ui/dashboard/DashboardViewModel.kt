@@ -32,7 +32,7 @@ class DashboardViewModel @ViewModelInject constructor(
             viewModelScope.launch {
                 withContext(dispatcherProvider.io) {
                     _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.setMotorStatus(MotorStatusRequest(status = it))
+                        globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = it))
                     })
                 }
             }
@@ -48,13 +48,13 @@ class DashboardViewModel @ViewModelInject constructor(
                         globalConfigRepository.getMotorStatus()
                     })
                 }
+                delay(10000)
                 checkRealTimeStatus()
-                delay(1000)
             }
         }
     }
 
     fun toggleMotorState() {
-        _toggleMotorState.value = _toggleMotorState.value?.not()
+        _toggleMotorState.value = (_toggleMotorState.value ?: false).not()
     }
 }

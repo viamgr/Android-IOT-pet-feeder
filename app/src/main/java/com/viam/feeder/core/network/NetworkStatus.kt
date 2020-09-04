@@ -46,10 +46,10 @@ class NetworkStatus @Inject constructor(
                 _connection.postValueIfChanged(CONNECTION_STATE_SUCCESS)
             }.onError {
                 if (it !is HttpException || it.code() == 404) {
-                    _connection.postValueIfChanged(CONNECTION_STATE_SUCCESS)
+                    _connection.postValueIfChanged(CONNECTION_STATE_WRONG)
                 }
             }
-            delay(2000)
+            delay(10000)
             check()
         }
     }

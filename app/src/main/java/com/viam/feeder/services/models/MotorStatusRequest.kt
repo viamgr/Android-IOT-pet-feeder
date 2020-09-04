@@ -1,3 +1,3 @@
 package com.viam.feeder.services.models
 
-data class MotorStatusRequest(val status: Boolean)
+data class MotorStatusRequest(val enabled: Boolean)

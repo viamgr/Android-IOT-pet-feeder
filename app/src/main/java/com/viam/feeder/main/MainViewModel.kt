@@ -9,6 +9,10 @@ import kotlinx.coroutines.launch
 class MainViewModel @ViewModelInject constructor(
     private val networkStatus: NetworkStatus
 ) : ViewModel() {
+    fun test() {
+
+
+    }
 
     init {
         viewModelScope.launch {
