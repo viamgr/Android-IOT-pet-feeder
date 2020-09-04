@@ -1,41 +1,42 @@
 package com.viam.feeder.di
 
-import com.viam.feeder.services.WebServerService
+import com.viam.feeder.services.GlobalConfigService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.scopes.ActivityScoped
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import javax.inject.Singleton
 
 
 @Module
 @InstallIn(ActivityComponent::class)
 class NetWorkModule {
     companion object {
-        const val API_URL = ""
+        const val API_IP = "192.168.4.1"
+        const val API_PORT = 80
     }
 
+    @ActivityScoped
     @Provides
-    @Singleton
-    fun getApiInterface(retroFit: Retrofit): WebServerService {
-        return retroFit.create(WebServerService::class.java)
+    fun bindGlobalConfigService(retroFit: Retrofit): GlobalConfigService {
+        return retroFit.create(GlobalConfigService::class.java)
     }
 
+    @ActivityScoped
     @Provides
-    @Singleton
     fun getRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(API_URL)
+            .baseUrl("http://$API_IP/")
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
     }
 
     @Provides
-    @Singleton
+    @ActivityScoped
     fun getHttpClient(): OkHttpClient {
         val okHttpBuilder = OkHttpClient.Builder()
         return okHttpBuilder.build()

@@ -15,6 +15,8 @@
     <string name="wifi_setting">Wifi Setting</string>
     <string name="retry">retry</string>
     <string name="connected">connected</string>
+    <string name="not_connected">Not connected</string>
     <string name="wifi_timeout">Wifi Timout</string>
     <string name="connecting_wifi_manually">Connecting Wifi Manually</string>
+    <string name="wrong_connected">Wrong Connected</string>
 </resources>

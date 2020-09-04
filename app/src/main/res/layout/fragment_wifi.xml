@@ -7,6 +7,10 @@
             name="vm"
             type="com.viam.feeder.wifi.WifiViewModel" />
 
+        <variable
+            name="mainViewModel"
+            type="com.viam.feeder.main.MainViewModel" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,99 +24,44 @@
             android:id="@+id/enable_wifi_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/wifi_is_disabled"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_DISABLED}"
+            android:text="@string/wrong_connected"
+            app:goneUnless="@{mainViewModel.connection == mainViewModel.CONNECTION_STATE_WRONG}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/connecting_wifi"
+            app:goneUnless="@{mainViewModel.connection == mainViewModel.CONNECTION_STATE_CONNECTING}"
+            app:layout_constraintBottom_toBottomOf="@id/enable_wifi_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/enable_wifi_text" />
+
         <Button
             android:id="@+id/enable_wifi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->vm.onEnableWifi()}"
-            android:text="@string/enable_wifi"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_DISABLED}"
+            android:text="@string/wifi_setting"
+            app:goneUnless="@{mainViewModel.connection != mainViewModel.CONNECTION_STATE_SUCCESS}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/enable_wifi_text" />
 
-        <TextView
-            android:id="@+id/manually"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connecting_wifi_manually"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_MANUALLY}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="gone" />
-
-        <TextView
-            android:id="@+id/connecting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connecting_wifi"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_CONNECTING}"
-            app:layout_constraintBottom_toTopOf="@+id/progressBar"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="gone" />
 
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_CONNECTING}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connecting"
-            tools:visibility="gone" />
-
-
-        <TextView
-            android:id="@+id/connected"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connected"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_DONE}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="gone" />
-
-
-        <TextView
-            android:id="@+id/manual"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wifi_timeout"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_RETRY}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="gone" />
-
-        <Button
-            android:id="@+id/manual_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->vm.retry()}"
-            android:text="@string/retry"
-            app:goneUnless="@{vm.wifiState == vm.CURRENT_STATUS_RETRY}"
+            app:goneUnless="@{mainViewModel.connection == mainViewModel.CONNECTION_STATE_CONNECTING}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/manual" />
+            app:layout_constraintTop_toBottomOf="@+id/enable_wifi" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
