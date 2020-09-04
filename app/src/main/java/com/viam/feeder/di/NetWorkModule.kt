@@ -1,7 +1,5 @@
 package com.viam.feeder.di
 
-import androidx.lifecycle.MutableLiveData
-import com.viam.feeder.main.MainViewModel
 import com.viam.feeder.services.GlobalConfigService
 import dagger.Module
 import dagger.Provides
@@ -43,11 +41,5 @@ class NetWorkModule {
         val okHttpBuilder = OkHttpClient.Builder()
         return okHttpBuilder.build()
     }
-
-
-    @Provides
-    @ActivityScoped
-    fun getConnection() = MutableLiveData(MainViewModel.CONNECTION_STATE_CONNECTING)
-
 
 }

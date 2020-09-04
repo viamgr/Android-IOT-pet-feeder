@@ -37,7 +37,6 @@ class WifiFragment : Fragment(R.layout.fragment_wifi) {
         binding.apply {
             lifecycleOwner = viewLifecycleOwner
             vm = viewModel
-            mainViewModel = activityViewModels.value
         }
 
         viewModel.enableWifiClicked.observe(viewLifecycleOwner, EventObserver {
