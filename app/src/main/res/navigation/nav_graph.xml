@@ -7,22 +7,16 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.viam.feeder.wifi.WifiFragment"
+        android:name="com.viam.feeder.ui.wifi.WifiFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_wifi">
-
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_FirstFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.viam.feeder.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
-        <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
-    </fragment>
+        android:id="@+id/dashboardFragment"
+        android:name="com.viam.feeder.ui.dashboard.DashboardFragment"
+        android:label="DashboardFragment"
+        tools:layout="@layout/fragment_dashboard" />
 </navigation>

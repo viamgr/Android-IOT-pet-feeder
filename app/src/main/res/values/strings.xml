@@ -19,4 +19,6 @@
     <string name="wifi_timeout">Wifi Timout</string>
     <string name="connecting_wifi_manually">Connecting Wifi Manually</string>
     <string name="wrong_connected">Wrong Connected</string>
+    <string name="turn_on_motor">Turn On Motor</string>
+    <string name="turn_off_motor">Turn Off Motor</string>
 </resources>

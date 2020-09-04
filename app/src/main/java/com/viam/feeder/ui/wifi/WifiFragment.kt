@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.viam.feeder.wifi
+package com.viam.feeder.ui.wifi
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,9 +9,12 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.viam.feeder.R
+import com.viam.feeder.core.databinding.viewBinding
+import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.databinding.FragmentWifiBinding
-import com.viam.feeder.databinding.viewBinding
 import com.viam.feeder.livedata.EventObserver
 import com.viam.feeder.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,9 +28,7 @@ import kotlinx.coroutines.ObsoleteCoroutinesApi
 @ObsoleteCoroutinesApi
 class WifiFragment : Fragment(R.layout.fragment_wifi) {
 
-
     private val binding by viewBinding(FragmentWifiBinding::bind)
-
     private val viewModel: WifiViewModel by viewModels()
 
     private val activityViewModels = activityViewModels<MainViewModel>()
@@ -45,6 +46,15 @@ class WifiFragment : Fragment(R.layout.fragment_wifi) {
                 startActivity(intent)
             }
         })
+        viewModel.networkStatus.connection.observe(viewLifecycleOwner, Observer {
+            if (it == NetworkStatus.CONNECTION_STATE_SUCCESS) {
+                gotoDashboardFragment()
+            }
+        })
+    }
+
+    private fun gotoDashboardFragment() {
+        findNavController().navigate(R.id.action_FirstFragment_to_dashboardFragment)
     }
 
 }

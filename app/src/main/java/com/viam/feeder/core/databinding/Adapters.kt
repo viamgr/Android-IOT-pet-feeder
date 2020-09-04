@@ -1,4 +1,4 @@
-package com.viam.feeder.databinding
+package com.viam.feeder.core.databinding
 
 import android.view.View
 import androidx.databinding.BindingAdapter
