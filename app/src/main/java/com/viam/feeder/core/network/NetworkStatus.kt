@@ -16,19 +16,20 @@
 
 package com.viam.feeder.core.network
 
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.viam.feeder.MyApplication
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.onSuccess
 import com.viam.feeder.core.utility.postValueIfChanged
 import com.viam.feeder.services.GlobalConfigRepository
 import dagger.hilt.android.scopes.ActivityScoped
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import retrofit2.HttpException
 import javax.inject.Inject
+
 
 @ActivityScoped
 class NetworkStatus @Inject constructor(
@@ -79,6 +80,11 @@ suspend inline fun <T : Any> safeApiCall(
         }
         Resource.Success(users)
     } catch (e: Exception) {
+
+        GlobalScope.launch(Dispatchers.Main) {
+            Toast.makeText(MyApplication.context, e.message, Toast.LENGTH_SHORT).show()
+        }
+
         Resource.Error(e)
     }
 }
