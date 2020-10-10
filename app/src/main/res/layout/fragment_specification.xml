@@ -10,22 +10,117 @@
             type="com.viam.feeder.ui.specification.SpecificationViewModel" />
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/cardview_dark_background"
-        tools:context=".ui.timer.DashboardFragment">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->vm.toggleMotorState()}"
-            android:text="@{vm.motorStatus?@string/turn_off_motor:@string/turn_on_motor}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/turn_on_motor" />
+        android:layout_height="wrap_content">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/food_volume"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:layout_constraintTop_toTopOf="parent"
+                app:spanCount="3"
+                tools:listitem="@layout/row_feed_volume" />
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/feeding_sound"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/food_volume">
+
+                <AutoCompleteTextView
+                    android:id="@+id/spinner_dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/feeding_sound"
+                    android:text="@string/choose" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.devlomi.record_view.RecordView
+                android:id="@+id/record_view"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:counter_time_color="#ff0000"
+                app:layout_constraintBottom_toBottomOf="@+id/record_button"
+                app:layout_constraintEnd_toStartOf="@id/record_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/feeding_sound"
+                app:slide_to_cancel_arrow="@drawable/recv_ic_arrow"
+                app:slide_to_cancel_arrow_color="#000000"
+                app:slide_to_cancel_bounds="8dp"
+                app:slide_to_cancel_margin_right="10dp"
+                app:slide_to_cancel_text="Slide To Cancel" />
+
+            <com.devlomi.record_view.RecordButton
+                android:id="@+id/record_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:background="@drawable/recv_bg_mic"
+                android:scaleType="centerInside"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/record_view"
+                app:mic_icon="@drawable/recv_ic_mic_white" />
+
+
+            <ImageView
+                android:id="@+id/volume_mute"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:padding="12dp"
+                app:layout_constraintBottom_toBottomOf="@+id/volume_up"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/volume_up"
+                app:srcCompat="@drawable/ic_baseline_volume_mute_24" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/soundVolume"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:stepSize="10.0"
+                android:value="50.0"
+                android:valueFrom="0.0"
+                android:valueTo="100.0"
+                app:layout_constraintBottom_toBottomOf="@+id/volume_up"
+                app:layout_constraintEnd_toStartOf="@+id/volume_up"
+                app:layout_constraintStart_toEndOf="@+id/volume_mute"
+                app:layout_constraintTop_toTopOf="@+id/volume_up" />
+
+            <ImageView
+                android:id="@+id/volume_up"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
+                android:padding="12dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/record_button"
+                app:srcCompat="@drawable/ic_baseline_volume_up_24" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/ledEnabled"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/volume_up">
+
+                <AutoCompleteTextView
+                    android:id="@+id/sound_volume_dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/led_state"
+                    android:text="@string/choose" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
 </layout>

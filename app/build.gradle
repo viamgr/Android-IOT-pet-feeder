@@ -101,6 +101,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
     implementation 'com.airbnb.android:lottie:3.4.4'
+    implementation 'com.devlomi.record-view:record-view:2.0.1'
+
 
 
 }

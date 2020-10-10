@@ -9,7 +9,7 @@
         android:id="@+id/wifi_fragment"
         android:name="com.viam.feeder.ui.wifi.WifiFragment"
         android:label="@string/wifi_fragment_label"
-        tools:layout="@layout/fragment_wifi"></fragment>
+        tools:layout="@layout/fragment_wifi" />
     <fragment
         android:id="@+id/fragment_home"
         android:name="com.viam.feeder.ui.dashboard.DashboardFragment"

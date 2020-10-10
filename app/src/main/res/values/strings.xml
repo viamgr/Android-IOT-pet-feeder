@@ -27,4 +27,8 @@ Wifi network"</string>
     <string name="specification">Specification</string>
     <string name="timer">Timer</string>
     <string name="setting">Setting</string>
+    <string name="little">little</string>
+    <string name="feeding_sound">Feeding Sound</string>
+    <string name="choose">Choose</string>
+    <string name="led_state">Led state</string>
 </resources>

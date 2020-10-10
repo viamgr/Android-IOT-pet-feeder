@@ -27,6 +27,24 @@ class SpecificationViewModel @ViewModelInject constructor(
         it is Resource.Success && it.data.enabled
     }
 
+    private val _feedSounds = MutableLiveData<List<String>>(
+        listOf(
+            "Cat",
+            "Dog",
+            "Custom"
+        )
+    )
+    val feedSounds: LiveData<List<String>> = _feedSounds
+
+    private val _ledStates = MutableLiveData<List<String>>(
+        listOf(
+            "Turn on when feeding",
+            "Always turn on",
+            "Always turn off"
+        )
+    )
+    val ledStates: LiveData<List<String>> = _ledStates
+
     init {
         _motorStatus.addSource(_toggleMotorState) {
             viewModelScope.launch {
