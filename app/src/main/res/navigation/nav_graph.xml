@@ -3,20 +3,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/fragment_home">
 
     <fragment
-        android:id="@+id/FirstFragment"
+        android:id="@+id/wifi_fragment"
         android:name="com.viam.feeder.ui.wifi.WifiFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_wifi">
-        <action
-            android:id="@+id/action_FirstFragment_to_dashboardFragment"
-            app:destination="@id/dashboardFragment" />
-    </fragment>
+        android:label="@string/wifi_fragment_label"
+        tools:layout="@layout/fragment_wifi"></fragment>
     <fragment
-        android:id="@+id/dashboardFragment"
+        android:id="@+id/fragment_home"
         android:name="com.viam.feeder.ui.dashboard.DashboardFragment"
         android:label="DashboardFragment"
+        tools:layout="@layout/fragment_dashboard" />
+    <fragment
+        android:id="@+id/fragment_specification"
+        android:name="com.viam.feeder.ui.specification.SpecificationFragment"
+        android:label="SpecificationFragment"
+        tools:layout="@layout/fragment_dashboard" />
+    <fragment
+        android:id="@+id/fragment_timer"
+        android:name="com.viam.feeder.ui.timer.TimerFragment"
+        android:label="TimerFragment"
+        tools:layout="@layout/fragment_dashboard" />
+    <fragment
+        android:id="@+id/fragment_setting"
+        android:name="com.viam.feeder.ui.setting.SettingFragment"
+        android:label="SettingFragment"
         tools:layout="@layout/fragment_dashboard" />
 </navigation>

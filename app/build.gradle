@@ -15,7 +15,7 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
-
+        vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -98,4 +98,9 @@ dependencies {
 
     implementation 'com.google.android.material:material:1.2.0'
     implementation platform('com.google.firebase:firebase-bom:25.12.0')
-    implementation 'com.google.firebase:firebase-analytics-ktx'}
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    implementation 'com.airbnb.android:lottie:3.4.4'
+
+
+}

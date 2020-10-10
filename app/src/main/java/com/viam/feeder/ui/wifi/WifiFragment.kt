@@ -18,14 +18,12 @@ import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.livedata.EventObserver
 import com.viam.feeder.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 @AndroidEntryPoint
-@ObsoleteCoroutinesApi
 class WifiFragment : Fragment(R.layout.fragment_wifi) {
 
     private val binding by viewBinding(FragmentWifiBinding::bind)
@@ -47,13 +45,9 @@ class WifiFragment : Fragment(R.layout.fragment_wifi) {
         })
         viewModel.networkStatus.connection.observe(viewLifecycleOwner, Observer {
             if (it == NetworkStatus.CONNECTION_STATE_SUCCESS) {
-                gotoDashboardFragment()
+                findNavController().navigateUp()
             }
         })
-    }
-
-    private fun gotoDashboardFragment() {
-        findNavController().navigate(R.id.action_FirstFragment_to_dashboardFragment)
     }
 
 }

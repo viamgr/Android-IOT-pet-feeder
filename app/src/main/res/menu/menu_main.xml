@@ -3,8 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.viam.feeder.main.MainActivity">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:id="@+id/fragment_home"
+        android:icon="@drawable/ic_baseline_home_24"
+        android:title="@string/home" />
+    <item
+        android:id="@+id/fragment_specification"
+        android:icon="@drawable/ic_baseline_timer_24"
+        android:title="@string/specification"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/fragment_timer"
+        android:icon="@drawable/ic_baseline_timer_24"
+        android:title="@string/timer"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/fragment_setting"
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/setting"
         app:showAsAction="never" />
 </menu>

@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">Feeder</string>
     <string name="action_settings">Settings</string>
+    <string name="home">Home</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
+    <string name="wifi_fragment_label">Wifi Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
@@ -16,9 +17,14 @@
     <string name="retry">retry</string>
     <string name="connected">connected</string>
     <string name="not_connected">Not connected</string>
-    <string name="wifi_timeout">Wifi Timout</string>
-    <string name="connecting_wifi_manually">Connecting Wifi Manually</string>
-    <string name="wrong_connected">Wrong Connected</string>
+    <string name="hello_worldRed"><![CDATA[<b><font color=#FF0000>Hello world!</font></b>]]></string>
+    <string name="wrong_connected">"You should connect to the
+<font color='blue'>Feeder-Access-Point</font>
+Wifi network"</string>
+    <string name="open_wifi_setting">Open Wifi Setting</string>
     <string name="turn_on_motor">Turn On Motor</string>
     <string name="turn_off_motor">Turn Off Motor</string>
+    <string name="specification">Specification</string>
+    <string name="timer">Timer</string>
+    <string name="setting">Setting</string>
 </resources>

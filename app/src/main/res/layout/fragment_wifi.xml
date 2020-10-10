@@ -1,67 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <variable
             name="vm"
             type="com.viam.feeder.ui.wifi.WifiViewModel" />
-
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="12dp"
+        app:cardBackgroundColor="@color/grey_100"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp"
         tools:context=".ui.wifi.WifiFragment">
 
-        <TextView
-            android:id="@+id/enable_wifi_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/wrong_connected"
-            app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_WRONG}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/connecting_wifi"
-            app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_CONNECTING}"
-            app:layout_constraintBottom_toBottomOf="@id/enable_wifi_text"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/enable_wifi_text"
-            tools:visibility="gone" />
-
-        <Button
-            android:id="@+id/enable_wifi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->vm.onEnableWifi()}"
-            android:text="@string/wifi_setting"
-            app:goneUnless="@{vm.networkStatus.connection != vm.networkStatus.CONNECTION_STATE_SUCCESS}"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/enable_wifi_text"
-            tools:visibility="gone" />
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/animation_view"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_CONNECTING}"
+                app:layout_constraintBottom_toTopOf="@+id/barrier"
+                app:layout_constraintDimensionRatio="800:1100"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/wifi_connecting" />
 
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
-            app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_CONNECTING}"
-            app:layout_constraintBottom_toBottomOf="@+id/enable_wifi_text"
-            app:layout_constraintStart_toEndOf="@+id/enable_wifi_text"
-            app:layout_constraintTop_toTopOf="@+id/enable_wifi_text"
-            tools:visibility="gone" />
+            <TextView
+                android:id="@+id/enable_wifi_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/wrong_connected"
+                android:visibility="gone"
+                app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_WRONG}"
+                app:layout_constraintBottom_toTopOf="@id/enable_wifi"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintWidth_percent="0.8" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/wifi_connecting_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/connecting_wifi"
+                app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_CONNECTING}"
+                app:layout_constraintBottom_toTopOf="@id/enable_wifi"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="top"
+                app:constraint_referenced_ids="wifi_connecting_label,enable_wifi_text" />
+
+            <Button
+                android:id="@+id/enable_wifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="32dp"
+                android:onClick="@{()->vm.onEnableWifi()}"
+                android:text="@string/open_wifi_setting"
+                app:backgroundTint="@color/primary"
+                app:icon="@drawable/ic_baseline_signal_wifi_4_bar_24"
+                app:iconSize="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 </layout>
