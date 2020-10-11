@@ -16,9 +16,15 @@
 
 package com.viam.feeder.core.network
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.viam.feeder.MyApplication
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.onError
@@ -38,6 +44,41 @@ class NetworkStatus @Inject constructor(
 ) {
     private val _connection = MutableLiveData<Int>(CONNECTION_STATE_CONNECTING)
     val connection: LiveData<Int> = _connection
+
+
+    private val _wifiEnabled = MutableLiveData<Boolean>()
+    val wifiEnabled: LiveData<Boolean> = _wifiEnabled
+    val test: Int = com.viam.feeder.R.color.green_500
+
+
+    private fun setWifiStatus(enabled: Boolean) {
+        _wifiEnabled.value = enabled
+    }
+
+    private fun hasInternetConnectionM(context: Context): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork
+            val capabilities = connectivityManager
+                .getNetworkCapabilities(network)
+            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && capabilities.hasCapability(
+                NetworkCapabilities.NET_CAPABILITY_VALIDATED
+            )
+        } else {
+            TODO("VERSION.SDK_INT < M")
+        }
+
+    }
+
+    fun startListener(activity: AppCompatActivity) {
+        val worker = WifiWorker.start(activity)
+        WorkManager.getInstance(activity)
+            .getWorkInfoByIdLiveData(worker.id)
+            .observe(activity, {
+                setWifiStatus(it.state == WorkInfo.State.SUCCEEDED)
+            })
+    }
 
     suspend fun check() {
         withContext(dispatcherProvider.io) {

@@ -16,4 +16,5 @@ class WifiViewModel @ViewModelInject constructor(val networkStatus: NetworkStatu
         _enableWifiClicked.value = Event(Unit)
     }
 
+
 }

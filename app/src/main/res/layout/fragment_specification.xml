@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="vm"
             type="com.viam.feeder.ui.specification.SpecificationViewModel" />
@@ -20,14 +19,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.recyclerview.widget.RecyclerView
+            <com.airbnb.epoxy.EpoxyRecyclerView
                 android:id="@+id/food_volume"
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                 app:layout_constraintTop_toTopOf="parent"
                 app:spanCount="3"
-                tools:listitem="@layout/row_feed_volume" />
+                tools:listitem="@layout/view_holder_feed_volume" />
 
 
             <com.google.android.material.textfield.TextInputLayout
@@ -68,7 +67,7 @@
                 android:background="@drawable/recv_bg_mic"
                 android:scaleType="centerInside"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/record_view"
+                app:layout_constraintTop_toBottomOf="@id/feeding_sound"
                 app:mic_icon="@drawable/recv_ic_mic_white" />
 
 

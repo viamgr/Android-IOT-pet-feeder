@@ -14,6 +14,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.viam.feeder.R
+import com.viam.feeder.core.network.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -29,6 +30,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(findViewById(R.id.toolbar))
         setupViews()
+
+        viewModel.networkStatus.startListener(this)
+
+
+        viewModel.networkStatus.connection.observe(this, {
+            if (it != NetworkStatus.CONNECTION_STATE_SUCCESS) {
+//                navController.navigate(R.id.wifi_fragment)
+            }
+        })
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

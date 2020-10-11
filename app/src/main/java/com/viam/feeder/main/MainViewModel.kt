@@ -7,7 +7,7 @@ import com.viam.feeder.core.network.NetworkStatus
 import kotlinx.coroutines.launch
 
 class MainViewModel @ViewModelInject constructor(
-    private val networkStatus: NetworkStatus
+    val networkStatus: NetworkStatus
 ) : ViewModel() {
 
     init {

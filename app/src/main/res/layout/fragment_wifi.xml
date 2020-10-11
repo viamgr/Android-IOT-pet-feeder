@@ -27,7 +27,6 @@
                 android:id="@+id/animation_view"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_CONNECTING}"
                 app:layout_constraintBottom_toTopOf="@+id/barrier"
                 app:layout_constraintDimensionRatio="800:1100"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -69,20 +68,23 @@
                 app:barrierDirection="top"
                 app:constraint_referenced_ids="wifi_connecting_label,enable_wifi_text" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/enable_wifi"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="32dp"
                 android:onClick="@{()->vm.onEnableWifi()}"
-                android:text="@string/open_wifi_setting"
-                app:backgroundTint="@color/primary"
-                app:icon="@drawable/ic_baseline_signal_wifi_4_bar_24"
+                android:text="@{vm.networkStatus.wifiEnabled?@string/connected:@string/open_wifi_setting}"
+                app:backgroundTint="@{vm.networkStatus.wifiEnabled?@color/green_500:@color/primary}"
+                app:icon="@{vm.networkStatus.wifiEnabled?@drawable/ic_baseline_check_circle_24:@drawable/ic_baseline_signal_wifi_4_bar_24}"
                 app:iconSize="16dp"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                tools:backgroundTint="@color/green_500"
+                tools:icon="@drawable/ic_baseline_check_circle_24"
+                tools:text="@string/connected" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

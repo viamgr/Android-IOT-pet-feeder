@@ -1,17 +1,14 @@
 package com.viam.feeder.ui.specification
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
-import com.viam.feeder.core.Resource
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.viam.feeder.R
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.network.NetworkStatus
-import com.viam.feeder.core.network.safeApiCall
+import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.services.GlobalConfigRepository
-import com.viam.feeder.services.models.MotorStatusRequest
-import com.viam.feeder.services.models.MotorStatusResponse
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class SpecificationViewModel @ViewModelInject constructor(
     private val networkStatus: NetworkStatus,
@@ -20,23 +17,27 @@ class SpecificationViewModel @ViewModelInject constructor(
 ) :
     ViewModel() {
 
-    private val _toggleMotorState = MutableLiveData<Boolean>()
 
-    private val _motorStatus = MediatorLiveData<Resource<MotorStatusResponse>>()
-    val motorStatus = _motorStatus.map {
-        it is Resource.Success && it.data.enabled
-    }
-
-    private val _feedSounds = MutableLiveData<List<String>>(
+    private val _feedSounds = MutableLiveData(
         listOf(
             "Cat",
             "Dog",
             "Custom"
         )
     )
+
     val feedSounds: LiveData<List<String>> = _feedSounds
 
-    private val _ledStates = MutableLiveData<List<String>>(
+    private val _feedVolume = MutableLiveData(
+        listOf(
+            FeedVolume(1, 0.33f, R.string.little, R.color.green_500),
+            FeedVolume(1, 0.66f, R.string.medium, R.color.grey_500),
+            FeedVolume(1, 1.0f, R.string.large, R.color.green_500),
+        )
+    )
+    val feedVolume: LiveData<List<FeedVolume>> = _feedVolume
+
+    private val _ledStates = MutableLiveData(
         listOf(
             "Turn on when feeding",
             "Always turn on",
@@ -45,34 +46,19 @@ class SpecificationViewModel @ViewModelInject constructor(
     )
     val ledStates: LiveData<List<String>> = _ledStates
 
-    init {
-        _motorStatus.addSource(_toggleMotorState) {
-            viewModelScope.launch {
-                withContext(dispatcherProvider.io) {
-                    _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = it))
-                    })
-                }
-            }
-        }
-        checkRealTimeStatus()
-    }
 
-    private fun checkRealTimeStatus() {
-        viewModelScope.launch {
-            withContext(dispatcherProvider.io) {
-                networkStatus.runIfConnected {
-                    _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.getMotorStatus()
-                    })
-                }
-                delay(10000)
-                checkRealTimeStatus()
-            }
-        }
-    }
+    fun onFeedVolumeClicked(id: Int) {
 
-    fun toggleMotorState() {
-        _toggleMotorState.value = (_toggleMotorState.value ?: false).not()
+        val values = _feedVolume.value
+        values
+            ?.map {
+                it.tintColor = R.color.grey_500
+                it
+            }
+            ?.first { it.id == id }
+            ?.let {
+                it.tintColor = R.color.green_500
+            }
+        _feedVolume.value = values
     }
 }

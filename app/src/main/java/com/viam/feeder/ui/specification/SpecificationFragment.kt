@@ -10,13 +10,12 @@ import androidx.lifecycle.Observer
 import com.devlomi.record_view.OnRecordListener
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
+import com.viam.feeder.core.interfaces.OnItemClickListener
 import com.viam.feeder.databinding.FragmentSpecificationBinding
+import com.viam.feeder.feedVolume
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-
 
 @AndroidEntryPoint
-@ObsoleteCoroutinesApi
 class SpecificationFragment : Fragment(R.layout.fragment_specification) {
 
     private val binding by viewBinding(FragmentSpecificationBinding::bind)
@@ -50,7 +49,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             }
         })
 
-        binding.recordButton.setRecordView(binding.recordView);
+        binding.recordButton.setRecordView(binding.recordView)
         binding.recordView.setOnRecordListener(object : OnRecordListener {
             override fun onStart() {
                 //Start Recording..
@@ -78,6 +77,26 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         binding.soundVolume.addOnChangeListener { slider, value, fromUser ->
             // Responds to when slider's value is changed
         }
+
+        viewModel.feedVolume.observe(viewLifecycleOwner, { list ->
+            binding.foodVolume.withModels {
+                list.forEach {
+                    feedVolume {
+                        id(it.id)
+                        identifier(it.id)
+                        label(it.label)
+                        scale(it.scale)
+                        tintColor(it.tintColor)
+                        listener(object : OnItemClickListener {
+                            override fun onItemClick(item: Any?) {
+                                viewModel.onFeedVolumeClicked(item as Int)
+                            }
+                        })
+                    }
+                }
+            }
+        })
+
     }
 
 }
