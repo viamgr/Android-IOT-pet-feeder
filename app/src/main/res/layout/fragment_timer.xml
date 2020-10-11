@@ -12,20 +12,25 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/cardview_dark_background"
-        tools:context=".ui.timer.DashboardFragment">
+        android:layout_height="match_parent">
 
-        <Button
+        <com.airbnb.epoxy.EpoxyRecyclerView
+            android:id="@+id/clock_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/view_holder_clock" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating_action_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{()->vm.toggleMotorState()}"
-            android:text="@{vm.motorStatus?@string/turn_off_motor:@string/turn_on_motor}"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/turn_on_motor" />
+            android:layout_margin="16dp"
+            android:contentDescription="@string/add_clock"
+            android:onClick="@{()->vm.onClickAddClock()}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/ic_baseline_add_24" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

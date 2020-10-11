@@ -1,60 +1,39 @@
 package com.viam.feeder.ui.timer
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
-import com.viam.feeder.core.Resource
-import com.viam.feeder.core.network.CoroutinesDispatcherProvider
-import com.viam.feeder.core.network.NetworkStatus
-import com.viam.feeder.core.network.safeApiCall
-import com.viam.feeder.services.GlobalConfigRepository
-import com.viam.feeder.services.models.MotorStatusRequest
-import com.viam.feeder.services.models.MotorStatusResponse
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.viam.feeder.R
+import com.viam.feeder.core.livedata.Event
+import com.viam.feeder.models.ClockTimer
 
-class TimerViewModel @ViewModelInject constructor(
-    private val networkStatus: NetworkStatus,
-    private val globalConfigRepository: GlobalConfigRepository,
-    private val dispatcherProvider: CoroutinesDispatcherProvider
-) :
-    ViewModel() {
+class TimerViewModel @ViewModelInject constructor() : ViewModel() {
 
-    private val _toggleMotorState = MutableLiveData<Boolean>()
 
-    private val _motorStatus = MediatorLiveData<Resource<MotorStatusResponse>>()
-    val motorStatus = _motorStatus.map {
-        it is Resource.Success && it.data.enabled
+    private val _clockTimer = MutableLiveData(
+        listOf(
+            ClockTimer(1, "1:10", R.string.am),
+            ClockTimer(2, "9:45", R.string.pm),
+            ClockTimer(3, "1:10", R.string.am),
+            ClockTimer(4, "9:45", R.string.pm),
+            ClockTimer(5, "1:10", R.string.am),
+            ClockTimer(6, "9:45", R.string.pm),
+            ClockTimer(7, "1:10", R.string.am),
+            ClockTimer(8, "9:45", R.string.pm),
+            ClockTimer(88, "1:10", R.string.am),
+            ClockTimer(9, "9:45", R.string.pm),
+        )
+    )
+    val clockTimer: LiveData<List<ClockTimer>> = _clockTimer
+
+    private val _openTimerDialog = MutableLiveData<Event<Unit>>()
+    val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
+    fun onClockTimerClicked(position: Long) {
+
     }
 
-    init {
-        _motorStatus.addSource(_toggleMotorState) {
-            viewModelScope.launch {
-                withContext(dispatcherProvider.io) {
-                    _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = it))
-                    })
-                }
-            }
-        }
-        checkRealTimeStatus()
-    }
-
-    private fun checkRealTimeStatus() {
-        viewModelScope.launch {
-            withContext(dispatcherProvider.io) {
-                networkStatus.runIfConnected {
-                    _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.getMotorStatus()
-                    })
-                }
-                delay(10000)
-                checkRealTimeStatus()
-            }
-        }
-    }
-
-    fun toggleMotorState() {
-        _toggleMotorState.value = (_toggleMotorState.value ?: false).not()
+    fun onClickAddClock() {
+        _openTimerDialog.postValue(Event(Unit))
     }
 }

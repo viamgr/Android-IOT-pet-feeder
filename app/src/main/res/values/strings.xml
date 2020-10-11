@@ -35,4 +35,7 @@
     <string name="start_record">Start record</string>
     <string name="play_sound">Play Sound</string>
     <string name="remove_recorded_file">Remove recorder file</string>
+    <string name="add_clock">add_new_clock</string>
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
 </resources>
