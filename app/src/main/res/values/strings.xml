@@ -19,8 +19,7 @@
     <string name="not_connected">Not connected</string>
     <string name="hello_worldRed"><![CDATA[<b><font color=#FF0000>Hello world!</font></b>]]></string>
     <string name="wrong_connected">"You should connect to the
-<font color='blue'>Feeder-Access-Point</font>
-Wifi network"</string>
+<font color='red'>Feeder-Access-Point</font>\nWifi network"</string>
     <string name="open_wifi_setting">Open Wifi Setting</string>
     <string name="turn_on_motor">Turn On Motor</string>
     <string name="turn_off_motor">Turn Off Motor</string>
@@ -33,4 +32,7 @@ Wifi network"</string>
     <string name="led_state">Led state</string>
     <string name="medium">Medium</string>
     <string name="large">Large</string>
+    <string name="start_record">Start record</string>
+    <string name="play_sound">Play Sound</string>
+    <string name="remove_recorded_file">Remove recorder file</string>
 </resources>

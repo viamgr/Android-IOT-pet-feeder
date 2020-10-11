@@ -1,29 +1,29 @@
 package com.viam.feeder.core.network
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.work.*
-import java.util.concurrent.TimeUnit
 
 class WifiWorker(appContext: Context, workerParams: WorkerParameters) :
     Worker(appContext, workerParams) {
     companion object {
 
-        fun start(context: Context): PeriodicWorkRequest {
+        fun start(context: Context): LiveData<WorkInfo> {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
-                .setRequiresCharging(true)
                 .build()
 
             val request =
-                PeriodicWorkRequestBuilder<WifiWorker>(1, TimeUnit.SECONDS)
+                OneTimeWorkRequestBuilder<WifiWorker>()
                     // Additional configuration
                     .setConstraints(constraints)
                     .build()
 
-            WorkManager
+            val instance = WorkManager
                 .getInstance(context)
-                .enqueue(request)
-            return request
+
+            instance.enqueue(request)
+            return instance.getWorkInfoByIdLiveData(request.id)
         }
     }
 

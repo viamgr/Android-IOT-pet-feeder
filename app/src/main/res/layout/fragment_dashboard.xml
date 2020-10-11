@@ -15,55 +15,70 @@
         android:layout_height="match_parent"
         tools:context=".ui.dashboard.DashboardFragment">
 
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/animation_view"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/animation_view_wrapper"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_margin="12dp"
+            android:clickable="true"
+            android:focusable="true"
             android:onClick="@{()->vm.toggleMotorState()}"
+            app:cardBackgroundColor="@color/green_200"
+            app:cardCornerRadius="400dp"
+            app:cardElevation="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="500:500"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.1"
-            app:layout_constraintWidth_percent="0.8"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/feeding" />
+            app:layout_constraintVertical_bias="0.5"
+            app:layout_constraintWidth_percent="0.8">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/animation_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:lottie_autoPlay="false"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/feeding" />
+
+
+        </androidx.cardview.widget.CardView>
+
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageView3"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/animation_view"
+            app:layout_constraintTop_toBottomOf="@+id/animation_view_wrapper"
             app:srcCompat="@drawable/ic_baseline_battery_charging_full_24"
             app:tint="@color/green_700" />
 
         <ImageView
             android:id="@+id/imageView3"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageView2"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/imageView"
-            app:layout_constraintTop_toBottomOf="@+id/animation_view"
+            app:layout_constraintTop_toBottomOf="@+id/animation_view_wrapper"
             app:srcCompat="@drawable/ic_wifi_router"
             app:tint="@color/grey_600" />
 
         <ImageView
             android:id="@+id/imageView2"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/imageView3"
-            app:layout_constraintTop_toBottomOf="@+id/animation_view"
+            app:layout_constraintTop_toBottomOf="@+id/animation_view_wrapper"
             app:srcCompat="@drawable/ic_baseline_signal_wifi_4_bar_24"
             app:tint="@color/green_700" />
 

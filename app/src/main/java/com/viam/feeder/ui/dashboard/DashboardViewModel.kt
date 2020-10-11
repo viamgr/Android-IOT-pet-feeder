@@ -3,6 +3,7 @@ package com.viam.feeder.ui.dashboard
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.viam.feeder.core.Resource
+import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.core.network.safeApiCall
@@ -20,7 +21,8 @@ class DashboardViewModel @ViewModelInject constructor(
 ) :
     ViewModel() {
 
-    private val _toggleMotorState = MutableLiveData<Boolean>()
+    private val _toggleMotorState = MutableLiveData<Event<Unit>>()
+    val toggleMotorState: LiveData<Event<Unit>> = _toggleMotorState
 
     private val _motorStatus = MediatorLiveData<Resource<MotorStatusResponse>>()
     val motorStatus = _motorStatus.map {
@@ -32,7 +34,7 @@ class DashboardViewModel @ViewModelInject constructor(
             viewModelScope.launch {
                 withContext(dispatcherProvider.io) {
                     _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = it))
+                        globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = true))
                     })
                 }
             }
@@ -55,6 +57,6 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     fun toggleMotorState() {
-        _toggleMotorState.value = (_toggleMotorState.value ?: false).not()
+        _toggleMotorState.value = Event(Unit)
     }
 }

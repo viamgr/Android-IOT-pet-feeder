@@ -42,31 +42,19 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                style="@style/TextAppearance.MaterialComponents.Body1"
                 android:text="@string/wrong_connected"
-                android:visibility="gone"
-                app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_WRONG}"
                 app:layout_constraintBottom_toTopOf="@id/enable_wifi"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintWidth_percent="0.8" />
-
-            <TextView
-                android:id="@+id/wifi_connecting_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/connecting_wifi"
-                app:goneUnless="@{vm.networkStatus.connection == vm.networkStatus.CONNECTION_STATE_CONNECTING}"
-                app:layout_constraintBottom_toTopOf="@id/enable_wifi"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-
 
             <androidx.constraintlayout.widget.Barrier
                 android:id="@+id/barrier"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:barrierDirection="top"
-                app:constraint_referenced_ids="wifi_connecting_label,enable_wifi_text" />
+                app:constraint_referenced_ids="enable_wifi_text" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/enable_wifi"
@@ -75,16 +63,13 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="32dp"
                 android:onClick="@{()->vm.onEnableWifi()}"
-                android:text="@{vm.networkStatus.wifiEnabled?@string/connected:@string/open_wifi_setting}"
-                app:backgroundTint="@{vm.networkStatus.wifiEnabled?@color/green_500:@color/primary}"
-                app:icon="@{vm.networkStatus.wifiEnabled?@drawable/ic_baseline_check_circle_24:@drawable/ic_baseline_signal_wifi_4_bar_24}"
+                android:text="@string/open_wifi_setting"
                 app:iconSize="16dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                tools:backgroundTint="@color/green_500"
-                tools:icon="@drawable/ic_baseline_check_circle_24"
-                tools:text="@string/connected" />
+                app:backgroundTint="@color/primary"
+                app:icon="@drawable/ic_baseline_signal_wifi_4_bar_24" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

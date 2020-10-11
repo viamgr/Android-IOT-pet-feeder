@@ -1,4 +1,4 @@
-package com.viam.feeder.livedata
+package com.viam.feeder.core.livedata
 
 import androidx.lifecycle.Observer
 

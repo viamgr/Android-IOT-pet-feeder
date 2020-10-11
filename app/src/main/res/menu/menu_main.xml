@@ -8,7 +8,7 @@
         android:title="@string/home" />
     <item
         android:id="@+id/fragment_specification"
-        android:icon="@drawable/ic_baseline_timer_24"
+        android:icon="@drawable/ic_pet_food"
         android:title="@string/specification"
         app:showAsAction="never" />
     <item

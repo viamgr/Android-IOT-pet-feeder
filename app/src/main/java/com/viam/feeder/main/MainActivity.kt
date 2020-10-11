@@ -3,7 +3,6 @@ package com.viam.feeder.main
 import android.os.Bundle
 import android.os.Handler
 import android.view.Menu
-import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -31,11 +30,8 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar))
         setupViews()
 
-        viewModel.networkStatus.startListener(this)
-
-
         viewModel.networkStatus.connection.observe(this, {
-            if (it != NetworkStatus.CONNECTION_STATE_SUCCESS) {
+            if (!viewModel.networkStatus.isShowing && it != NetworkStatus.CONNECTION_STATE_SUCCESS) {
 //                navController.navigate(R.id.wifi_fragment)
             }
         })
@@ -57,14 +53,6 @@ class MainActivity : AppCompatActivity() {
         //var appBarConfiguration = AppBarConfiguration(navHostFragment.navController.graph)
         var appBarConfiguration = AppBarConfiguration(setOf(R.id.fragment_home))
         setupActionBarWithNavController(navHostFragment.navController, appBarConfiguration)
-    }
-
-    fun showBottomNavigation() {
-        bottom_nav.visibility = View.VISIBLE
-    }
-
-    fun hideBottomNavigation() {
-        bottom_nav.visibility = View.GONE
     }
 
     private var backPressedOnce = false

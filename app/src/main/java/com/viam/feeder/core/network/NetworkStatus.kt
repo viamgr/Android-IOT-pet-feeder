@@ -18,80 +18,65 @@ package com.viam.feeder.core.network
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import android.net.NetworkInfo
+import android.net.wifi.WifiManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import com.viam.feeder.MyApplication
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.onSuccess
 import com.viam.feeder.core.utility.postValueIfChanged
 import com.viam.feeder.services.GlobalConfigRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityScoped
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import javax.inject.Inject
 
 
+@Suppress("DEPRECATION")
 @ActivityScoped
 class NetworkStatus @Inject constructor(
     private val globalConfigRepository: GlobalConfigRepository,
-    private val dispatcherProvider: CoroutinesDispatcherProvider
+    private val dispatcherProvider: CoroutinesDispatcherProvider,
+    @ApplicationContext private val appContext: Context
 ) {
+    var isShowing = false
     private val _connection = MutableLiveData<Int>(CONNECTION_STATE_CONNECTING)
     val connection: LiveData<Int> = _connection
 
-
     private val _wifiEnabled = MutableLiveData<Boolean>()
     val wifiEnabled: LiveData<Boolean> = _wifiEnabled
-    val test: Int = com.viam.feeder.R.color.green_500
-
 
     private fun setWifiStatus(enabled: Boolean) {
-        _wifiEnabled.value = enabled
+        _wifiEnabled.postValue(enabled)
     }
 
-    private fun hasInternetConnectionM(context: Context): Boolean {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork
-            val capabilities = connectivityManager
-                .getNetworkCapabilities(network)
-            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && capabilities.hasCapability(
-                NetworkCapabilities.NET_CAPABILITY_VALIDATED
-            )
-        } else {
-            TODO("VERSION.SDK_INT < M")
-        }
+    var wifi: WifiManager? =
+        appContext.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager?
 
-    }
-
-    fun startListener(activity: AppCompatActivity) {
-        val worker = WifiWorker.start(activity)
-        WorkManager.getInstance(activity)
-            .getWorkInfoByIdLiveData(worker.id)
-            .observe(activity, {
-                setWifiStatus(it.state == WorkInfo.State.SUCCEEDED)
-            })
-    }
+    private val cm =
+        appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
 
     suspend fun check() {
         withContext(dispatcherProvider.io) {
-            safeApiCall {
-                globalConfigRepository.getStatus()
-            }.onSuccess {
-                _connection.postValueIfChanged(CONNECTION_STATE_SUCCESS)
-            }.onError {
-                if (it !is HttpException || it.code() == 404) {
-                    _connection.postValueIfChanged(CONNECTION_STATE_WRONG)
+            val enabled = activeNetwork?.isConnectedOrConnecting == true
+            setWifiStatus(enabled)
+            if (enabled) {
+                safeApiCall {
+                    globalConfigRepository.getStatus()
+                }.onSuccess {
+                    _connection.postValueIfChanged(CONNECTION_STATE_SUCCESS)
+                }.onError {
+                    if (it !is HttpException || it.code() == 404) {
+                        _connection.postValue(CONNECTION_STATE_WRONG)
+                    }
                 }
             }
-            delay(10000)
+            delay(3000)
             check()
         }
     }
@@ -122,9 +107,9 @@ suspend inline fun <T : Any> safeApiCall(
         Resource.Success(users)
     } catch (e: Exception) {
 
-        GlobalScope.launch(Dispatchers.Main) {
-            Toast.makeText(MyApplication.context, e.message, Toast.LENGTH_SHORT).show()
-        }
+        /*  GlobalScope.launch(Dispatchers.Main) {
+              Toast.makeText(MyApplication.context, e.message, Toast.LENGTH_SHORT).show()
+          }*/
 
         Resource.Error(e)
     }

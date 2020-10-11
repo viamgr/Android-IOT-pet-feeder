@@ -2,6 +2,7 @@
 
 package com.viam.feeder.ui.wifi
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -10,16 +11,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.viam.feeder.BR
 import com.viam.feeder.R
+import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.databinding.FragmentWifiBinding
-import com.viam.feeder.livedata.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -27,11 +27,16 @@ import dagger.hilt.android.AndroidEntryPoint
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 @AndroidEntryPoint
-class WifiFragment : BottomSheetDialogFragment() {
+class WifiFragment : DialogFragment() {
 
     private lateinit var binding: FragmentWifiBinding
     private val viewModel: WifiViewModel by viewModels()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle);
+        isCancelable = false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,10 +47,16 @@ class WifiFragment : BottomSheetDialogFragment() {
             ?.apply {
                 lifecycleOwner = viewLifecycleOwner
                 setVariable(BR.vm, viewModel)
+                viewModel.networkStatus.isShowing = true
+
             }?.also {
                 binding = it
             }
-        return super.onCreateView(inflater, container, savedInstanceState)
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        viewModel.networkStatus.isShowing = false
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,7 +67,7 @@ class WifiFragment : BottomSheetDialogFragment() {
                 startActivity(intent)
             }
         })
-        viewModel.networkStatus.connection.observe(viewLifecycleOwner, Observer {
+        viewModel.networkStatus.connection.observe(viewLifecycleOwner, {
             if (it == NetworkStatus.CONNECTION_STATE_SUCCESS) {
                 findNavController().navigateUp()
             }
