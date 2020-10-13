@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.TimePicker
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.google.android.material.tabs.TabLayout
 import com.viam.feeder.R
 import com.viam.feeder.clockTimer
 import com.viam.feeder.core.databinding.viewBinding
@@ -29,6 +30,22 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
         binding.apply {
             lifecycleOwner = viewLifecycleOwner
             vm = viewModel
+        }
+        binding.tab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                viewModel.onTabChanged(tab?.position)
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+
+
+        binding.periodSlider.addOnChangeListener { _, value, _ ->
+            viewModel.onValueChanged(value)
         }
 
         viewModel.timerList.observe(viewLifecycleOwner, { resource ->

@@ -17,14 +17,24 @@ import kotlinx.coroutines.launch
 class TimerViewModel @ViewModelInject constructor(
     private val timerRepository: TimerRepository,
     private val dispatcherProvider: CoroutinesDispatcherProvider
-) :
-    ViewModel() {
+) : ViewModel() {
+
+    companion object {
+        const val TIMER_MODE_SCHEDULING = 0
+        const val TIMER_MODE_PERIODIC = 1
+        const val MAX_VALUE = 24 * 60
+        const val MIN_VALUE = 1
+        const val DEFAULT_VALUE = 4 * 60
+    }
 
     private val _timerList = MutableLiveData<Resource<List<ClockTimer>>>()
     val timerList: LiveData<Resource<List<ClockTimer>>> = _timerList
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
+
+    private val _timerMode = MutableLiveData<Int>()
+    val timerMode: LiveData<Int> = _timerMode
 
     init {
         getTimes()
@@ -77,4 +87,27 @@ class TimerViewModel @ViewModelInject constructor(
 
         }
     }
+
+    private val _currentValue = MutableLiveData(DEFAULT_VALUE)
+    val currentValue: LiveData<Int> = _currentValue
+
+    fun onUpClicked() {
+        _currentValue.value =
+            _currentValue.value?.plus(1)?.coerceAtMost(MAX_VALUE)
+    }
+
+    fun onDownClicked() {
+        _currentValue.value =
+            _currentValue.value?.minus(1)?.coerceAtLeast(MIN_VALUE)
+
+    }
+
+    fun onTabChanged(position: Int?) {
+        _timerMode.value = if (position == 0) TIMER_MODE_SCHEDULING else TIMER_MODE_PERIODIC
+    }
+
+    fun onValueChanged(value: Float) {
+        _currentValue.value = value.toInt()
+    }
+
 }

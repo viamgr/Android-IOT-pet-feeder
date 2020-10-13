@@ -40,4 +40,7 @@
     <string name="clock_format">%d:%02d</string>
     <string name="dashboard">Dashboard</string>
     <string name="specification">Specification</string>
+    <string name="scheduling">scheduling</string>
+    <string name="periodic">Periodic</string>
+    <string name="minute">%d Minute</string>
 </resources>

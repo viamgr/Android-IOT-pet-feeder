@@ -14,20 +14,44 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tabMode="fixed">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_baseline_access_time_24"
+                android:text="@string/scheduling" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:icon="@drawable/ic_baseline_timelapse_24"
+                android:text="@string/periodic" />
+
+        </com.google.android.material.tabs.TabLayout>
+
         <ProgressBar
             style="?android:attr/progressBarStyleHorizontal"
             goneUnless="@{vm.loading}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:indeterminateBehavior="repeat"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/tab" />
 
         <com.airbnb.epoxy.EpoxyRecyclerView
             android:id="@+id/clock_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:paddingBottom="60dp"
-            tools:listitem="@layout/view_holder_clock_timer" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tab"
+            tools:listitem="@layout/view_holder_clock_timer"
+            tools:visibility="gone" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floating_action_button"
@@ -41,5 +65,69 @@
             app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/ic_baseline_add_24" />
 
+        <ImageView
+            android:id="@+id/period_down"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:onClick="@{()->vm.onDownClicked()}"
+            android:padding="12dp"
+            app:layout_constraintBottom_toBottomOf="@+id/period_up"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/period_up"
+            app:srcCompat="@drawable/ic_baseline_indeterminate_check_box_24" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/period_slider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:stepSize="1"
+            android:value="@{vm.currentValue}"
+            android:valueFrom="@{vm.MIN_VALUE}"
+            android:valueTo="@{vm.MAX_VALUE}"
+            app:layout_constraintBottom_toBottomOf="@+id/period_up"
+            app:layout_constraintEnd_toStartOf="@+id/period_up"
+            app:layout_constraintStart_toEndOf="@+id/period_down"
+            app:layout_constraintTop_toTopOf="@+id/period_up"
+            tools:value="300"
+            tools:valueFrom="0"
+            tools:valueTo="1000.0" />
+
+        <ImageView
+            android:id="@+id/period_up"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:onClick="@{()->vm.onUpClicked()}"
+            android:padding="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tab"
+            app:srcCompat="@drawable/ic_baseline_add_box_24" />
+
+        <TextView
+            android:id="@+id/value"
+            style="@style/TextAppearance.MaterialComponents.Headline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{String.format(@string/minute, vm.currentValue)}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/period_up"
+            tools:text="155 Minute" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/periodic_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="value,period_up,period_slider,period_down"
+            app:goneUnless="@{vm.timerMode==vm.TIMER_MODE_PERIODIC}" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/scheduling_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="clock_list,floating_action_button"
+            app:goneUnless="@{vm.timerMode==vm.TIMER_MODE_SCHEDULING}" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
