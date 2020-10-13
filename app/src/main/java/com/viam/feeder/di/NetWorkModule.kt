@@ -1,6 +1,7 @@
 package com.viam.feeder.di
 
-import com.viam.feeder.services.GlobalConfigService
+import com.viam.feeder.data.remote.GlobalConfigService
+import com.viam.feeder.data.remote.TimerService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,9 +22,12 @@ class NetWorkModule {
 
     @ActivityScoped
     @Provides
-    fun bindGlobalConfigService(retroFit: Retrofit): GlobalConfigService {
-        return retroFit.create(GlobalConfigService::class.java)
-    }
+    fun bindGlobalConfigService(retroFit: Retrofit) =
+        retroFit.create(GlobalConfigService::class.java)
+
+    @ActivityScoped
+    @Provides
+    fun bindTimerService(retroFit: Retrofit) = retroFit.create(TimerService::class.java)
 
     @ActivityScoped
     @Provides

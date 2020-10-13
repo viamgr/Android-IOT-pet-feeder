@@ -7,9 +7,9 @@ import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.core.network.safeApiCall
-import com.viam.feeder.services.GlobalConfigRepository
-import com.viam.feeder.services.models.MotorStatusRequest
-import com.viam.feeder.services.models.MotorStatusResponse
+import com.viam.feeder.data.models.MotorStatusRequest
+import com.viam.feeder.data.models.MotorStatusResponse
+import com.viam.feeder.data.repository.GlobalConfigRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

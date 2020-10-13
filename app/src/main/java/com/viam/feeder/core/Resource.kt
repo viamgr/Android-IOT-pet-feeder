@@ -41,3 +41,18 @@ fun <T> Resource<T>.onError(callback: (Exception) -> Unit): Resource<T> {
     }
     return this
 }
+
+fun <T> Resource<T>.onLoading(callback: () -> Unit): Resource<T> {
+    if (this is Resource.Loading) {
+        callback.invoke()
+    }
+    return this
+}
+
+fun <T> Resource<T>.isLoading(): Boolean {
+    return this is Resource.Loading
+}
+
+fun <T> Resource<T>?.dataOrNull(): T? {
+    return if (this is Resource.Success) this.data else null
+}

@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.viam.feeder.R
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.network.NetworkStatus
+import com.viam.feeder.data.repository.GlobalConfigRepository
 import com.viam.feeder.models.FeedVolume
-import com.viam.feeder.services.GlobalConfigRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.ticker
@@ -33,14 +33,14 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     val feedSounds: LiveData<List<String>> = _feedSounds
 
-    private val _feedVolume = MutableLiveData(
+    private val _feedVolumeList = MutableLiveData(
         listOf(
-            FeedVolume(1, 0.33f, R.string.little, R.color.green_500),
-            FeedVolume(1, 0.66f, R.string.medium, R.color.grey_500),
-            FeedVolume(1, 1.0f, R.string.large, R.color.green_500),
+            FeedVolume(1, 0.33f, R.string.little),
+            FeedVolume(2, 0.66f, R.string.medium),
+            FeedVolume(3, 1.0f, R.string.large),
         )
     )
-    val feedVolume: LiveData<List<FeedVolume>> = _feedVolume
+    val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
 
     private val _ledStates = MutableLiveData(
         listOf(
@@ -54,17 +54,11 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     fun onFeedVolumeClicked(id: Int) {
 
-        val values = _feedVolume.value
-        values
-            ?.map {
-                it.tintColor = R.color.grey_500
-                it
-            }
-            ?.first { it.id == id }
-            ?.let {
-                it.tintColor = R.color.green_500
-            }
-        _feedVolume.value = values
+        val values = _feedVolumeList.value?.toMutableList()?.map {
+            it.selected = id == it.id
+            it
+        }
+        _feedVolumeList.value = values
     }
 
     private var tickerChannel: ReceiveChannel<Unit>? = null
@@ -103,6 +97,11 @@ class SpecificationViewModel @ViewModelInject constructor(
         } else {
             _recordState.value = RECORD_STATE_RECORDED
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        job?.cancel()
     }
 
     fun onPlayClicked() {

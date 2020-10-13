@@ -20,42 +20,49 @@
             type="int" />
 
         <variable
-            name="tintColor"
-            type="int" />
+            name="selected"
+            type="boolean" />
 
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="4dp"
         android:onClick="@{() -> listener.onItemClick(identifier)}"
-        android:padding="8dp">
+        app:cardBackgroundColor="@{selected?@color/green_500:@color/grey_300}"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="4dp">
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toTopOf="@id/label"
-            app:layout_constraintDimensionRatio="1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/ic_pet_food"
-            app:tint="@color/grey_500"
-            app:tintCompat="@{tintColor}" />
-
-        <TextView
-            android:id="@+id/label"
-            style="@style/TextAppearance.MaterialComponents.Headline5"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@{label}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Label" />
+            android:layout_height="match_parent"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toTopOf="@id/label"
+                app:layout_constraintDimensionRatio="1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:srcCompat="@drawable/ic_pet_food" />
+
+            <TextView
+                android:id="@+id/label"
+                style="@style/TextAppearance.MaterialComponents.Headline5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@{label}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                tools:text="Label" />
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 </layout>

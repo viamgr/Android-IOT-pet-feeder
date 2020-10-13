@@ -29,7 +29,6 @@
                 app:spanCount="3"
                 tools:listitem="@layout/view_holder_feed_volume" />
 
-
             <ImageView
                 android:id="@+id/volume_mute"
                 android:layout_width="48dp"
@@ -56,7 +55,6 @@
                 app:layout_constraintTop_toTopOf="@+id/volume_up"
                 tools:value="50.0" />
 
-
             <ImageView
                 android:id="@+id/volume_up"
                 android:layout_width="48dp"
@@ -67,7 +65,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/food_volume"
                 app:srcCompat="@drawable/ic_baseline_volume_up_24" />
-
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/feeding_sound"
@@ -91,7 +88,6 @@
                 goneUnless="@{vm.feedSoundValue == 2 &amp;&amp; vm.recordState == vm.RECORD_STATE_RECORDED}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:contentDescription="@string/start_record"
                 android:onClick="@{()->vm.onPlayClicked()}"
                 android:text="@string/play_sound"
@@ -99,7 +95,6 @@
                 app:backgroundTint="@color/green_500"
                 app:icon="@drawable/ic_baseline_play_arrow_24"
                 app:iconTint="@color/white"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/remove_record"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toStartOf="parent"
@@ -117,9 +112,25 @@
                 app:icon="@drawable/ic_baseline_delete_24"
                 app:iconTint="@color/white"
                 app:layout_constraintBottom_toBottomOf="@+id/play_record"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/approve_record"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/play_record"
+                app:layout_constraintTop_toTopOf="@+id/play_record" />
+
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/approve_record"
+                goneUnless="@{vm.feedSoundValue == 2 &amp;&amp; vm.recordState == vm.RECORD_STATE_RECORDED}"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:contentDescription="@string/remove_recorded_file"
+                android:onClick="@{()->vm.onRemoveRecordClicked()}"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/orange_500"
+                app:icon="@drawable/ic_baseline_check_24"
+                app:iconTint="@color/white"
+                app:layout_constraintBottom_toBottomOf="@+id/play_record"
+                app:layout_constraintStart_toEndOf="@+id/remove_record"
                 app:layout_constraintTop_toTopOf="@+id/play_record" />
 
             <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -136,7 +147,6 @@
                 app:backgroundTint="@color/red_500"
                 app:icon="@{vm.recordText==null?@drawable/ic_baseline_mic_24:@drawable/ic_baseline_stop_24}"
                 app:iconTint="@color/white"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/feeding_sound"
                 tools:icon="@drawable/ic_baseline_mic_24"
@@ -152,7 +162,6 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/ledEnabled"
-                android:layout_marginTop="12dp"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -161,9 +170,9 @@
                 <AutoCompleteTextView
                     android:id="@+id/led_dropdown"
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
-                    android:layout_height="wrap_content"
                     android:hint="@string/led_state"
                     android:text="@string/choose" />
             </com.google.android.material.textfield.TextInputLayout>

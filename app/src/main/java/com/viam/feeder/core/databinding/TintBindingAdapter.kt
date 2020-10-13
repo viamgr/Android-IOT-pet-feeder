@@ -10,7 +10,6 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.databinding.BindingAdapter
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 
-
 @SuppressLint("NewApi")
 @BindingAdapter("tintCompat")
 fun setTintCompat(imageView: ImageView, @ColorInt color: Int) {

@@ -1,8 +1,8 @@
-package com.viam.feeder.services
+package com.viam.feeder.data.remote
 
-import com.viam.feeder.services.models.MotorStatusRequest
-import com.viam.feeder.services.models.MotorStatusResponse
-import com.viam.feeder.services.models.Status
+import com.viam.feeder.data.models.MotorStatusRequest
+import com.viam.feeder.data.models.MotorStatusResponse
+import com.viam.feeder.data.models.Status
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers

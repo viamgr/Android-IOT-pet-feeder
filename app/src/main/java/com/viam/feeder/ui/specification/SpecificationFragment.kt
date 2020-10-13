@@ -53,11 +53,10 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         })
 
         binding.soundVolume.addOnChangeListener { _, value, fromUser ->
-            // Responds to when slider's value is changed
             viewModel.onSoundVolumeChanged(value)
         }
 
-        viewModel.feedVolume.observe(viewLifecycleOwner, { list ->
+        viewModel.feedVolumeList.observe(viewLifecycleOwner, { list ->
             binding.foodVolume.withModels {
                 list.forEach {
                     feedVolume {
@@ -65,7 +64,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
                         identifier(it.id)
                         label(it.label)
                         scale(it.scale)
-                        tintColor(it.tintColor)
+                        selected(it.selected)
                         listener(object : OnItemClickListener {
                             override fun onItemClick(item: Any?) {
                                 viewModel.onFeedVolumeClicked(item as Int)

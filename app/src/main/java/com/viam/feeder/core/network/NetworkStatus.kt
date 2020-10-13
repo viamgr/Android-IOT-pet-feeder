@@ -22,14 +22,12 @@ import android.net.NetworkInfo
 import android.net.wifi.WifiManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.viam.feeder.core.Resource
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.onSuccess
 import com.viam.feeder.core.utility.postValueIfChanged
-import com.viam.feeder.services.GlobalConfigRepository
+import com.viam.feeder.data.repository.GlobalConfigRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ActivityScoped
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -93,24 +91,4 @@ class NetworkStatus @Inject constructor(
         }
     }
 
-}
-
-
-suspend inline fun <T : Any> safeApiCall(
-    crossinline body: suspend () -> T
-): Resource<T> {
-    return try {
-        // blocking block
-        val users = withContext(Dispatchers.IO) {
-            body()
-        }
-        Resource.Success(users)
-    } catch (e: Exception) {
-
-        /*  GlobalScope.launch(Dispatchers.Main) {
-              Toast.makeText(MyApplication.context, e.message, Toast.LENGTH_SHORT).show()
-          }*/
-
-        Resource.Error(e)
-    }
 }

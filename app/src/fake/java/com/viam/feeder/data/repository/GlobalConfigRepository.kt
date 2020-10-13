@@ -1,8 +1,9 @@
-package com.viam.feeder.services
+package com.viam.feeder.data.repository
 
-import com.viam.feeder.services.models.MotorStatusRequest
-import com.viam.feeder.services.models.MotorStatusResponse
-import com.viam.feeder.services.models.Status
+import com.viam.feeder.data.models.MotorStatusRequest
+import com.viam.feeder.data.models.MotorStatusResponse
+import com.viam.feeder.data.models.Status
+import com.viam.feeder.data.remote.GlobalConfigService
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -10,9 +11,9 @@ class GlobalConfigRepository @Inject constructor(private val globalConfigService
 
     suspend fun getStatus(): Status {
         return if (Random.nextInt(0, 40) == 0) {
-            Status(false)
+            Status(100, "WIFI")
         } else {
-            Status(true)
+            Status(10000, "WIFIFIFIFI")
         }
     }
 
