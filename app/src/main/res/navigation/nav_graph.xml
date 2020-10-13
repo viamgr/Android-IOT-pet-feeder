@@ -13,21 +13,21 @@
     <fragment
         android:id="@+id/fragment_home"
         android:name="com.viam.feeder.ui.dashboard.DashboardFragment"
-        android:label="DashboardFragment"
+        android:label="@string/dashboard"
         tools:layout="@layout/fragment_dashboard" />
     <fragment
         android:id="@+id/fragment_specification"
         android:name="com.viam.feeder.ui.specification.SpecificationFragment"
-        android:label="SpecificationFragment"
+        android:label="@string/specification"
         tools:layout="@layout/fragment_dashboard" />
     <fragment
         android:id="@+id/fragment_timer"
         android:name="com.viam.feeder.ui.timer.TimerFragment"
-        android:label="TimerFragment"
+        android:label="@string/timer"
         tools:layout="@layout/fragment_dashboard" />
     <fragment
         android:id="@+id/fragment_setting"
         android:name="com.viam.feeder.ui.setting.SettingFragment"
-        android:label="SettingFragment"
+        android:label="@string/setting"
         tools:layout="@layout/fragment_dashboard" />
 </navigation>

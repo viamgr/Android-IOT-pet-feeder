@@ -23,7 +23,6 @@
     <string name="open_wifi_setting">Open Wifi Setting</string>
     <string name="turn_on_motor">Turn On Motor</string>
     <string name="turn_off_motor">Turn Off Motor</string>
-    <string name="specification">Specification</string>
     <string name="timer">Timer</string>
     <string name="setting">Setting</string>
     <string name="little">Little</string>
@@ -39,4 +38,6 @@
     <string name="am">AM</string>
     <string name="pm">PM</string>
     <string name="clock_format">%d:%02d</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="specification">Specification</string>
 </resources>

@@ -2,14 +2,16 @@ package com.viam.feeder.ui.dashboard
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentDashboardBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
@@ -27,10 +29,10 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         viewModel.toggleMotorState.observe(viewLifecycleOwner, EventObserver {
             binding.animationView.cancelAnimation()
             binding.animationView.playAnimation()
-            binding.animationView.postDelayed(5000L) {
+            lifecycleScope.launch {
+                delay(5000)
                 binding.animationView.cancelAnimation()
             }
-
         })
     }
 
