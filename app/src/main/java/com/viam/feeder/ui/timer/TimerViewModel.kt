@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.viam.feeder.core.Resource
 import com.viam.feeder.core.dataOrNull
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
@@ -27,14 +26,18 @@ class TimerViewModel @ViewModelInject constructor(
         const val DEFAULT_VALUE = 4 * 60
     }
 
-    private val _timerList = MutableLiveData<Resource<List<ClockTimer>>>()
-    val timerList: LiveData<Resource<List<ClockTimer>>> = _timerList
-
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
 
     private val _timerMode = MutableLiveData<Int>()
     val timerMode: LiveData<Int> = _timerMode
+
+    val controller = TimerController()
+        .also { timerController ->
+            timerController.clickListener = { clockTimer ->
+                removeTimer(clockTimer)
+            }
+        }
 
     init {
         getTimes()
@@ -44,7 +47,7 @@ class TimerViewModel @ViewModelInject constructor(
         _loading.postValue(true)
         viewModelScope.launch {
             timerRepository.getTimes().let {
-                _timerList.postValue(it)
+                controller.setData(it.dataOrNull())
                 _loading.postValue(false)
             }
         }
@@ -52,13 +55,6 @@ class TimerViewModel @ViewModelInject constructor(
 
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
-    fun onRemoveClockTimerClicked(id: Long) {
-        _timerList.value.dataOrNull()
-            ?.firstOrNull { it.id == id }
-            ?.let { timer ->
-                removeTimer(timer)
-            }
-    }
 
     private fun removeTimer(timer: ClockTimer) {
         _loading.value = true

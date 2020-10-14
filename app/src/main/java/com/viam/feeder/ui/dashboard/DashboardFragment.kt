@@ -27,11 +27,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             vm = viewModel
         }
         viewModel.toggleMotorState.observe(viewLifecycleOwner, EventObserver {
-            binding.animationView.cancelAnimation()
+            binding.animationView.clearAnimation()
             binding.animationView.playAnimation()
-            lifecycleScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch {
                 delay(5000)
-                binding.animationView.cancelAnimation()
+                binding.animationView.clearAnimation()
             }
         })
     }

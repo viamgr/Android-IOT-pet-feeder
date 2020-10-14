@@ -8,10 +8,8 @@ import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.databinding.FragmentSettingBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.ObsoleteCoroutinesApi
 
 @AndroidEntryPoint
-@ObsoleteCoroutinesApi
 class SettingFragment : Fragment(R.layout.fragment_setting) {
 
     private val binding by viewBinding(FragmentSettingBinding::bind)

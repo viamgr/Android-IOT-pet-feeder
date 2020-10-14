@@ -5,25 +5,16 @@
     <data>
 
         <variable
-            name="removeListener"
+            name="clickListener"
             type="android.view.View.OnClickListener" />
 
         <variable
-            name="identifier"
-            type="long" />
+            name="ssid"
+            type="String" />
 
         <variable
-            name="hour"
-            type="int" />
-
-        <variable
-            name="minute"
-            type="int" />
-
-        <variable
-            name="time"
-            type="int" />
-
+            name="lock"
+            type="boolean" />
 
     </data>
 
@@ -46,34 +37,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:gravity="center"
-                android:text="@{String.format(@string/clock_format, hour,minute)}"
+                android:text="@{ssid}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="1:00" />
-
-            <TextView
-                android:id="@+id/time"
-                style="@style/TextAppearance.MaterialComponents.Subtitle2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:gravity="center"
-                android:text="@{time}"
-                android:textColor="?android:textColorSecondary"
-                app:layout_constraintBottom_toBottomOf="@id/clock"
-                app:layout_constraintStart_toEndOf="@id/clock"
-                tools:text="AM" />
+                tools:text="V. M" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
-                android:onClick="@{removeListener}"
+                android:onClick="@{() -> removeListener.onItemClick(identifier)}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_baseline_delete_24" />
+                app:srcCompat="@drawable/ic_baseline_lock_24" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </layout>

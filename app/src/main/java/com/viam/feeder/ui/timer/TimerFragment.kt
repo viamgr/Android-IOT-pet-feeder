@@ -8,11 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.tabs.TabLayout
 import com.viam.feeder.R
-import com.viam.feeder.clockTimer
 import com.viam.feeder.core.databinding.viewBinding
-import com.viam.feeder.core.interfaces.OnItemClickListener
 import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.onSuccess
 import com.viam.feeder.databinding.FragmentTimerBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -30,6 +27,7 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
         binding.apply {
             lifecycleOwner = viewLifecycleOwner
             vm = viewModel
+            clockList.setController(viewModel.controller)
         }
         binding.tab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -48,33 +46,10 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
             viewModel.onValueChanged(value)
         }
 
-        viewModel.timerList.observe(viewLifecycleOwner, { resource ->
-            resource.onSuccess { list ->
-                binding.clockList.withModels {
-                    list.forEach {
-                        clockTimer {
-                            id(it.id)
-                            identifier(it.id)
-                            hour(it.hour)
-                            minute(it.minute)
-                            time(it.time)
-                            removeListener(object : OnItemClickListener {
-                                override fun onItemClick(item: Any?) {
-                                    viewModel.onRemoveClockTimerClicked(item as Long)
-                                }
-                            })
-                        }
-                    }
-                }
-            }
-        })
-
         viewModel.openTimerDialog.observe(viewLifecycleOwner, EventObserver {
             showFrameworkTimePicker()
         })
-
     }
-
 
     private fun showFrameworkTimePicker() {
         val timePickerDialog = TimePickerDialog(

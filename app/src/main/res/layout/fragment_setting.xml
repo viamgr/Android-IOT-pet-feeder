@@ -13,19 +13,14 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/cardview_dark_background"
-        tools:context=".ui.timer.DashboardFragment">
+        tools:context=".ui.setting.SettingFragment">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="@{()->vm.toggleMotorState()}"
-            android:text="@{vm.motorStatus?@string/turn_off_motor:@string/turn_on_motor}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+        <com.airbnb.epoxy.EpoxyRecyclerView
+            android:id="@+id/settings"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/turn_on_motor" />
+            tools:listitem="@layout/view_holder_wifi_list" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
