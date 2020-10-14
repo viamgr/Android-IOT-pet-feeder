@@ -72,7 +72,7 @@
             android:layout_margin="8dp"
             android:onClick="@{()->vm.onDownClicked()}"
             android:padding="12dp"
-            app:layout_constraintBottom_toBottomOf="@+id/period_up"
+            app:layout_constraintBottom_toBottomOf="@id/period_up"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/period_up"
             app:srcCompat="@drawable/ic_baseline_indeterminate_check_box_24" />
@@ -85,10 +85,10 @@
             android:value="@{vm.currentValue}"
             android:valueFrom="@{vm.MIN_VALUE}"
             android:valueTo="@{vm.MAX_VALUE}"
-            app:layout_constraintBottom_toBottomOf="@+id/period_up"
-            app:layout_constraintEnd_toStartOf="@+id/period_up"
-            app:layout_constraintStart_toEndOf="@+id/period_down"
-            app:layout_constraintTop_toTopOf="@+id/period_up"
+            app:layout_constraintBottom_toBottomOf="@id/period_up"
+            app:layout_constraintEnd_toStartOf="@id/period_up"
+            app:layout_constraintStart_toEndOf="@id/period_down"
+            app:layout_constraintTop_toTopOf="@id/period_up"
             tools:value="300"
             tools:valueFrom="0"
             tools:valueTo="1000.0" />
@@ -101,7 +101,7 @@
             android:onClick="@{()->vm.onUpClicked()}"
             android:padding="12dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tab"
+            app:layout_constraintTop_toBottomOf="@id/value"
             app:srcCompat="@drawable/ic_baseline_add_box_24" />
 
         <TextView
@@ -112,7 +112,7 @@
             android:text="@{String.format(@string/minute, vm.currentValue)}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/period_up"
+            app:layout_constraintTop_toBottomOf="@id/tab"
             tools:text="155 Minute" />
 
         <androidx.constraintlayout.widget.Group

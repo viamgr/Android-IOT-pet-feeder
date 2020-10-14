@@ -15,8 +15,16 @@
         android:layout_height="match_parent"
         tools:context=".ui.setting.SettingFragment">
 
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            goneUnless="@{vm.loading}"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminateBehavior="repeat"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <com.airbnb.epoxy.EpoxyRecyclerView
-            android:id="@+id/settings"
+            android:id="@+id/wifi_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintTop_toTopOf="parent"

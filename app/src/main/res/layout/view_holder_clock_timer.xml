@@ -9,10 +9,6 @@
             type="android.view.View.OnClickListener" />
 
         <variable
-            name="identifier"
-            type="long" />
-
-        <variable
             name="hour"
             type="int" />
 
@@ -41,7 +37,7 @@
 
             <TextView
                 android:id="@+id/clock"
-                style="@style/TextAppearance.MaterialComponents.Headline4"
+                style="@style/TextAppearance.MaterialComponents.Headline5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"

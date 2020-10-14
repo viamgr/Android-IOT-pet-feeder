@@ -22,6 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
+        android:onClick="@{clickListener}"
         app:cardCornerRadius="4dp"
         app:cardElevation="4dp">
 
@@ -32,7 +33,7 @@
 
             <TextView
                 android:id="@+id/clock"
-                style="@style/TextAppearance.MaterialComponents.Headline4"
+                style="@style/TextAppearance.MaterialComponents.Headline5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
@@ -44,10 +45,10 @@
                 tools:text="V. M" />
 
             <ImageView
+                goneUnless="@{lock}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
-                android:onClick="@{() -> removeListener.onItemClick(identifier)}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

@@ -43,4 +43,9 @@
     <string name="scheduling">scheduling</string>
     <string name="periodic">Periodic</string>
     <string name="minute">%d Minute</string>
+    <string name="wifi_password">Wifi Password</string>
+    <string name="enter_wifi_password">Enter wifi password</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="input_wrong">Enter a valid %s</string>
 </resources>

@@ -10,7 +10,6 @@ class TimerController : TypedEpoxyController<List<ClockTimer>>() {
         data?.forEach { clockTimer: ClockTimer ->
             clockTimer {
                 id(clockTimer.id)
-                identifier(clockTimer.id)
                 hour(clockTimer.hour)
                 minute(clockTimer.minute)
                 time(clockTimer.time)

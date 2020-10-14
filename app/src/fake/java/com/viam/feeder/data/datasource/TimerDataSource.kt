@@ -6,7 +6,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TimerWifiDataSource @Inject constructor() {
+class TimerDataSource @Inject constructor() {
     private val list = mutableListOf(
         ClockTimer(1, 23, 10, R.string.am),
         ClockTimer(2, 5, 1, R.string.pm),
