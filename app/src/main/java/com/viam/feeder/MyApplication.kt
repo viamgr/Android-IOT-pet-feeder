@@ -1,11 +1,12 @@
 package com.viam.feeder
 
 import android.app.Application
+import androidx.multidex.MultiDexApplication
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
-class MyApplication : Application() {
+class MyApplication : MultiDexApplication() {
 
     companion object {
         lateinit var context: Application

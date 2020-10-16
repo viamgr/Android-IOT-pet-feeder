@@ -4,12 +4,17 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.interfaces.OnItemClickListener
+import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentSpecificationBinding
 import com.viam.feeder.feedVolume
+import com.viam.feeder.ui.record.RecordFragment.Companion.PATH
+import com.viam.feeder.ui.record.RecordFragment.Companion.REQUEST_KEY
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -26,6 +31,10 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             vm = viewModel
         }
 
+        viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
+            findNavController().navigate(R.id.record_fragment)
+        })
+
         viewModel.feedSounds.observe(viewLifecycleOwner, { list ->
             ArrayAdapter(
                 requireContext(),
@@ -34,7 +43,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             ).also { adapter ->
                 binding.feedingSoundDropDown.setAdapter(adapter)
                 binding.feedingSoundDropDown.setOnItemClickListener { _, _, position, _ ->
-                    viewModel.onFeedSoundItemClickListener(position)
+                    viewModel.onFeedSoundItemClicked(position)
                 }
             }
         })
@@ -74,6 +83,16 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
                 }
             }
         })
+
+        setFragmentResultListener(REQUEST_KEY) { requestKey, bundle ->
+            if (requestKey == REQUEST_KEY) {
+                val result = bundle.getString(PATH)
+                result?.let {
+                    viewModel.onRecordFile(result)
+                }
+
+            }
+        }
 
     }
 

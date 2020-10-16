@@ -2,7 +2,6 @@ package com.viam.feeder.main
 
 import android.os.Bundle
 import android.os.Handler
-import android.view.Menu
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -36,12 +35,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
     }
 
     private fun setupViews() {

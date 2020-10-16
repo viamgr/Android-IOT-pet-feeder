@@ -33,7 +33,6 @@
     <string name="large">Large</string>
     <string name="start_record">Start record</string>
     <string name="play_sound">Play Sound</string>
-    <string name="remove_recorded_file">Remove recorder file</string>
     <string name="add_clock">add_new_clock</string>
     <string name="am">AM</string>
     <string name="pm">PM</string>
@@ -48,4 +47,8 @@
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="input_wrong">Enter a valid %s</string>
+    <string name="record_sound">Record Sound</string>
+    <string name="all_permissions_denied_feedback">all_permissions_denied_feedback</string>
+    <string name="permission_rationale_settings_button_text">permission_rationale_settings_button_text</string>
+    <string name="apply">Apply</string>
 </resources>

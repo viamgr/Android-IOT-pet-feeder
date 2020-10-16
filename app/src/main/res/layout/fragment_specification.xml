@@ -83,89 +83,12 @@
                     android:text="@string/choose" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-                android:id="@+id/play_record"
-                goneUnless="@{vm.feedSoundValue == 2 &amp;&amp; vm.recordState == vm.RECORD_STATE_RECORDED}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/start_record"
-                android:onClick="@{()->vm.onPlayClicked()}"
-                android:text="@string/play_sound"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/green_500"
-                app:icon="@drawable/ic_baseline_play_arrow_24"
-                app:iconTint="@color/white"
-                app:layout_constraintEnd_toStartOf="@+id/remove_record"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/feeding_sound" />
-
-            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-                android:id="@+id/remove_record"
-                goneUnless="@{vm.feedSoundValue == 2 &amp;&amp; vm.recordState == vm.RECORD_STATE_RECORDED}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/remove_recorded_file"
-                android:onClick="@{()->vm.onRemoveRecordClicked()}"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/red_500"
-                app:icon="@drawable/ic_baseline_delete_24"
-                app:iconTint="@color/white"
-                app:layout_constraintBottom_toBottomOf="@+id/play_record"
-                app:layout_constraintEnd_toStartOf="@+id/approve_record"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/play_record"
-                app:layout_constraintTop_toTopOf="@+id/play_record" />
-
-            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-                android:id="@+id/approve_record"
-                goneUnless="@{vm.feedSoundValue == 2 &amp;&amp; vm.recordState == vm.RECORD_STATE_RECORDED}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:contentDescription="@string/remove_recorded_file"
-                android:onClick="@{()->vm.onRemoveRecordClicked()}"
-                android:textColor="@color/white"
-                app:backgroundTint="@color/orange_500"
-                app:icon="@drawable/ic_baseline_check_24"
-                app:iconTint="@color/white"
-                app:layout_constraintBottom_toBottomOf="@+id/play_record"
-                app:layout_constraintStart_toEndOf="@+id/remove_record"
-                app:layout_constraintTop_toTopOf="@+id/play_record" />
-
-            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-                android:id="@+id/record"
-                goneUnless="@{vm.feedSoundValue == 2 &amp;&amp; vm.recordState == vm.RECORD_STATE_NOT_RECORDED}"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:contentDescription="@string/start_record"
-                android:onClick="@{()->vm.onRecordClick()}"
-                android:text="@{vm.recordText??@string/start_record}"
-                android:textColor="@color/white"
-                android:visibility="gone"
-                app:backgroundTint="@color/red_500"
-                app:icon="@{vm.recordText==null?@drawable/ic_baseline_mic_24:@drawable/ic_baseline_stop_24}"
-                app:iconTint="@color/white"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/feeding_sound"
-                tools:icon="@drawable/ic_baseline_mic_24"
-                tools:text="@string/start_record" />
-
-
-            <androidx.constraintlayout.widget.Barrier
-                android:id="@+id/record_barrier"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:barrierDirection="bottom"
-                app:constraint_referenced_ids="record,play_record" />
-
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/ledEnabled"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/record_barrier">
+                app:layout_constraintTop_toBottomOf="@+id/feeding_sound">
 
                 <AutoCompleteTextView
                     android:id="@+id/led_dropdown"
