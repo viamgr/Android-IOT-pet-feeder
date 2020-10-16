@@ -86,12 +86,14 @@ class RecordFragment : BottomSheetDialogFragment() {
         })
 
         viewModel.applyClicked.observe(viewLifecycleOwner, EventObserver {
+            result = if (file != null && (File(file!!).exists())) file else null
             findNavController().navigateUp()
         })
     }
 
+    private var result: String? = null
+
     private fun setResult() {
-        val result = if (file != null && (File(file!!).exists())) file else null
         setFragmentResult(REQUEST_KEY, bundleOf(PATH to result))
     }
 
@@ -128,7 +130,6 @@ class RecordFragment : BottomSheetDialogFragment() {
         val feedbackViewMultiplePermissionListener =
             object : MultiplePermissionsListener {
                 override fun onPermissionsChecked(report: MultiplePermissionsReport) {
-
                     if (report.areAllPermissionsGranted()) {
                         startRecord()
                     }

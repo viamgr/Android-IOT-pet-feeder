@@ -13,17 +13,18 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="8dp">
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
             android:id="@+id/recording"
-            goneUnless="@{vm.recordText!=null}"
+            goneUnless="@{vm.recordText!=null &amp;&amp; vm.recordWillStarting==null}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/start_record"
             android:onClick="@{()->vm.onStopClicked()}"
             android:text="@{vm.recordText??@string/start_record}"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:backgroundTint="@color/red_500"
             app:icon="@drawable/ic_baseline_stop_24"
             app:iconTint="@color/white"
@@ -33,10 +34,25 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="00:54" />
 
+        <TextView
+            android:id="@+id/starting"
+            style="@style/TextAppearance.MaterialComponents.Headline6"
+            goneUnless="@{vm.recordWillStarting!=null}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{String.format(@string/time_to_start,vm.recordWillStarting)}"
+            android:textColor="@color/green_500"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/divider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/time_to_start" />
+
         <Button
             android:id="@+id/play"
             style="@style/Widget.MaterialComponents.Button.TextButton"
-            goneUnless="@{vm.recordText==null}"
+            goneUnless="@{vm.recordText==null  &amp;&amp; vm.recordWillStarting==null}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->vm.onPlayClicked()}"
@@ -44,18 +60,18 @@
             android:textColor="@color/green_500"
             app:icon="@drawable/ic_baseline_play_arrow_24"
             app:iconTint="@color/green_500"
-            app:layout_constraintBottom_toBottomOf="@id/recording"
+            app:layout_constraintBottom_toBottomOf="@id/divider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/record"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/recording" />
+            app:layout_constraintTop_toTopOf="parent" />
 
 
         <Button
             android:id="@+id/record"
             style="@style/Widget.MaterialComponents.Button.TextButton"
-            goneUnless="@{vm.recordText==null}"
+            goneUnless="@{vm.recordText==null &amp;&amp; vm.recordWillStarting==null}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="@{()->vm.onRetryClicked()}"
@@ -68,21 +84,28 @@
             app:layout_constraintStart_toEndOf="@+id/play"
             app:layout_constraintTop_toTopOf="@id/play" />
 
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="recording,play,starting" />
+
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:background="@color/grey_300"
-            app:layout_constraintTop_toBottomOf="@+id/recording" />
-
+            app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
         <Button
             android:id="@+id/confirm"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
+            android:enabled="@{vm.recordText==null}"
             android:onClick="@{()->vm.onApplyClicked()}"
             android:text="@string/apply"
             android:textColor="@color/primary"

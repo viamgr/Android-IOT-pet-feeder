@@ -51,4 +51,5 @@
     <string name="all_permissions_denied_feedback">all_permissions_denied_feedback</string>
     <string name="permission_rationale_settings_button_text">permission_rationale_settings_button_text</string>
     <string name="apply">Apply</string>
+    <string name="time_to_start">Time To Start: %s</string>
 </resources>
