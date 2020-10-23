@@ -7,12 +7,14 @@ import kotlinx.coroutines.supervisorScope
 
 suspend fun Long.timerAsync(action: (count: Long) -> Unit) = supervisorScope {
     var count = 0L
-    action(count)
     return@supervisorScope launchPeriodicAsync(1000) {
-        if (count++ == this@timerAsync - 1) {
-            this.cancel()
+        if (count == this@timerAsync) {
+            action(count)
+            cancel()
+        } else {
+            action(count)
         }
-        action(count)
+        count++
     }
 }
 

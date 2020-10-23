@@ -14,14 +14,14 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
 
     companion object {
         const val MAX_TIME = 10L
-        const val STARTING = 4L
+        const val STARTING = 3L
     }
 
     private lateinit var filePath: String
     private val _recordText = MutableLiveData<String?>()
     val recordText: LiveData<String?> = _recordText
 
-    private val _recordWillStarting = MutableLiveData(STARTING.toString())
+    private val _recordWillStarting = MutableLiveData<String?>()
     val recordWillStarting: LiveData<String?> = _recordWillStarting
 
     private val _playClicked = MutableLiveData<Event<Unit>>()
@@ -41,19 +41,6 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
 
     private var job: Job? = null
 
-    init {
-
-        viewModelScope.launch {
-            STARTING.timerAsync {
-                if (it == STARTING) {
-                    _recordWillStarting.value = null
-                    _startRecord.postValue(Event(Unit))
-                } else {
-                    _recordWillStarting.value = (STARTING - it).toString()
-                }
-            }
-        }
-    }
 
     fun onPlayClicked() {
         _playClicked.value = Event(Unit)
@@ -94,6 +81,19 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
         job = viewModelScope.launch {
             MAX_TIME.timerAsync {
                 onInterval(it)
+            }
+        }
+    }
+
+    fun onPermissionGranted() {
+        viewModelScope.launch {
+            STARTING.timerAsync {
+                if (it == STARTING) {
+                    _recordWillStarting.value = null
+                    _startRecord.postValue(Event(Unit))
+                } else {
+                    _recordWillStarting.value = (STARTING - it).toString()
+                }
             }
         }
     }
