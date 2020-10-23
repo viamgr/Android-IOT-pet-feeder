@@ -13,12 +13,20 @@
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-
         android:layout_height="wrap_content">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleHorizontal"
+                goneUnless="@{vm.loading}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminateBehavior="repeat"
+                app:elevation="100dp"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <com.airbnb.epoxy.EpoxyRecyclerView
                 android:id="@+id/food_volume"

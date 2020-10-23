@@ -31,6 +31,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             binding.animationView.playAnimation()
             viewLifecycleOwner.lifecycleScope.launch {
                 delay(5000)
+                binding.animationView.cancelAnimation()
                 binding.animationView.clearAnimation()
             }
         })

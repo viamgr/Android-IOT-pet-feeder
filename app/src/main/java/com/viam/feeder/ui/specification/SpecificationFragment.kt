@@ -1,8 +1,12 @@
 package com.viam.feeder.ui.specification
 
+import android.app.RecoverableSecurityException
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -16,6 +20,8 @@ import com.viam.feeder.feedVolume
 import com.viam.feeder.ui.record.RecordFragment.Companion.PATH
 import com.viam.feeder.ui.record.RecordFragment.Companion.REQUEST_KEY
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+
 
 @AndroidEntryPoint
 class SpecificationFragment : Fragment(R.layout.fragment_specification) {
@@ -33,6 +39,9 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
             findNavController().navigate(R.id.record_fragment)
+        })
+        viewModel.chooseIntentSound.observe(viewLifecycleOwner, EventObserver {
+            openChooseIntent()
         })
 
         viewModel.feedSounds.observe(viewLifecycleOwner, { list ->
@@ -94,6 +103,47 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             }
         }
 
+    }
+
+
+    private val getContent =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { uri: Uri ->
+                val filePath = "${requireActivity().externalCacheDir?.absolutePath}/recording.mp3"
+
+                val contentResolver = requireContext().contentResolver
+                try {
+                    contentResolver.openInputStream(uri)?.use {
+                        val file = File(filePath)
+                        it.copyTo(file.outputStream())
+                        viewModel.onRecordFile(file.absolutePath)
+                    }
+                } catch (securityException: SecurityException) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        val recoverableSecurityException = securityException as?
+                                RecoverableSecurityException ?: throw RuntimeException(
+                            securityException.message,
+                            securityException
+                        )
+                        val intentSender =
+                            recoverableSecurityException.userAction.actionIntent.intentSender
+                        intentSender?.let {
+                            startIntentSenderForResult(
+                                intentSender, 23131,
+                                null, 0, 0, 0, null
+                            )
+                        }
+                    } else {
+                        throw RuntimeException(securityException.message, securityException)
+                    }
+                }
+
+
+            }
+        }
+
+    private fun openChooseIntent() {
+        getContent.launch("audio/mpeg")
     }
 
 }

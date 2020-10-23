@@ -1,7 +1,7 @@
 package com.viam.feeder.data.repository
 
-import com.viam.feeder.data.GlobalConfigService
 import com.viam.feeder.data.models.MotorStatusRequest
+import com.viam.feeder.data.remote.GlobalConfigService
 import javax.inject.Inject
 
 class GlobalConfigRepository @Inject constructor(private val globalConfigService: GlobalConfigService) {

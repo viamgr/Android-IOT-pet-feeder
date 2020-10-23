@@ -2,6 +2,7 @@ package com.viam.feeder.di
 
 import com.viam.feeder.data.remote.GlobalConfigService
 import com.viam.feeder.data.remote.TimerService
+import com.viam.feeder.data.remote.UploadService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,12 +23,19 @@ class NetWorkModule {
 
     @ActivityScoped
     @Provides
-    fun bindGlobalConfigService(retroFit: Retrofit) =
+    fun provideGlobalConfigService(retroFit: Retrofit): GlobalConfigService =
         retroFit.create(GlobalConfigService::class.java)
 
     @ActivityScoped
     @Provides
-    fun bindTimerService(retroFit: Retrofit) = retroFit.create(TimerService::class.java)
+    fun provideTimerService(retroFit: Retrofit): TimerService =
+        retroFit.create(TimerService::class.java)
+
+    @ActivityScoped
+    @Provides
+    fun provideUploadService(retroFit: Retrofit): UploadService {
+        return retroFit.create(UploadService::class.java)
+    }
 
     @ActivityScoped
     @Provides
@@ -43,7 +51,7 @@ class NetWorkModule {
     @ActivityScoped
     fun getHttpClient(): OkHttpClient {
         val okHttpBuilder = OkHttpClient.Builder()
-        return okHttpBuilder.build()
+        return okHttpBuilder.addInterceptor(TimberLoggingInterceptor()).build()
     }
 
 }

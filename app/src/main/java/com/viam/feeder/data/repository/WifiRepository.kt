@@ -4,10 +4,10 @@ import com.viam.feeder.core.Resource
 import com.viam.feeder.core.network.safeApiCall
 import com.viam.feeder.data.datasource.WifiDataSource
 import com.viam.feeder.data.models.WifiDevice
+import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+@ActivityScoped
 class WifiRepository @Inject constructor(private val wifiDataSource: WifiDataSource) {
     suspend fun getList(): Resource<List<WifiDevice>> {
         return safeApiCall {

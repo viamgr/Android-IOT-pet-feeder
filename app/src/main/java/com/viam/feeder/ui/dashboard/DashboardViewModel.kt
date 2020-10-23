@@ -2,17 +2,18 @@ package com.viam.feeder.ui.dashboard
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
+import com.viam.feeder.MyApplication
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.core.network.safeApiCall
+import com.viam.feeder.core.onError
+import com.viam.feeder.core.onSuccess
 import com.viam.feeder.data.models.MotorStatusRequest
 import com.viam.feeder.data.models.MotorStatusResponse
 import com.viam.feeder.data.repository.GlobalConfigRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class DashboardViewModel @ViewModelInject constructor(
     private val networkStatus: NetworkStatus,
@@ -31,32 +32,41 @@ class DashboardViewModel @ViewModelInject constructor(
 
     init {
         _motorStatus.addSource(_toggleMotorState) {
-            viewModelScope.launch {
-                withContext(dispatcherProvider.io) {
-                    _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = true))
-                    })
-                }
-            }
+
         }
         checkRealTimeStatus()
     }
 
     private fun checkRealTimeStatus() {
-        viewModelScope.launch {
-            withContext(dispatcherProvider.io) {
-                networkStatus.runIfConnected {
-                    _motorStatus.postValue(safeApiCall {
-                        globalConfigRepository.getMotorStatus()
-                    })
-                }
-                delay(10000)
-                checkRealTimeStatus()
-            }
-        }
+        /* viewModelScope.launch {
+             withContext(dispatcherProvider.io) {
+                 networkStatus.runIfConnected {
+                     val safeApiCall = safeApiCall {
+                         globalConfigRepository.getMotorStatus()
+                     }
+                     _motorStatus.postValue(safeApiCall)
+                 }
+                 delay(10000)
+                 checkRealTimeStatus()
+             }
+         }*/
     }
 
     fun toggleMotorState() {
-        _toggleMotorState.value = Event(Unit)
+//        _toggleMotorState.value = Event(Unit)
+
+        viewModelScope.launch(dispatcherProvider.io) {
+            safeApiCall {
+                globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = true))
+            }
+                .onSuccess {
+                    MyApplication.toast(it.enabled.toString())
+                }
+                .onError {
+                    MyApplication.toast(it.message!!)
+                }
+//            _motorStatus.postValue(safeApiCall)
+        }
+
     }
 }
