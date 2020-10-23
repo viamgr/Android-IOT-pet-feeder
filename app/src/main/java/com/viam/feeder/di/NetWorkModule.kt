@@ -9,8 +9,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.scopes.ActivityScoped
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 
 
 @Module
@@ -51,7 +53,18 @@ class NetWorkModule {
     @ActivityScoped
     fun getHttpClient(): OkHttpClient {
         val okHttpBuilder = OkHttpClient.Builder()
-        return okHttpBuilder.addInterceptor(TimberLoggingInterceptor()).build()
+
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.apply { interceptor.level = HttpLoggingInterceptor.Level.HEADERS }
+
+        return okHttpBuilder
+            .retryOnConnectionFailure(false)
+//            .addInterceptor(interceptor)
+            .callTimeout(50, TimeUnit.SECONDS)
+            .connectTimeout(50, TimeUnit.SECONDS)
+            .readTimeout(50, TimeUnit.SECONDS)
+            .writeTimeout(50, TimeUnit.SECONDS)
+            .build()
     }
 
 }

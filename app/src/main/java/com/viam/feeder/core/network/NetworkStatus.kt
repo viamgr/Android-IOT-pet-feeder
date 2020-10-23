@@ -74,7 +74,7 @@ class NetworkStatus @Inject constructor(
                     }
                 }
             }
-            delay(3000)
+            delay(300000)
             check()
         }
     }

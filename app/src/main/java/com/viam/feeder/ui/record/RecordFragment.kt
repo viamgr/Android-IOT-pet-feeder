@@ -1,11 +1,9 @@
 package com.viam.feeder.ui.record
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.content.DialogInterface
 import android.media.MediaPlayer
 import android.media.MediaRecorder
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,7 +31,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.IOException
 
-
 @AndroidEntryPoint
 class RecordFragment : BottomSheetDialogFragment() {
     companion object {
@@ -46,10 +43,13 @@ class RecordFragment : BottomSheetDialogFragment() {
     private var recorder: MediaRecorder? = null
 
     private var allPermissionsListener: MultiplePermissionsListener? = null
+    private var result: String? = null
 
     private var mediaPlayer: MediaPlayer? = null
-    private var file: String? = null
 
+    val file = lazy {
+        "${requireActivity().externalCacheDir?.absolutePath}/recording.mp3"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,7 +78,7 @@ class RecordFragment : BottomSheetDialogFragment() {
             playSound()
         })
         viewModel.cancelClicked.observe(viewLifecycleOwner, EventObserver {
-            file = null
+            result = null
             findNavController().navigateUp()
         })
         viewModel.stopClicked.observe(viewLifecycleOwner, EventObserver {
@@ -86,12 +86,11 @@ class RecordFragment : BottomSheetDialogFragment() {
         })
 
         viewModel.applyClicked.observe(viewLifecycleOwner, EventObserver {
-            result = if (file != null && (File(file!!).exists())) file else null
+            result = if (File(file.value).exists()) file.value else null
             findNavController().navigateUp()
         })
     }
 
-    private var result: String? = null
 
     private fun setResult() {
         setFragmentResult(REQUEST_KEY, bundleOf(PATH to result))
@@ -154,7 +153,6 @@ class RecordFragment : BottomSheetDialogFragment() {
     }
 
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun showPermissionRationale(token: PermissionToken) {
         AlertDialog.Builder(requireContext()).setTitle("R.string.permission_rationale_title")
             .setMessage("R.string.permission_rationale_message")
@@ -179,21 +177,23 @@ class RecordFragment : BottomSheetDialogFragment() {
         }
     }
 
+
     private fun startRecord() {
-        file = "${requireActivity().externalCacheDir?.absolutePath}/recording.mp3"
+
         stopPlaying()
         stopRecording()
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setOutputFile(file)
+            setOutputFile(file.value)
+            setAudioSamplingRate(44100)
+            setAudioEncodingBitRate(128000)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             prepare()
             start()
-            viewModel.onStartRecording()
+            viewModel.onStartRecording(file.value)
         }
     }
-
 
     private fun playSound() {
         stopPlaying()
@@ -202,7 +202,7 @@ class RecordFragment : BottomSheetDialogFragment() {
             mediaPlayer = MediaPlayer()
             mediaPlayer?.apply {
                 try {
-                    setDataSource(file)
+                    setDataSource(file.value)
                     mediaPlayer?.prepare()
                     mediaPlayer?.start()
                 } catch (e: IOException) {

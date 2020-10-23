@@ -17,6 +17,7 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
         const val STARTING = 4L
     }
 
+    private lateinit var filePath: String
     private val _recordText = MutableLiveData<String?>()
     val recordText: LiveData<String?> = _recordText
 
@@ -60,6 +61,7 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
 
     fun onApplyClicked() {
         _applyClicked.value = Event(Unit)
+
     }
 
     fun onCancelClicked() {
@@ -86,7 +88,8 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
         _startRecord.value = Event(Unit)
     }
 
-    fun onStartRecording() {
+    fun onStartRecording(filePath: String) {
+        this.filePath = filePath
         job?.cancel()
         job = viewModelScope.launch {
             MAX_TIME.timerAsync {

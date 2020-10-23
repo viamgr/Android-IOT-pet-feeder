@@ -1,27 +1,24 @@
 package com.viam.feeder.ui.specification
 
-import android.os.ParcelFileDescriptor
+import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.arthenica.mobileffmpeg.Config
+import com.arthenica.mobileffmpeg.FFmpeg
 import com.viam.feeder.R
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.data.repository.UploadRepository
 import com.viam.feeder.models.FeedVolume
 import kotlinx.coroutines.launch
-import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.internal.Util
-import okio.BufferedSink
-import okio.Okio
-import okio.Source
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
-import java.io.IOException
-import java.io.InputStream
 
 
 class SpecificationViewModel @ViewModelInject constructor(
@@ -108,58 +105,38 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> = _loading
-    fun onRecordFile(path: String) {
-        _loading.value = true
-        viewModelScope.launch(coroutinesDispatcherProvider.io) {
-            val file = File(path)
-            val requestFile: RequestBody =
-                RequestBody.create(MediaType.parse("multipart/form-data"), file)
-            val body = MultipartBody.Part.createFormData("filename", file.name, requestFile)
-
-            uploadRepository.uploadEating(body)
-            _loading.postValue(false)
-        }
-
-    }
-
-    fun createBody(contentType: MediaType, fd: ParcelFileDescriptor): RequestBody {
-        return object : RequestBody() {
-            override fun contentType(): MediaType? {
-                return contentType
-            }
-
-            override fun contentLength(): Long {
-                return fd.statSize
-            }
-
-            @Throws(IOException::class)
-            override fun writeTo(sink: BufferedSink) {
-                var source: Source? = null
-                try {
-                    source = Okio.source(ParcelFileDescriptor.AutoCloseInputStream(fd))
-                    sink.writeAll(source)
-                } finally {
-                    Util.closeQuietly(source)
-                }
-            }
-        }
-    }
-
-    fun onFile(inputStream: InputStream) {
-
+    fun onRecordFile(input: String, output: String) {
         _loading.value = true
         viewModelScope.launch(coroutinesDispatcherProvider.io) {
 
-            val part = MultipartBody.Part.createFormData(
-                "filename", "filename.mp3", RequestBody.create(
-                    MediaType.parse("audio/mpeg"),
-                    inputStream.readBytes()
+            val cmd =
+                "-i $input -y -codec:a libmp3lame -ac 1 -ar 44100 -ab 128k -t 10  -map 0:a -map_metadata -1 $output"
+
+            val rc: Int = FFmpeg.execute(cmd)
+
+            if (rc == Config.RETURN_CODE_SUCCESS) {
+                Log.i("Config.TAG", "Command execution completed successfully.")
+
+
+                val file = File(output)
+                val requestFile: RequestBody =
+                    file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                val body = MultipartBody.Part.createFormData("filename", file.name, requestFile)
+
+                uploadRepository.uploadEating(body)
+
+            } else if (rc == Config.RETURN_CODE_CANCEL) {
+                Log.i("Config.TAG", "Command execution cancelled by user.")
+            } else {
+                Log.i(
+                    "Config.TAG",
+                    String.format("Command execution failed with rc=%d and the output below.", rc)
                 )
-            )
+                Config.printLastCommandOutput(Log.INFO)
+            }
 
-            val resource = uploadRepository.uploadEating(part)
+
             _loading.postValue(false)
-
         }
     }
 }

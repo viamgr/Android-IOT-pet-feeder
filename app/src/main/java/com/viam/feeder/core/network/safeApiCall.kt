@@ -12,6 +12,7 @@ suspend inline fun <T : Any> safeApiCall(
     return try {
         Resource.Success(body())
     } catch (e: Exception) {
+        e.printStackTrace()
         withContext(Dispatchers.Main) {
             Toast.makeText(MyApplication.context, e.message, Toast.LENGTH_SHORT).show()
         }

@@ -12,7 +12,7 @@ class MainViewModel @ViewModelInject constructor(
 
     init {
         viewModelScope.launch {
-            networkStatus.check()
+//            networkStatus.check()
         }
     }
 }

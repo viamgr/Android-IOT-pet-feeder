@@ -29,6 +29,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
     private val binding by viewBinding(FragmentSpecificationBinding::bind)
 
     private val viewModel: SpecificationViewModel by viewModels()
+    val output = lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -97,7 +98,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             if (requestKey == REQUEST_KEY) {
                 val result = bundle.getString(PATH)
                 result?.let {
-                    viewModel.onRecordFile(result)
+                    viewModel.onRecordFile(result, output.value)
                 }
 
             }
@@ -116,7 +117,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
                     contentResolver.openInputStream(uri)?.use {
                         val file = File(filePath)
                         it.copyTo(file.outputStream())
-                        viewModel.onRecordFile(file.absolutePath)
+                        viewModel.onRecordFile(file.absolutePath, output.value)
                     }
                 } catch (securityException: SecurityException) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
