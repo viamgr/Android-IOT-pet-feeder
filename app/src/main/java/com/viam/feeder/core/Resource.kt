@@ -22,13 +22,13 @@ package com.viam.feeder.core
  */
 sealed class Resource<out T> {
 
-    data class Success<out T : Any>(val data: T) : Resource<T>()
+    data class Success<out T : Any>(val data: T?) : Resource<T>()
     data class Error(val exception: Exception) : Resource<Nothing>()
     object Loading : Resource<Nothing>()
 }
 
 
-fun <T> Resource<T>.onSuccess(callback: (T) -> Unit): Resource<T> {
+fun <T> Resource<T>.onSuccess(callback: (T?) -> Unit): Resource<T> {
     if (this is Resource.Success) {
         callback.invoke(this.data)
     }
@@ -51,6 +51,10 @@ fun <T> Resource<T>.onLoading(callback: () -> Unit): Resource<T> {
 
 fun <T> Resource<T>.isLoading(): Boolean {
     return this is Resource.Loading
+}
+
+fun <T> Resource<T>.isError(): Boolean {
+    return this is Resource.Error
 }
 
 fun <T> Resource<T>?.dataOrNull(): T? {

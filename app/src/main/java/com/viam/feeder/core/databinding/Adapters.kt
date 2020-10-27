@@ -1,12 +1,17 @@
 package com.viam.feeder.core.databinding
 
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import com.google.android.material.button.MaterialButton
+import com.viam.feeder.R
 import com.viam.feeder.core.Resource
+import com.viam.feeder.core.isError
 import com.viam.feeder.core.isLoading
+import kotlinx.android.synthetic.main.fragment_loading.view.*
 
 
 @BindingAdapter("goneUnless")
@@ -26,6 +31,33 @@ fun MaterialButton.setIcon(icon: Int) {
 }
 
 @BindingAdapter("visibleOnLoading")
-fun View.visibleOnLoading(resource: Resource<*>) {
-    isVisible = resource.isLoading()
+fun View.visibleOnLoading(resource: Resource<*>?) {
+    isVisible = resource?.isLoading() ?: false
+}
+
+@BindingAdapter("requestResource", "retryClicked", "dismissClicked", requireAll = true)
+fun ViewGroup.requestResource(
+    requestResource: Resource<Any>?,
+    retryClicked: () -> Unit,
+    dismissClicked: () -> Unit
+) {
+    if (loading_root == null) {
+        LayoutInflater.from(context).inflate(R.layout.fragment_loading, this)
+
+    }
+    loading_root.isVisible =
+        requestResource?.isLoading() ?: false || requestResource?.isError() ?: false
+
+    progress.isVisible = requestResource?.isLoading() ?: false
+    error_group.isVisible = requestResource?.isError() ?: false
+    retry.setOnClickListener {
+        retryClicked.invoke()
+    }
+    close.setOnClickListener {
+        dismissClicked.invoke()
+    }
+    if (requestResource is Resource.Error) {
+        //todo Parse error message function
+        error.text = requestResource.exception.message
+    }
 }

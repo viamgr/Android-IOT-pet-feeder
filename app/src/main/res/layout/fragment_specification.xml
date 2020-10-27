@@ -10,104 +10,112 @@
             type="com.viam.feeder.ui.specification.SpecificationViewModel" />
     </data>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollView"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        dismissClicked="@{vm.dismiss}"
+        requestResource="@{vm.combinedRequest.resource}"
+        retryClicked="@{vm.retry}"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scrollView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <ProgressBar
-                style="?android:attr/progressBarStyleHorizontal"
-                goneUnless="@{vm.loading}"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:indeterminateBehavior="repeat"
-                app:elevation="100dp"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:layout_height="match_parent">
 
-            <com.airbnb.epoxy.EpoxyRecyclerView
-                android:id="@+id/food_volume"
-                android:layout_width="match_parent"
-                android:layout_height="150dp"
-                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-                app:layout_constraintTop_toTopOf="parent"
-                app:spanCount="3"
-                tools:listitem="@layout/view_holder_feed_volume" />
-
-            <ImageView
-                android:id="@+id/volume_mute"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:onClick="@{()->vm.onVolumeDownClicked()}"
-                android:padding="12dp"
-                app:layout_constraintBottom_toBottomOf="@+id/volume_up"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/volume_up"
-                app:srcCompat="@drawable/ic_baseline_volume_mute_24" />
-
-            <com.google.android.material.slider.Slider
-                android:id="@+id/soundVolume"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:stepSize="10.0"
-                android:value="@{vm.currentSoundVolumeValue}"
-                android:valueFrom="0.0"
-                android:valueTo="100.0"
-                app:layout_constraintBottom_toBottomOf="@+id/volume_up"
-                app:layout_constraintEnd_toStartOf="@+id/volume_up"
-                app:layout_constraintStart_toEndOf="@+id/volume_mute"
-                app:layout_constraintTop_toTopOf="@+id/volume_up"
-                tools:value="50.0" />
-
-            <ImageView
-                android:id="@+id/volume_up"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_margin="8dp"
-                android:onClick="@{()->vm.onVolumeUpClicked()}"
-                android:padding="12dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/food_volume"
-                app:srcCompat="@drawable/ic_baseline_volume_up_24" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/feeding_sound"
-                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/volume_up">
-
-                <AutoCompleteTextView
-                    android:id="@+id/feeding_sound_drop_down"
+                <ProgressBar
+                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:hint="@string/feeding_sound"
-                    android:text="@string/choose" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:indeterminateBehavior="repeat"
+                    app:elevation="100dp"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/ledEnabled"
-                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@+id/feeding_sound">
+                <com.airbnb.epoxy.EpoxyRecyclerView
+                    android:id="@+id/food_volume"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:spanCount="3"
+                    tools:listitem="@layout/view_holder_feed_volume" />
 
-                <AutoCompleteTextView
-                    android:id="@+id/led_dropdown"
+                <ImageView
+                    android:id="@+id/volume_mute"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="8dp"
+                    android:onClick="@{()->vm.onVolumeDownClicked()}"
+                    android:padding="12dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/volume_up"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/volume_up"
+                    app:srcCompat="@drawable/ic_baseline_volume_mute_24" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/soundVolume"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:stepSize="10.0"
+                    android:value="@{vm.currentSoundVolumeValue}"
+                    android:valueFrom="0.0"
+                    android:valueTo="100.0"
+                    app:layout_constraintBottom_toBottomOf="@+id/volume_up"
+                    app:layout_constraintEnd_toStartOf="@+id/volume_up"
+                    app:layout_constraintStart_toEndOf="@+id/volume_mute"
+                    app:layout_constraintTop_toTopOf="@+id/volume_up"
+                    tools:value="50.0" />
+
+                <ImageView
+                    android:id="@+id/volume_up"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_margin="8dp"
+                    android:onClick="@{()->vm.onVolumeUpClicked()}"
+                    android:padding="12dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/food_volume"
+                    app:srcCompat="@drawable/ic_baseline_volume_up_24" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/feeding_sound"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="false"
-                    android:focusableInTouchMode="false"
-                    android:hint="@string/led_state"
-                    android:text="@string/choose" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                    app:layout_constraintTop_toBottomOf="@+id/volume_up">
 
-    </androidx.core.widget.NestedScrollView>
+                    <AutoCompleteTextView
+                        android:id="@+id/feeding_sound_drop_down"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="@string/feeding_sound"
+                        android:text="@string/choose" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/ledEnabled"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@+id/feeding_sound">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/led_dropdown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:hint="@string/led_state"
+                        android:text="@string/choose" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

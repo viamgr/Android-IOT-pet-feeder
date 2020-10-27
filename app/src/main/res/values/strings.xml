@@ -48,6 +48,7 @@
     <string name="cancel">Cancel</string>
     <string name="input_wrong">Enter a valid %s</string>
     <string name="record_sound">Record Sound</string>
+    <string name="loading">Loading</string>
     <string name="all_permissions_denied_feedback">all_permissions_denied_feedback</string>
     <string name="permission_rationale_settings_button_text">permission_rationale_settings_button_text</string>
     <string name="apply">Apply</string>
