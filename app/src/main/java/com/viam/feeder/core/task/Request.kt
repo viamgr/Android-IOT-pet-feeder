@@ -37,15 +37,17 @@ class Request<R, T>(
 
     override fun execute(params: R) {
         this.params = params
-        currentJob?.cancel()
-        requestBlock.invoke(this)
+        if (currentJob == null || currentJob?.isCancelled == true || currentJob?.isCompleted == true) {
+            requestBlock.invoke(this)
+        }
     }
 
     override fun status() = state
 
     override fun cancel() {
         currentJob?.cancel()
-        _result.postValue(null)
+        state = null
+        _result.postValue(this)
     }
 
     override fun retry() {

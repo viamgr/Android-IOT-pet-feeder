@@ -12,6 +12,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.viam.feeder.R
+import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.network.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
@@ -33,6 +34,9 @@ class MainActivity : AppCompatActivity() {
             if (!viewModel.networkStatus.isShowing && it != NetworkStatus.CONNECTION_STATE_SUCCESS) {
 //                navController.navigate(R.id.wifi_fragment)
             }
+        })
+        viewModel.globalRequest.errorEvents.observe(this, EventObserver {
+            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
         })
 
     }

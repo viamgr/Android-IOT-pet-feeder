@@ -16,6 +16,7 @@ class CompositeRequest @Inject constructor(
 
     init {
         requests.map { request ->
+            // TODO: 10/30/2020 Move it to add when execute
             _result.addSource(request.result()) {
                 globalRequest.newEvent(request.status())
                 val notSuccessList = requests
