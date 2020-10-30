@@ -4,78 +4,69 @@ import androidx.hilt.Assisted
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
-import com.viam.feeder.core.isError
-import kotlinx.coroutines.*
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
-@Suppress("UNCHECKED_CAST")
 class CompositeRequest @Inject constructor(
     private val globalRequest: GlobalRequest,
-    @Assisted val coroutineContext: CoroutineContext,
-    @Assisted vararg val requests: Request<*, *>
-) {
-
-    private var currentJob: Job? = null
-
-    private val _result = MediatorLiveData<Resource<Unit>>()
-    val result: LiveData<Resource<Unit>> = _result
+    @Assisted vararg val requests: PromiseTask<*, *>
+) : PromiseTask<Any, Any> {
+    private val _result = MediatorLiveData<PromiseTask<Any, Any>?>()
+    val result: LiveData<PromiseTask<Any, Any>?> = _result
+    private var state: Resource<Any>? = null
 
     init {
         requests.map { request ->
-            _result.addSource(request.result) { res: Resource<Any?>? ->
-                res?.let {
-                    globalRequest.newEvent(it)
-                }
+            _result.addSource(request.result()) {
+                globalRequest.newEvent(request.status())
                 val notSuccessList = requests
-                    .filterNot { it.result.value == null || it.result.value is Resource.Success }
-                    .map { it.result.value }
+                    .filterNot { it.status() == null || it.status() is Resource.Success }
+                    .map { it.status() }
                 if (notSuccessList.isEmpty()) {
-                    _result.value = Resource.Success(Unit)
+                    state = Resource.Success(Unit)
+                    _result.value = this
                 } else {
                     if (!notSuccessList.any { it is Resource.Error }) {
-                        _result.value = Resource.Loading
+                        state = Resource.Loading
+                        _result.value = this
                     } else {
                         val errors = notSuccessList.filterIsInstance(Resource.Error::class.java)
                             .map { it.exception }
-                        _result.value = Resource.Error(CompositeException(errors))
+                        state = Resource.Error(CompositeException(errors))
+                        _result.value = this
                     }
                 }
             }
         }
     }
 
-    fun retry() {
-        currentJob = CoroutineScope(coroutineContext).launch {
-            requests.map { request: Request<*, *> ->
-                async {
-                    if (request.result.value?.isError() == true) {
-                        request.retry()
-                    }
-                }
-            }.awaitAll()
+    override fun retry() {
+        requests.map {
+            it.retry()
         }
     }
 
-    fun cancel() {
-        currentJob?.cancel()
-        for (index in requests.indices) {
-            val request = requests[index]
-            request.cancel()
+    override fun status() = state
+
+    override fun cancel() {
+        requests.map {
+            it.cancel()
         }
     }
 
     fun clear() {
-        for (i in requests.indices) {
-            val request = requests[i]
-            _result.removeSource(request.result)
+        requests.map {
+            _result.removeSource(it.result())
         }
     }
 
-    fun launch(block: suspend () -> Unit) {
-        currentJob = CoroutineScope(coroutineContext).launch {
-            block()
+    override fun execute(params: Any) {
+        requests.map {
+            it.retry()
         }
+    }
+
+    override fun result(): LiveData<PromiseTask<Any, Any>?> {
+        return result
     }
 
 }

@@ -3,35 +3,74 @@ package com.viam.feeder.core.task
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.viam.feeder.core.Resource
-import java.util.concurrent.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
-data class Request<R, T>(
-    val result: LiveData<Resource<T>?>,
-    val retry: suspend () -> Unit,
-    val cancel: () -> Unit,
-    val execute: suspend (requestBody: R) -> Unit
-)
+class Request<R, T>(
+    private var requestBlock: RequestBuilder<R, T>.() -> Unit
+) : RequestBuilder<R, T>, PromiseTask<R, T> {
+    private val _result = MutableLiveData<PromiseTask<R, T>?>()
+    val result: LiveData<PromiseTask<R, T>?> = _result
+    private var state: Resource<T>? = null
+    private var params: R? = null
+    private var currentJob: Job? = null
 
-fun <R, T : Any> makeRequest(requestBlock: suspend (R) -> Resource<T>): Request<R, T> {
-    val result = MutableLiveData<Resource<T>?>()
-    var retryRequest: (suspend () -> Unit)? = null
-    var execute: (suspend (R) -> Unit)? = null
-    execute = { requestBody: R ->
-        result.postValue(Resource.Loading)
-        val output = requestBlock(requestBody)
-        if (output is Resource.Error) {
-            retryRequest = {
-                execute?.invoke(requestBody)
+    override fun withContext(
+        coroutineContext: CoroutineContext, block: suspend (R) -> Unit
+    ) {
+        state = Resource.Loading?.also {
+            _result.postValue(this)
+        }
+        currentJob = CoroutineScope(coroutineContext).launch {
+            params?.let {
+                block.invoke(it)
             }
         }
-        if (output is Resource.Error && output.exception !is CancellationException) {
-            result.postValue(output)
-        }
-
     }
-    return Request(result = result, retry = {
-        retryRequest?.invoke()
-    }, cancel = {
-        result.postValue(null)
-    }, execute = execute)
+
+    override fun emit(resultValue: Resource<T>) {
+        state = resultValue
+        _result.postValue(this)
+    }
+
+    override fun execute(params: R) {
+        this.params = params
+        currentJob?.cancel()
+        requestBlock.invoke(this)
+    }
+
+    override fun status() = state
+
+    override fun cancel() {
+        currentJob?.cancel()
+        _result.postValue(null)
+    }
+
+    override fun retry() {
+        params?.let {
+            execute(it)
+        }
+    }
+
+    override fun initialParams(params: R) {
+        this.params = params
+    }
+
+    override fun result(): LiveData<PromiseTask<R, T>?> {
+        return result
+    }
+
+}
+
+fun <R, T : Any> makeRequest(requestBlock: RequestBuilder<R, T>.() -> Unit): PromiseTask<R, T> {
+    return Request(requestBlock)
+}
+
+fun compositeTask(
+    globalRequest: GlobalRequest,
+    vararg requests: PromiseTask<*, *>
+): PromiseTask<Any, Any> {
+    return CompositeRequest(globalRequest, *requests)
 }

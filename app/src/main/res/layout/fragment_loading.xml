@@ -2,15 +2,14 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:id="@+id/loading_root"
-    android:background="@color/red_500"
-    android:fillViewport="true">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_margin="8dp"
         android:padding="8dp"
         app:cardCornerRadius="4dp"
@@ -18,7 +17,7 @@
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="150dp"
             android:padding="8dp">
 
             <androidx.appcompat.widget.AppCompatImageView

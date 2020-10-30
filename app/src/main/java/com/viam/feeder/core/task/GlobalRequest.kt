@@ -9,7 +9,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GlobalRequest @Inject constructor() {
+class GlobalRequest @Inject constructor() : PromiseTask<Any, Any> {
 
     private val _errorEvents = MediatorLiveData<Event<String?>>()
     val errorEvents: LiveData<Event<String?>> = _errorEvents
@@ -18,7 +18,7 @@ class GlobalRequest @Inject constructor() {
     val state: LiveData<Resource<Unit>> = _state
 
     private var loadingCount = 0;
-    fun newEvent(result: Resource<Any?>) {
+    fun newEvent(result: Resource<Any?>?) {
         when (result) {
             is Resource.Error -> {
                 _errorEvents.postValue(Event(result.exception.message))
@@ -41,6 +41,24 @@ class GlobalRequest @Inject constructor() {
         } else {
             _state.postValue(Resource.Loading)
         }
+    }
+
+    override fun status() = _state.value
+
+    override fun cancel() {
+        TODO("Not yet implemented")
+    }
+
+    override fun retry() {
+        TODO("Not yet implemented")
+    }
+
+    override fun execute(params: Any) {
+        TODO("Not yet implemented")
+    }
+
+    override fun result(): LiveData<PromiseTask<Any, Any>?> {
+        TODO("Not yet implemented")
     }
 
 }
