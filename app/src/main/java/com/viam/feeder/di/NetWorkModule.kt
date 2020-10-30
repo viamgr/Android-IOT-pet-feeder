@@ -60,10 +60,10 @@ class NetWorkModule {
         return okHttpBuilder
             .retryOnConnectionFailure(false)
 //            .addInterceptor(interceptor)
-            .callTimeout(50, TimeUnit.SECONDS)
-            .connectTimeout(50, TimeUnit.SECONDS)
-            .readTimeout(50, TimeUnit.SECONDS)
-            .writeTimeout(50, TimeUnit.SECONDS)
+            .callTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
             .build()
     }
 

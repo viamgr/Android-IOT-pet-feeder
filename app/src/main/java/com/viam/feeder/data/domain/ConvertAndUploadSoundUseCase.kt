@@ -1,6 +1,9 @@
-package com.viam.feeder.data.repository
+package com.viam.feeder.data.domain
 
+import com.viam.feeder.core.domain.UseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
+import com.viam.feeder.data.repository.ConvertRepository
+import com.viam.feeder.data.repository.UploadRepository
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody

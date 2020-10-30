@@ -11,6 +11,7 @@ import com.viam.feeder.R
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.isError
 import com.viam.feeder.core.isLoading
+import com.viam.feeder.core.task.CompositeException
 import kotlinx.android.synthetic.main.fragment_loading.view.*
 
 
@@ -43,7 +44,6 @@ fun ViewGroup.requestResource(
 ) {
     if (loading_root == null) {
         LayoutInflater.from(context).inflate(R.layout.fragment_loading, this)
-
     }
     loading_root.isVisible =
         requestResource?.isLoading() ?: false || requestResource?.isError() ?: false
@@ -51,13 +51,19 @@ fun ViewGroup.requestResource(
     progress.isVisible = requestResource?.isLoading() ?: false
     error_group.isVisible = requestResource?.isError() ?: false
     retry.setOnClickListener {
-        retryClicked.invoke()
+        retryClicked()
     }
     close.setOnClickListener {
-        dismissClicked.invoke()
+        dismissClicked()
     }
     if (requestResource is Resource.Error) {
         //todo Parse error message function
-        error.text = requestResource.exception.message
+        val exception = requestResource.exception
+        if (exception is CompositeException) {
+            error.text = exception.errors.joinToString("\n") { it.message.toString() }
+        } else {
+            error.text = exception.message
+        }
+
     }
 }

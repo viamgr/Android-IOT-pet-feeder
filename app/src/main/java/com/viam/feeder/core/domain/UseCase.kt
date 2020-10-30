@@ -1,4 +1,4 @@
-package com.viam.feeder.data.repository
+package com.viam.feeder.core.domain
 
 import com.viam.feeder.core.Resource
 import kotlinx.coroutines.CoroutineDispatcher

@@ -11,9 +11,9 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        dismissClicked="@{vm.dismiss}"
-        requestResource="@{vm.combinedRequest.resource}"
-        retryClicked="@{vm.retry}"
+        dismissClicked="@{vm.combinedRequest::cancel}"
+        requestResource="@{vm.combinedRequest.result}"
+        retryClicked="@{vm.combinedRequest::retry}"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
