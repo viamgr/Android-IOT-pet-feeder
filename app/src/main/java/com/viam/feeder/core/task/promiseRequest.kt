@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.fragment_loading.view.*
 import java.util.concurrent.CancellationException
 
 @BindingAdapter("promiseRequest", requireAll = true)
-fun ViewGroup.promiseRequest(request: PromiseTask<*, *>?) {
+fun ViewGroup.promiseTask(request: PromiseTask<*, *>?) {
     val loadingRoot =
         if (getChildAt(childCount - 1) == null || getChildAt(childCount - 1).id != R.id.loading_root) {
             LayoutInflater.from(context).inflate(R.layout.fragment_loading, this)

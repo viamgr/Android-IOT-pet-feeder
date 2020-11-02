@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.viam.feeder.MyApplication
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.network.NetworkStatus
@@ -49,10 +48,8 @@ class DashboardViewModel @ViewModelInject constructor(
                 globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = true))
             }
                 .onSuccess {
-                    MyApplication.toast(it?.enabled.toString())
                 }
                 .onError {
-                    MyApplication.toast(it.message!!)
                 }
 //            _motorStatus.postValue(safeApiCall)
         }

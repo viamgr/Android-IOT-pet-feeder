@@ -1,24 +1,23 @@
 package com.viam.feeder.core.task
 
-import androidx.hilt.Assisted
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
-import javax.inject.Inject
 
-class CompositeRequest @Inject constructor(
-    private val globalRequest: GlobalRequest,
-    @Assisted vararg val requests: PromiseTask<*, *>
-) : PromiseTask<Any, Any> {
+class CompositeRequest(
+    requestBlock: (CompositeTaskBuilder.() -> Unit)?,
+    private vararg val requests: PromiseTask<*, *>
+) : PromiseTask<Any, Any>, CompositeTaskBuilder {
+    private var logger: EventLogger? = null
     private val _result = MediatorLiveData<PromiseTask<Any, Any>?>()
     val result: LiveData<PromiseTask<Any, Any>?> = _result
     private var state: Resource<Any>? = null
 
     init {
+        requestBlock?.invoke(this)
         requests.map { request ->
-            // TODO: 10/30/2020 Move it to add when execute
             _result.addSource(request.result()) {
-                globalRequest.newEvent(request.status())
+                logger?.newEvent(request.status())
                 val notSuccessList = requests
                     .filterNot { it.status() == null || it.status() is Resource.Success }
                     .map { it.status() }
@@ -54,13 +53,7 @@ class CompositeRequest @Inject constructor(
         }
     }
 
-    fun clear() {
-        requests.map {
-            _result.removeSource(it.result())
-        }
-    }
-
-    override fun execute(params: Any) {
+    override fun request(params: Any) {
         requests.map {
             it.retry()
         }
@@ -70,4 +63,15 @@ class CompositeRequest @Inject constructor(
         return result
     }
 
+    override suspend fun logger(logger: EventLogger) {
+        this.logger = logger
+    }
+
+}
+
+fun compositeTask(
+    vararg requests: PromiseTask<*, *>,
+    requestBlock: (CompositeTaskBuilder.() -> Unit)? = null
+): PromiseTask<Any, Any> {
+    return CompositeRequest(requestBlock, *requests)
 }

@@ -8,5 +8,6 @@ interface PromiseTask<R, T> {
     fun status(): Resource<*>?
     fun cancel()
     fun retry()
-    fun execute(params: R)
+    fun request(params: R)
+    suspend fun logger(logger: EventLogger)
 }

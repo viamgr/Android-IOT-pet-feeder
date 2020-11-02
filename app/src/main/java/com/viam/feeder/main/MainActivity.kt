@@ -14,6 +14,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.viam.feeder.R
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.network.NetworkStatus
+import com.viam.feeder.core.onError
+import com.viam.feeder.core.task.TaskEventLogger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.bottom_nav
@@ -35,8 +37,11 @@ class MainActivity : AppCompatActivity() {
 //                navController.navigate(R.id.wifi_fragment)
             }
         })
-        viewModel.globalRequest.errorEvents.observe(this, EventObserver {
-            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+        TaskEventLogger.lastEvent.observe(this, EventObserver { resource ->
+            resource?.onError {
+                // TODO: 11/2/2020 Parse Error Message
+                Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
+            }
         })
 
     }

@@ -8,15 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.task.*
+import com.viam.feeder.core.task.PromiseTask
+import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.core.task.makeRequest
 import com.viam.feeder.data.domain.ConvertAndUploadSoundUseCase
 import com.viam.feeder.models.FeedVolume
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class SpecificationViewModel @ViewModelInject constructor(
-    private val convertAndUploadSoundUseCase: ConvertAndUploadSoundUseCase,
-    globalRequest: GlobalRequest
+    private val convertAndUploadSoundUseCase: ConvertAndUploadSoundUseCase
 ) :
     ViewModel() {
 
@@ -37,28 +39,27 @@ class SpecificationViewModel @ViewModelInject constructor(
     val chooseIntentSound: LiveData<Event<Unit>> = _chooseIntentSound
 
     val convertAndUploadSoundRequest: PromiseTask<Pair<String, String>, Unit> = makeRequest {
-        withContext(viewModelScope.coroutineContext) {
-            emit(convertAndUploadSoundUseCase(it))
+        viewModelScope.launch {
+            execute {
+                convertAndUploadSoundUseCase(it)
+            }
         }
     }
 
     val convertAndUploadSoundRequest2 = makeRequest<String, Unit> {
-        withContext(viewModelScope.coroutineContext) {
-            delay(2000)
-            emit(Resource.Error(Exception("Custom Error")))
+        viewModelScope.launch {
+            initialParams("1222")
+            execute {
+                delay(2000)
+                Resource.Error(Exception("Custom Error"))
+            }
         }
     }
 
     val combinedRequests: PromiseTask<Any, Any> = compositeTask(
-        globalRequest,
-        convertAndUploadSoundRequest as Request<*, *>,
-        convertAndUploadSoundRequest2 as Request<*, *>
+        convertAndUploadSoundRequest,
+        convertAndUploadSoundRequest2
     )
-
-    override fun onCleared() {
-        super.onCleared()
-        combinedRequests.cancel()
-    }
 
     private val _feedVolumeList = MutableLiveData(
         listOf(
@@ -122,7 +123,7 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     fun onRecordFile(input: String, output: String) {
-        convertAndUploadSoundRequest.execute(Pair(input, output))
-        convertAndUploadSoundRequest2.execute("Test")
+        convertAndUploadSoundRequest.request(Pair(input, output))
+        convertAndUploadSoundRequest2.request("Test")
     }
 }
