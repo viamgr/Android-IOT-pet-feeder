@@ -13,6 +13,7 @@ import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.core.task.makeRequest
 import com.viam.feeder.data.domain.ConvertAndUploadSoundUseCase
 import com.viam.feeder.models.FeedVolume
+import com.viam.feeder.ui.wifi.ConnectionUtil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -21,7 +22,7 @@ class SpecificationViewModel @ViewModelInject constructor(
     private val convertAndUploadSoundUseCase: ConvertAndUploadSoundUseCase
 ) :
     ViewModel() {
-
+    val connectionStatus = ConnectionUtil.connectionState
     private val _feedSounds = MutableLiveData(
         listOf(
             "Cat",

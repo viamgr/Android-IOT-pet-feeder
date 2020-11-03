@@ -10,7 +10,7 @@ import javax.inject.Singleton
 object TaskEventLogger : EventLogger {
 
     private val data = MutableLiveData<Event<Resource<*>?>>()
-    val lastEvent: LiveData<Event<Resource<*>?>> = data
+    val events: LiveData<Event<Resource<*>?>> = data
 
     override fun newEvent(resource: Resource<*>?) {
         data.postValue(Event(resource))

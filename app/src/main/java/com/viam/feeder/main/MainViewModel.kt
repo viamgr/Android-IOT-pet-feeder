@@ -5,5 +5,5 @@ import androidx.lifecycle.ViewModel
 import com.viam.feeder.core.network.NetworkStatus
 
 class MainViewModel @ViewModelInject constructor(val networkStatus: NetworkStatus) : ViewModel() {
-
+    var isWifiDialogShowing: Boolean = false
 }

@@ -53,4 +53,5 @@
     <string name="permission_rationale_settings_button_text">permission_rationale_settings_button_text</string>
     <string name="apply">Apply</string>
     <string name="time_to_start">Time To Start: %s</string>
+    <string name="error_happened">An Error Happened</string>
 </resources>

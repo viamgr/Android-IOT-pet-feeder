@@ -12,10 +12,12 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.viam.feeder.R
+import com.viam.feeder.core.domain.isConnectionError
+import com.viam.feeder.core.domain.toMessage
 import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.TaskEventLogger
+import com.viam.feeder.ui.wifi.ConnectionUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.bottom_nav
@@ -32,18 +34,30 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         setupViews()
-        viewModel.networkStatus.connection.observe(this, {
-            if (!viewModel.networkStatus.isShowing && it != NetworkStatus.CONNECTION_STATE_SUCCESS) {
-//                navController.navigate(R.id.wifi_fragment)
-            }
-        })
-        TaskEventLogger.lastEvent.observe(this, EventObserver { resource ->
-            resource?.onError {
-                // TODO: 11/2/2020 Parse Error Message
-                Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
-            }
-        })
 
+        TaskEventLogger.events.observe(this, EventObserver { resource ->
+            resource?.onError {
+                if (it.isConnectionError() && !viewModel.isWifiDialogShowing) {
+                    Toast.makeText(this, it.toMessage(this), Toast.LENGTH_SHORT).show()
+                    setIsWifiDialogShowing(true)
+                    navController.navigate(R.id.wifi_fragment)
+                }
+            }
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        ConnectionUtil.withActivity(this).startListen()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ConnectionUtil.stopListen()
+    }
+
+    fun setIsWifiDialogShowing(isShowing: Boolean) {
+        viewModel.isWifiDialogShowing = isShowing
     }
 
     private fun setupViews() {

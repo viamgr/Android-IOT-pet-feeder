@@ -20,6 +20,7 @@ import com.viam.feeder.R
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.databinding.FragmentWifiBinding
+import com.viam.feeder.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -36,6 +37,12 @@ class WifiFragment : DialogFragment() {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
         isCancelable = false
+        ConnectionUtil.connectionState.observe(this, {
+            if (it.isAvailable) {
+                if (!it.isWifi || it.deviceName == "\"V. M\"")
+                    dismiss()
+            }
+        })
     }
 
     override fun onCreateView(
@@ -56,7 +63,7 @@ class WifiFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        viewModel.networkStatus.isShowing = false
+        (requireActivity() as MainActivity).setIsWifiDialogShowing(false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,6 +79,10 @@ class WifiFragment : DialogFragment() {
                 findNavController().navigateUp()
             }
         })
+    }
+
+    companion object {
+        const val REQUEST_KEY = "WifiFragment"
     }
 
 }

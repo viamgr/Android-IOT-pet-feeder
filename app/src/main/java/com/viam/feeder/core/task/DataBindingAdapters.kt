@@ -1,6 +1,5 @@
 package com.viam.feeder.core.task
 
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -11,20 +10,27 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
+import com.viam.feeder.core.domain.isConnectionError
+import com.viam.feeder.core.domain.toMessage
 import com.viam.feeder.core.isError
 import com.viam.feeder.core.isLoading
+import com.viam.feeder.ui.wifi.NetworkStatus
 import eightbitlab.com.blurview.BlurView
 import eightbitlab.com.blurview.RenderScriptBlur
-import kotlinx.android.synthetic.main.fragment_loading.view.*
 import java.util.concurrent.CancellationException
 
 
-@BindingAdapter("taskProgress")
-fun View.taskProgress(request: PromiseTask<*, *>?) {
+@BindingAdapter("taskProgress", "networkStatus", requireAll = false)
+fun View.taskProgress(request: PromiseTask<*, *>?, networkStatus: NetworkStatus?) {
     val result = request?.status()
     val isLoading = result?.isLoading() == true
     val showError = result is Resource.Error && result.exception !is CancellationException
     val isVisible = isLoading || showError
+
+    if (result is Resource.Error && result.exception.isConnectionError() && networkStatus?.isAvailable == true) {
+        request.retry()
+        return
+    }
 
     val parent = if (parent !is ConstraintLayout && this is ConstraintLayout) {
         this
@@ -40,7 +46,6 @@ fun View.taskProgress(request: PromiseTask<*, *>?) {
             parent.removeView(parent.findViewById(tag as Int))
         }
     } else {
-
         val viewId = id
         val view = if (parent is ConstraintLayout) {
             val inflated = tag?.let {
@@ -75,16 +80,11 @@ fun View.taskProgress(request: PromiseTask<*, *>?) {
         }
         retryView.isVisible = result?.isError() == true
         if (result is Resource.Error) {
-            //todo Parse error message function
-            val exception = result.exception
-            if (exception is CompositeException) {
-                errorView.text = exception.errors.joinToString("\n") { it.message.toString() }
-            } else {
-                errorView.text = exception.message
-            }
+            errorView.text = result.exception.toMessage(context)
         } else if (result is Resource.Loading) {
             errorView.text = context.getString(R.string.loading)
         }
+
         blurView.setupWith(this as ViewGroup)
             .setBlurAlgorithm(RenderScriptBlur(context))
             .setBlurRadius(2F)
@@ -96,41 +96,6 @@ fun View.taskProgress(request: PromiseTask<*, *>?) {
         }
         closeView.setOnClickListener {
             request?.cancel()
-        }
-
-    }
-
-
-}
-
-@BindingAdapter("promiseRequest", requireAll = true)
-fun ViewGroup.promiseTask(request: PromiseTask<*, *>?) {
-    val loadingRoot =
-        if (getChildAt(childCount - 1) == null || getChildAt(childCount - 1).id != R.id.loading_root) {
-            LayoutInflater.from(context).inflate(R.layout.fragment_loading, this)
-            getChildAt(childCount - 1)
-        } else {
-            getChildAt(childCount - 1)
-        }
-    val result = request?.status()
-    loadingRoot.isVisible =
-        result?.isLoading() ?: false || (result is Resource.Error && result.exception !is CancellationException)
-
-    progress.isVisible = result?.isLoading() ?: false
-    error_group.isVisible = result?.isError() ?: false
-    retry.setOnClickListener {
-        request?.retry()
-    }
-    close.setOnClickListener {
-        request?.cancel()
-    }
-    if (result is Resource.Error) {
-        //todo Parse error message function
-        val exception = result.exception
-        if (exception is CompositeException) {
-            error.text = exception.errors.joinToString("\n") { it.message.toString() }
-        } else {
-            error.text = exception.message
         }
     }
 }
