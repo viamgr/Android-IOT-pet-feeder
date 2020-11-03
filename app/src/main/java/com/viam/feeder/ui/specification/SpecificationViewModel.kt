@@ -56,7 +56,7 @@ class SpecificationViewModel @ViewModelInject constructor(
         }
     }
 
-    val combinedRequests: PromiseTask<Any, Any> = compositeTask(
+    val compositeTask: PromiseTask<Any, Any> = compositeTask(
         convertAndUploadSoundRequest,
         convertAndUploadSoundRequest2
     )
