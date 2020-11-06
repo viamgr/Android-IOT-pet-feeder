@@ -3,9 +3,8 @@ package com.viam.feeder.data.datasource
 import com.viam.feeder.R
 import com.viam.feeder.data.models.ClockTimer
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+@ActivityScoped
 class TimerDataSource @Inject constructor() {
     private val list = mutableListOf(
         ClockTimer(1, 23, 10, R.string.am),

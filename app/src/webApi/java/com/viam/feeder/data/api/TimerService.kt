@@ -1,4 +1,4 @@
-package com.viam.feeder.data.remote
+package com.viam.feeder.data.api
 
 import com.viam.feeder.data.models.ClockTimer
 import retrofit2.Response

@@ -11,6 +11,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        taskProgress="@{vm.sendRequestEvent.asLiveData()}"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.dashboard.DashboardFragment">
@@ -22,7 +23,7 @@
             android:layout_margin="12dp"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="@{()->vm.toggleMotorState()}"
+            android:onClick="@{()->vm.sendTriggerEvent()}"
             app:cardBackgroundColor="@color/green_200"
             app:cardCornerRadius="400dp"
             app:cardElevation="8dp"

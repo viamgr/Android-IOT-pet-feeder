@@ -4,24 +4,25 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
+import com.viam.feeder.core.domain.UseCase
 import kotlinx.coroutines.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-internal typealias Block<R, T> = suspend PromiseTaskScope<R, T>.(params: R) -> Unit
+internal typealias Block<P, R> = suspend PromiseTaskScope<P, R>.(params: P) -> Unit
 
-class CoroutineLiveTask<R, T>(
+class CoroutineLiveTask<P, R>(
     context: CoroutineContext = EmptyCoroutineContext,
-    private val requestBlock: Block<R, T>,
-) : MediatorLiveData<LiveTask<R, T>>(), LiveTask<R, T>,
-    PromiseTaskScope<R, T> {
+    private val requestBlock: Block<P, R>,
+) : MediatorLiveData<LiveTask<P, R>>(), LiveTask<P, R>,
+    PromiseTaskScope<P, R> {
     private val logger: EventLogger = TaskEventLogger
 
     // currently running block job.
     private var runningJob: Job? = null
-    private var _state: Resource<T>? = null
-    private var params: R? = null
+    private var _state: Resource<R>? = null
+    private var params: P? = null
 
     // use `liveData` provided context + main dispatcher to communicate with the target
     // LiveData. This gives us main thread safety as well as cancellation cooperation
@@ -70,7 +71,7 @@ class CoroutineLiveTask<R, T>(
         cancel(true)
     }
 
-    override suspend fun emit(resource: Resource<T>?) {
+    override suspend fun emit(resource: Resource<R>?) {
         context?.let {
             withContext(it) {
                 _state = resource
@@ -84,7 +85,7 @@ class CoroutineLiveTask<R, T>(
             maybeRun()
     }
 
-    override fun execute(params: R) {
+    override fun execute(params: P) {
         this.params = params
         maybeRun()
     }
@@ -96,7 +97,7 @@ class CoroutineLiveTask<R, T>(
         cancel(false)
     }
 
-    override fun asLiveData(): LiveData<LiveTask<R, T>>? = this
+    override fun asLiveData(): LiveData<LiveTask<P, R>>? = this
 
     private fun notifyValue() {
         value = this
@@ -123,9 +124,15 @@ class CoroutineLiveTask<R, T>(
 }
 
 
-fun <R, T : Any> livaTask(
+fun <P, R> livaTask(
     context: CoroutineContext = EmptyCoroutineContext,
-    requestBlock: Block<R, T>
-): LiveTask<R, T> {
+    requestBlock: Block<P, R>
+): LiveTask<P, R> {
     return CoroutineLiveTask(context, requestBlock)
+}
+
+fun <P, R> UseCase<P, R>.toLiveTask(): LiveTask<P, R> {
+    return livaTask { params ->
+        emit(this@toLiveTask.invoke(params))
+    }
 }

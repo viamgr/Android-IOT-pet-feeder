@@ -2,6 +2,6 @@ package com.viam.feeder.core.task
 
 import com.viam.feeder.core.Resource
 
-interface PromiseTaskScope<R, T> {
-    suspend fun emit(resource: Resource<T>?)
+interface PromiseTaskScope<P, R> {
+    suspend fun emit(resource: Resource<R>?)
 }

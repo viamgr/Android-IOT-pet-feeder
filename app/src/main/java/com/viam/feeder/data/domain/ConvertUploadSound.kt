@@ -4,13 +4,15 @@ import com.viam.feeder.core.domain.UseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.data.repository.ConvertRepository
 import com.viam.feeder.data.repository.UploadRepository
+import dagger.hilt.android.scopes.ActivityScoped
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import javax.inject.Inject
 
-class ConvertAndUploadSoundUseCase @Inject constructor(
+@ActivityScoped
+class ConvertUploadSound @Inject constructor(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     private val convertRepository: ConvertRepository,
     private val uploadRepository: UploadRepository

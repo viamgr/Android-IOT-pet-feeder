@@ -11,7 +11,7 @@ import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.LiveTask
 import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.core.task.livaTask
-import com.viam.feeder.data.domain.ConvertAndUploadSoundUseCase
+import com.viam.feeder.data.domain.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.ui.wifi.ConnectionUtil
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 
 
 class SpecificationViewModel @ViewModelInject constructor(
-    private val convertAndUploadSoundUseCase: ConvertAndUploadSoundUseCase
+    private val convertAndUploadSoundUseCase: ConvertUploadSound
 ) :
     ViewModel() {
     val connectionStatus = ConnectionUtil.connectionState

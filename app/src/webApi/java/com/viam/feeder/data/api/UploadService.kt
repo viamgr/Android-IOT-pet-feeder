@@ -1,4 +1,4 @@
-package com.viam.feeder.data.remote
+package com.viam.feeder.data.api
 
 import okhttp3.MultipartBody
 import retrofit2.Response

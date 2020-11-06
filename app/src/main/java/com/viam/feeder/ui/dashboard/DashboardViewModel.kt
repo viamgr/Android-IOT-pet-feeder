@@ -1,58 +1,17 @@
 package com.viam.feeder.ui.dashboard
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.network.CoroutinesDispatcherProvider
-import com.viam.feeder.core.network.NetworkStatus
-import com.viam.feeder.core.network.safeApiCall
-import com.viam.feeder.core.onError
-import com.viam.feeder.core.onSuccess
-import com.viam.feeder.data.models.MotorStatusRequest
-import com.viam.feeder.data.repository.GlobalConfigRepository
-import kotlinx.coroutines.launch
+import com.viam.feeder.constants.EVENT_TRIGGER
+import com.viam.feeder.core.task.toLiveTask
+import com.viam.feeder.data.domain.event.SendEvent
+import com.viam.feeder.data.models.KeyValue
 
-class DashboardViewModel @ViewModelInject constructor(
-    private val networkStatus: NetworkStatus,
-    private val globalConfigRepository: GlobalConfigRepository,
-    private val dispatcherProvider: CoroutinesDispatcherProvider
-) :
+class DashboardViewModel @ViewModelInject constructor(sendEvent: SendEvent) :
     ViewModel() {
 
-    private val _toggleMotorState = MutableLiveData<Event<Unit>>()
-    val toggleMotorState: LiveData<Event<Unit>> = _toggleMotorState
-
-    private fun checkRealTimeStatus() {
-        /* viewModelScope.launch {
-             withContext(dispatcherProvider.io) {
-                 networkStatus.runIfConnected {
-                     val safeApiCall = safeApiCall {
-                         globalConfigRepository.getMotorStatus()
-                     }
-                     _motorStatus.postValue(safeApiCall)
-                 }
-                 delay(10000)
-                 checkRealTimeStatus()
-             }
-         }*/
-    }
-
-    fun toggleMotorState() {
-//        _toggleMotorState.value = Event(Unit)
-
-        viewModelScope.launch(dispatcherProvider.io) {
-            safeApiCall {
-                globalConfigRepository.setMotorStatus(MotorStatusRequest(enabled = true))
-            }
-                .onSuccess {
-                }
-                .onError {
-                }
-//            _motorStatus.postValue(safeApiCall)
-        }
-
+    val sendRequestEvent = sendEvent.toLiveTask()
+    fun sendTriggerEvent() {
+        sendRequestEvent.execute(KeyValue(EVENT_TRIGGER))
     }
 }
