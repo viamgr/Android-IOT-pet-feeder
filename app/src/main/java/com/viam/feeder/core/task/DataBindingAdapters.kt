@@ -47,37 +47,42 @@ fun View.taskProgress(promiseTask: LiveTask<*, *>?, networkStatus: NetworkStatus
         }
     } else {
         val viewId = id
+        var isInflated = false
+
         val view = if (parent is ConstraintLayout) {
             val inflated = tag?.let {
                 (parent).findViewById(it as Int)
             } ?: run {
-                val generateViewId = ViewCompat.generateViewId()
-                tag = generateViewId
+                isInflated = true
                 View.inflate(context, R.layout.layout_row_progress, null).let {
-                    it.id = generateViewId
                     parent.addView(it)
                     it
                 }
             }
-            val set = ConstraintSet()
-            set.connect(inflated.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
-            set.connect(inflated.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
-            set.connect(inflated.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
-            set.connect(inflated.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
-            set.applyTo(parent)
+            if (isInflated) {
+                val generateViewId = ViewCompat.generateViewId()
+                inflated.id = generateViewId
+                tag = generateViewId
+                val set = ConstraintSet()
+                set.connect(inflated.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
+                set.connect(inflated.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
+                set.connect(inflated.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
+                set.connect(inflated.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
+                set.applyTo(parent)
+            }
 
             inflated
         } else {
+            isInflated = true
             View.inflate(context, R.layout.layout_row_progress, parent)
         }
 
-        val blurView = view.findViewById<BlurView>(R.id.blurView)
         val errorView = view.findViewById<TextView>(R.id.error)
         val retryView = view.findViewById<View>(R.id.retry)
         val closeView = view.findViewById<View>(R.id.close)
-        errorView?.post {
-            view.findViewById<View>(R.id.progress).isVisible = isLoading
-        }
+
+        view.findViewById<View>(R.id.progress).isVisible = isLoading
+
         retryView.isVisible = state?.isError() == true
         if (state is Resource.Error) {
             errorView.text = state.exception.toMessage(context)
@@ -85,17 +90,21 @@ fun View.taskProgress(promiseTask: LiveTask<*, *>?, networkStatus: NetworkStatus
             errorView.text = context.getString(R.string.loading)
         }
 
-        blurView.setupWith(this as ViewGroup)
-            .setBlurAlgorithm(RenderScriptBlur(context))
-            .setBlurRadius(2F)
-            .setBlurAutoUpdate(true)
-            .setHasFixedTransformationMatrix(true)
+        if (isInflated) {
+            val blurView = view.findViewById<BlurView>(R.id.blurView)
+            blurView.setupWith(this as ViewGroup)
+                .setBlurAlgorithm(RenderScriptBlur(context))
+                .setBlurRadius(2F)
+                .setBlurAutoUpdate(true)
+                .setHasFixedTransformationMatrix(true)
 
-        retryView.setOnClickListener {
-            promiseTask?.retry()
+            retryView.setOnClickListener {
+                promiseTask?.retry()
+            }
+            closeView.setOnClickListener {
+                promiseTask?.cancel()
+            }
         }
-        closeView.setOnClickListener {
-            promiseTask?.cancel()
-        }
+
     }
 }
