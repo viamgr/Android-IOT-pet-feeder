@@ -21,14 +21,14 @@ import java.util.concurrent.CancellationException
 
 
 @BindingAdapter("taskProgress", "networkStatus", requireAll = false)
-fun View.taskProgress(request: PromiseTask<*, *>?, networkStatus: NetworkStatus?) {
-    val result = request?.status()
-    val isLoading = result?.isLoading() == true
-    val showError = result is Resource.Error && result.exception !is CancellationException
+fun View.taskProgress(promiseTask: LiveTask<*, *>?, networkStatus: NetworkStatus?) {
+    val state = promiseTask?.state()
+    val isLoading = state?.isLoading() == true
+    val showError = state is Resource.Error && state.exception !is CancellationException
     val isVisible = isLoading || showError
 
-    if (result is Resource.Error && result.exception.isConnectionError() && networkStatus?.isAvailable == true) {
-        request.retry()
+    if (state is Resource.Error && state.exception.isConnectionError() && networkStatus?.isAvailable == true) {
+        promiseTask.retry()
         return
     }
 
@@ -68,7 +68,7 @@ fun View.taskProgress(request: PromiseTask<*, *>?, networkStatus: NetworkStatus?
 
             inflated
         } else {
-            View.inflate(context, R.layout.layout_row_progress, parent as ViewGroup)
+            View.inflate(context, R.layout.layout_row_progress, parent)
         }
 
         val blurView = view.findViewById<BlurView>(R.id.blurView)
@@ -78,10 +78,10 @@ fun View.taskProgress(request: PromiseTask<*, *>?, networkStatus: NetworkStatus?
         errorView?.post {
             view.findViewById<View>(R.id.progress).isVisible = isLoading
         }
-        retryView.isVisible = result?.isError() == true
-        if (result is Resource.Error) {
-            errorView.text = result.exception.toMessage(context)
-        } else if (result is Resource.Loading) {
+        retryView.isVisible = state?.isError() == true
+        if (state is Resource.Error) {
+            errorView.text = state.exception.toMessage(context)
+        } else if (state is Resource.Loading) {
             errorView.text = context.getString(R.string.loading)
         }
 
@@ -92,10 +92,10 @@ fun View.taskProgress(request: PromiseTask<*, *>?, networkStatus: NetworkStatus?
             .setHasFixedTransformationMatrix(true)
 
         retryView.setOnClickListener {
-            request?.retry()
+            promiseTask?.retry()
         }
         closeView.setOnClickListener {
-            request?.cancel()
+            promiseTask?.cancel()
         }
     }
 }

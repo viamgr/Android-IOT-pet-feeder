@@ -26,6 +26,7 @@
 
                 <com.airbnb.epoxy.EpoxyRecyclerView
                     android:id="@+id/food_volume"
+                    taskProgress="@{vm.compositeTask.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
                     app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
@@ -73,7 +74,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/feeding_sound"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                    taskProgress="@{vm.convertAndUploadSoundRequest.result()}"
+                    taskProgress="@{vm.convertAndUploadSoundRequest.asLiveData()}"
                     networkStatus="@{vm.connectionStatus}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,16 +86,16 @@
                         android:layout_height="wrap_content"
                         android:focusable="false"
                         android:focusableInTouchMode="false"
-                        android:hint="@string/feeding_sound"
+                        android:hint="@{vm.a}"
                         android:text="@string/choose" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/ledEnabled"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                    taskProgress="@{vm.convertAndUploadSoundRequest2.result()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    taskProgress="@{vm.convertAndUploadSoundRequest2.asLiveData()}"
                     app:layout_constraintTop_toBottomOf="@+id/feeding_sound">
 
                     <AutoCompleteTextView

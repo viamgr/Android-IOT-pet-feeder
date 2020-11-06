@@ -4,18 +4,19 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.liveData
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.task.PromiseTask
+import com.viam.feeder.core.task.LiveTask
 import com.viam.feeder.core.task.compositeTask
-import com.viam.feeder.core.task.makeRequest
+import com.viam.feeder.core.task.livaTask
 import com.viam.feeder.data.domain.ConvertAndUploadSoundUseCase
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.ui.wifi.ConnectionUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class SpecificationViewModel @ViewModelInject constructor(
@@ -33,35 +34,46 @@ class SpecificationViewModel @ViewModelInject constructor(
     )
     val feedSounds: LiveData<List<String>> = _feedSounds
 
+    val a = liveData<String> {
+        withContext(Dispatchers.IO) {
+
+            repeat(1000) {
+                emit("$it")
+                println("work on $it")
+
+                delay(1000)
+            }
+        }
+    }
     private val _openRecordDialog = MutableLiveData<Event<Unit>>()
     val openRecordDialog: LiveData<Event<Unit>> = _openRecordDialog
 
     private val _chooseIntentSound = MutableLiveData<Event<Unit>>()
     val chooseIntentSound: LiveData<Event<Unit>> = _chooseIntentSound
 
-    val convertAndUploadSoundRequest: PromiseTask<Pair<String, String>, Unit> = makeRequest {
-        viewModelScope.launch {
-            execute {
-                convertAndUploadSoundUseCase(it)
-            }
+    val convertAndUploadSoundRequest: LiveTask<Pair<String, String>, Unit> =
+        livaTask { params ->
+            emit(convertAndUploadSoundUseCase(params))
         }
+
+
+    val convertAndUploadSoundRequest2: LiveTask<String, Unit> = livaTask {
+        emit(Resource.Loading)
+        delay(2000)
+        emit(Resource.Success(Unit))
+        delay(2000)
+        emit(Resource.Loading)
+        delay(2000)
+        emit(Resource.Success(Unit))
+        delay(2000)
+        emit(Resource.Error(Exception("Custom Error")))
+        delay(2000)
     }
 
-    val convertAndUploadSoundRequest2 = makeRequest<String, Unit> {
-        viewModelScope.launch {
-            initialParams("1222")
-            execute {
-                delay(2000)
-                Resource.Error(Exception("Custom Error"))
-            }
-        }
-    }
-
-    val compositeTask: PromiseTask<Any, Any> = compositeTask(
+    val compositeTask: LiveTask<Any, Any> = compositeTask(
         convertAndUploadSoundRequest,
         convertAndUploadSoundRequest2
     )
-
     private val _feedVolumeList = MutableLiveData(
         listOf(
             FeedVolume(1, 0.33f, R.string.little),
@@ -124,7 +136,12 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     fun onRecordFile(input: String, output: String) {
-        convertAndUploadSoundRequest.request(Pair(input, output))
-        convertAndUploadSoundRequest2.request("Test")
+        convertAndUploadSoundRequest.execute(Pair(input, output))
+//        convertAndUploadSoundRequest2.execute("Test")
+    }
+
+    init {
+        convertAndUploadSoundRequest2.execute("asdasd")
+
     }
 }
