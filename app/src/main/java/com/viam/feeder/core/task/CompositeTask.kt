@@ -11,6 +11,7 @@ class CompositeRequest(
     requestBlock: CompositeBlock,
     private vararg val requests: LiveTask<*, *>
 ) : LiveTask<Any, Any>, CompositeTaskBuilder, MediatorLiveData<LiveTask<*, *>>() {
+    private var onSuccessBlock: ((resource: Any?) -> Unit)? = null
     private var state: Resource<Any>? = null
 
     init {
@@ -27,6 +28,7 @@ class CompositeRequest(
                         .map { it.state() }
                     if (notSuccessList.isEmpty()) {
                         state = Resource.Success(Unit)
+                        onSuccessBlock?.invoke(state)
                         value = this
                     } else {
                         if (!notSuccessList.any { it is Resource.Error }) {
@@ -71,7 +73,10 @@ class CompositeRequest(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun asLiveData(): LiveData<LiveTask<Any, Any>>? = this as LiveData<LiveTask<Any, Any>>
+    override fun asLiveData() = this as MediatorLiveData<LiveTask<Any, Any>>
+    override fun onSuccess(block: (resource: Any?) -> Unit) {
+        onSuccessBlock = block
+    }
 }
 
 fun compositeTask(

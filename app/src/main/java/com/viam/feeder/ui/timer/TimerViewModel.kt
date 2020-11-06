@@ -4,42 +4,66 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.viam.feeder.constants.SETTING_INTERVAL
 import com.viam.feeder.core.domain.toLiveTask
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.onSuccess
 import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.timer.AddTimer
 import com.viam.feeder.data.domain.timer.DeleteTimer
 import com.viam.feeder.data.domain.timer.GetTimerList
 import com.viam.feeder.data.models.ClockTimer
+import com.viam.feeder.data.models.KeyValue
 
 class TimerViewModel @ViewModelInject constructor(
     addTimer: AddTimer,
     deleteTimer: DeleteTimer,
-    getTimerList: GetTimerList
+    getTimerList: GetTimerList,
+    sendEvent: SendEvent
 ) : ViewModel() {
 
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 
-    private val getTimerListTask = getTimerList.toLiveTask { resource ->
-        resource.onSuccess {
+    private val _currentValue = MutableLiveData(DEFAULT_VALUE)
+    val currentValue: LiveData<Int> = _currentValue
+
+    private val getTimerListTask = getTimerList.toLiveTask {
+        onSuccess {
             controller.setData(it)
         }
     }.also {
         it.execute(Unit)
     }
+
     private val addTimerTask = addTimer.toLiveTask {
-        getTimerListTask.execute(Unit)
+        onSuccess {
+            getTimerListTask.execute(Unit)
+        }
     }
+
     private val deleteTimerTask = deleteTimer.toLiveTask {
-        getTimerListTask.execute(Unit)
+        onSuccess {
+            getTimerListTask.execute(Unit)
+        }
+    }
+
+    private val sendEventTask = sendEvent.toLiveTask {
+        debounce(1000)
+    }
+
+    init {
+        sendEventTask.asLiveData().addSource(_currentValue) {
+//            sendEventTask.cancel()
+            sendEventTask.execute(KeyValue(SETTING_INTERVAL))
+        }
     }
 
     val compositeTask = compositeTask(
         addTimerTask,
         getTimerListTask,
-        deleteTimerTask
+        deleteTimerTask,
+        sendEventTask,
     )
 
     private val _timerMode = MutableLiveData<Int>()
@@ -64,8 +88,6 @@ class TimerViewModel @ViewModelInject constructor(
         addTimerTask.execute(ClockTimer(hour = newHour, minute = newMinute))
     }
 
-    private val _currentValue = MutableLiveData(DEFAULT_VALUE)
-    val currentValue: LiveData<Int> = _currentValue
 
     fun onUpClicked() {
         _currentValue.value =

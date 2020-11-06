@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.domain.isConnectionError
+import com.viam.feeder.core.onSuccess
 import kotlinx.coroutines.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
@@ -21,13 +22,12 @@ class CoroutineLiveTask<P, R>(
     private val autoRetryHandler: LiveData<Boolean> = AutoRetryHandler,
 ) : MediatorLiveData<LiveTask<P, R>>(), LiveTask<P, R>,
     PromiseTaskScope<P, R> {
+    private var debounceTime: Long = 250
+    private var successBlock: ((resource: R?) -> Unit)? = null
     private var runningJob: Job? = null
     private var _state: Resource<R>? = null
     private var params: P? = null
 
-    // use `liveData` provided context + main dispatcher to communicate with the target
-    // LiveData. This gives us main thread safety as well as cancellation cooperation
-    private var context: CoroutineContext? = null
     private var retryAfterActive: Boolean? = null
     private var scope: CoroutineScope
 
@@ -45,17 +45,24 @@ class CoroutineLiveTask<P, R>(
 
     @MainThread
     fun maybeRun() {
-        if (runningJob != null) {
-            return
-        }
+        runningJob?.cancel()
         runningJob = scope.launch {
-            context = coroutineContext + Dispatchers.Main.immediate
-            _state = Resource.Loading
-            notifyValue()
-            requestBlock(this@CoroutineLiveTask, params!!)
-            runningJob?.cancel()
-            runningJob = null
-            context = null
+            try {
+                _state = Resource.Loading
+                val loadingJob = launch {
+                    delay(debounceTime)
+                    if (isActive) {
+                        _state = Resource.Loading
+                        notifyValue()
+                    }
+                }
+                requestBlock(this@CoroutineLiveTask, params!!)
+                notifyValue()
+                loadingJob.cancel()
+
+            } catch (e: Exception) {
+            }
+
         }
     }
 
@@ -90,12 +97,19 @@ class CoroutineLiveTask<P, R>(
     }
 
     override suspend fun emit(resource: Resource<R>?) {
-        context?.let {
+        /*context?.let {
             withContext(it) {
                 _state = resource
                 notifyValue()
             }
+        }*/
+        _state = if (resource is Resource.Error && resource.exception is CancellationException) {
+            null
+        } else {
+            resource
         }
+
+        notifyValue()
     }
 
     override fun retry() {
@@ -110,11 +124,13 @@ class CoroutineLiveTask<P, R>(
 
     override fun state() = _state
 
-
-    override fun asLiveData(): LiveData<LiveTask<P, R>>? = this
+    override fun asLiveData(): MediatorLiveData<LiveTask<P, R>> = this
 
     private fun notifyValue() {
         value = this
+        _state?.onSuccess {
+            successBlock?.invoke(it)
+        }
         logger.newEvent(_state)
     }
 
@@ -123,18 +139,25 @@ class CoroutineLiveTask<P, R>(
             retryAfterActive = true
         }
 
-        if (runningJob?.isActive == true)
+        /*if (runningJob?.isActive == true)
             _state = Resource.Error(CancellationException())
         else if (userCanceled) {
             _state = null
         }
         notifyValue()
-
+*/
         runningJob?.cancel()
         runningJob = null
-        context = null
+        notifyValue()
     }
 
+    override fun onSuccess(block: (resource: R?) -> Unit) {
+        successBlock = block
+    }
+
+    override fun debounce(timeInMillis: Long) {
+        debounceTime = timeInMillis
+    }
 }
 
 
