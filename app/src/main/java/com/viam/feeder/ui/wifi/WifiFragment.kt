@@ -13,14 +13,14 @@ import android.widget.FrameLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import com.viam.feeder.BR
 import com.viam.feeder.R
 import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.network.NetworkStatus
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
+import com.viam.feeder.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -32,17 +32,12 @@ class WifiFragment : DialogFragment() {
 
     private lateinit var binding: FragmentWifiBinding
     private val viewModel: WifiViewModel by viewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
         isCancelable = false
-        ConnectionUtil.connectionState.observe(this, {
-            if (it.isAvailable) {
-                if (!it.isWifi || it.deviceName == "\"V. M\"")
-                    dismiss()
-            }
-        })
     }
 
     override fun onCreateView(
@@ -54,7 +49,6 @@ class WifiFragment : DialogFragment() {
             ?.apply {
                 lifecycleOwner = viewLifecycleOwner
                 setVariable(BR.vm, viewModel)
-                viewModel.networkStatus.isShowing = true
 
             }?.also {
                 binding = it
@@ -70,19 +64,17 @@ class WifiFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel.enableWifiClicked.observe(viewLifecycleOwner, EventObserver {
             val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             if (intent.resolveActivity(requireActivity().packageManager) != null) {
                 startActivity(intent)
             }
         })
-        viewModel.networkStatus.connection.observe(viewLifecycleOwner, {
-            if (it == NetworkStatus.CONNECTION_STATE_SUCCESS) {
-                findNavController().navigateUp()
+        mainViewModel.connectionStatus.observe(this, {
+            if (it.isAvailable) {
+                if (!it.isWifi || it.deviceName == "\"V. M\"")
+                    dismiss()
             }
         })
-    }
-
-    companion object {
-        const val REQUEST_KEY = "WifiFragment"
     }
 
 }

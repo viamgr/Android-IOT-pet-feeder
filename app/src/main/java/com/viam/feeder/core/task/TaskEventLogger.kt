@@ -7,12 +7,12 @@ import com.viam.feeder.core.livedata.Event
 import javax.inject.Singleton
 
 @Singleton
-object TaskEventLogger : EventLogger {
+object TaskEventLogger : EventLogger<Resource<*>> {
 
     private val data = MutableLiveData<Event<Resource<*>?>>()
     val events: LiveData<Event<Resource<*>?>> = data
 
-    override fun newEvent(resource: Resource<*>?) {
-        data.postValue(Event(resource))
+    override fun newEvent(event: Resource<*>?) {
+        data.postValue(Event(event))
     }
 }

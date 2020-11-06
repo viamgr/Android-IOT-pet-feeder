@@ -1,10 +1,12 @@
+@file:JvmName("LiveTaskKt")
+
 package com.viam.feeder.core.task
 
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
-import com.viam.feeder.core.domain.UseCase
+import com.viam.feeder.core.domain.isConnectionError
 import kotlinx.coroutines.*
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
@@ -15,11 +17,10 @@ internal typealias Block<P, R> = suspend PromiseTaskScope<P, R>.(params: P) -> U
 class CoroutineLiveTask<P, R>(
     context: CoroutineContext = EmptyCoroutineContext,
     private val requestBlock: Block<P, R>,
+    private val logger: TaskEventLogger = TaskEventLogger,
+    private val autoRetryHandler: LiveData<Boolean> = AutoRetryHandler,
 ) : MediatorLiveData<LiveTask<P, R>>(), LiveTask<P, R>,
     PromiseTaskScope<P, R> {
-    private val logger: EventLogger = TaskEventLogger
-
-    // currently running block job.
     private var runningJob: Job? = null
     private var _state: Resource<R>? = null
     private var params: P? = null
@@ -58,11 +59,28 @@ class CoroutineLiveTask<P, R>(
         }
     }
 
+    override fun onInactive() {
+        super.onInactive()
+        removeSource(autoRetryHandler)
+        cancel(false)
+    }
+
     override fun onActive() {
         super.onActive()
         if (retryAfterActive == true) {
             retryAfterActive = false
             maybeRun()
+        }
+        handleAutoRetry()
+    }
+
+    private fun handleAutoRetry() {
+        addSource(autoRetryHandler) { isAvailableConnection ->
+            if (isAvailableConnection && _state is Resource.Error &&
+                (_state as Resource.Error).exception.isConnectionError()
+            ) {
+                retry()
+            }
         }
     }
 
@@ -92,10 +110,6 @@ class CoroutineLiveTask<P, R>(
 
     override fun state() = _state
 
-    override fun onInactive() {
-        super.onInactive()
-        cancel(false)
-    }
 
     override fun asLiveData(): LiveData<LiveTask<P, R>>? = this
 
@@ -126,13 +140,15 @@ class CoroutineLiveTask<P, R>(
 
 fun <P, R> livaTask(
     context: CoroutineContext = EmptyCoroutineContext,
+    logger: TaskEventLogger = TaskEventLogger,
+    autoRetryHandler: LiveData<Boolean> = AutoRetryHandler,
     requestBlock: Block<P, R>
 ): LiveTask<P, R> {
-    return CoroutineLiveTask(context, requestBlock)
+    return CoroutineLiveTask(
+        context,
+        requestBlock = requestBlock,
+        logger = logger,
+        autoRetryHandler = autoRetryHandler
+    )
 }
 
-fun <P, R> UseCase<P, R>.toLiveTask(): LiveTask<P, R> {
-    return livaTask { params ->
-        emit(this@toLiveTask.invoke(params))
-    }
-}

@@ -16,6 +16,7 @@ import com.viam.feeder.core.domain.isConnectionError
 import com.viam.feeder.core.domain.toMessage
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
+import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.ui.wifi.ConnectionUtil
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,7 +28,7 @@ import kotlinx.android.synthetic.main.content_main.bottom_nav
 class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
 
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +46,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+        viewModel.connectionStatus.observe(this, {
+            AutoRetryHandler.value = it.isAvailable
+        })
+
     }
 
     override fun onStart() {

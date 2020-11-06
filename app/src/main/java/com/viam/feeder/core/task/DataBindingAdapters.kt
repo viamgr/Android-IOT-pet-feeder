@@ -10,27 +10,20 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
-import com.viam.feeder.core.domain.isConnectionError
 import com.viam.feeder.core.domain.toMessage
 import com.viam.feeder.core.isError
 import com.viam.feeder.core.isLoading
-import com.viam.feeder.ui.wifi.NetworkStatus
 import eightbitlab.com.blurview.BlurView
 import eightbitlab.com.blurview.RenderScriptBlur
 import java.util.concurrent.CancellationException
 
 
-@BindingAdapter("taskProgress", "networkStatus", requireAll = false)
-fun View.taskProgress(promiseTask: LiveTask<*, *>?, networkStatus: NetworkStatus?) {
+@BindingAdapter("taskProgress")
+fun View.taskProgress(promiseTask: LiveTask<*, *>?) {
     val state = promiseTask?.state()
     val isLoading = state?.isLoading() == true
     val showError = state is Resource.Error && state.exception !is CancellationException
     val isVisible = isLoading || showError
-
-    if (state is Resource.Error && state.exception.isConnectionError() && networkStatus?.isAvailable == true) {
-        promiseTask.retry()
-        return
-    }
 
     val parent = if (parent !is ConstraintLayout && this is ConstraintLayout) {
         this
@@ -55,6 +48,7 @@ fun View.taskProgress(promiseTask: LiveTask<*, *>?, networkStatus: NetworkStatus
             } ?: run {
                 isInflated = true
                 View.inflate(context, R.layout.layout_row_progress, null).let {
+                    ViewCompat.setElevation(it, Float.MAX_VALUE)
                     parent.addView(it)
                     it
                 }

@@ -10,11 +10,11 @@ import retrofit2.http.Path
 interface TimerService {
 
     @GET("timer/list/")
-    suspend fun getTimes(): List<ClockTimer>
+    suspend fun getList(): List<ClockTimer>
 
     @POST("timer/")
-    fun addTime(clockTimer: ClockTimer): ClockTimer
+    fun add(clockTimer: ClockTimer): ClockTimer
 
     @DELETE("timer/{id}/")
-    fun removeTime(@Path("id") id: Long): Response<Unit>
+    fun delete(@Path("id") id: Long): Response<Unit>
 }

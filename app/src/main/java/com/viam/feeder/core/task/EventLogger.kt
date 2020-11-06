@@ -1,7 +1,5 @@
 package com.viam.feeder.core.task
 
-import com.viam.feeder.core.Resource
-
-interface EventLogger {
-    fun newEvent(resource: Resource<*>?)
+interface EventLogger<T> {
+    fun newEvent(event: T?)
 }

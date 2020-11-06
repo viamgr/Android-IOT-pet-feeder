@@ -27,11 +27,10 @@
                 android:id="@+id/animation_view"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintBottom_toTopOf="@+id/barrier"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintDimensionRatio="800:1100"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
                 app:lottie_autoPlay="true"
                 app:lottie_loop="true"
                 app:lottie_rawRes="@raw/wifi_connecting" />
@@ -39,15 +38,16 @@
 
             <TextView
                 android:id="@+id/enable_wifi_text"
+                style="@style/TextAppearance.MaterialComponents.Body1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                style="@style/TextAppearance.MaterialComponents.Body1"
                 android:text="@string/wrong_connected"
-                app:layout_constraintBottom_toTopOf="@id/enable_wifi"
+                app:layout_constraintBottom_toTopOf="@id/animation_view"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintWidth_percent="0.8" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.95" />
 
             <androidx.constraintlayout.widget.Barrier
                 android:id="@+id/barrier"
@@ -60,16 +60,16 @@
                 android:id="@+id/enable_wifi"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="32dp"
                 android:onClick="@{()->vm.onEnableWifi()}"
                 android:text="@string/open_wifi_setting"
-                app:iconSize="16dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:backgroundTint="@color/primary"
-                app:icon="@drawable/ic_baseline_signal_wifi_4_bar_24" />
+                app:icon="@drawable/ic_baseline_signal_wifi_4_bar_24"
+                app:iconSize="16dp"
+                app:layout_constraintBottom_toBottomOf="@id/animation_view"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/animation_view"
+                app:layout_constraintVertical_bias="0.95" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

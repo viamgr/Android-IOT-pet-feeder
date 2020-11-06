@@ -5,9 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.network.NetworkStatus
 
-class WifiViewModel @ViewModelInject constructor(val networkStatus: NetworkStatus) : ViewModel() {
+class WifiViewModel @ViewModelInject constructor() : ViewModel() {
 
     private val _enableWifiClicked = MutableLiveData<Event<Unit>>()
     val enableWifiClicked: LiveData<Event<Unit>> = _enableWifiClicked

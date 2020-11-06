@@ -11,6 +11,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        taskProgress="@{vm.compositeTask.asLiveData()}"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -34,14 +35,6 @@
                 android:text="@string/periodic" />
 
         </com.google.android.material.tabs.TabLayout>
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleHorizontal"
-            goneUnless="@{vm.loading}"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:indeterminateBehavior="repeat"
-            app:layout_constraintTop_toBottomOf="@id/tab" />
 
         <com.airbnb.epoxy.EpoxyRecyclerView
             android:id="@+id/clock_list"

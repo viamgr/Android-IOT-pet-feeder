@@ -4,30 +4,43 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.viam.feeder.core.dataOrNull
+import com.viam.feeder.core.domain.toLiveTask
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.onSuccess
+import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.data.domain.timer.AddTimer
+import com.viam.feeder.data.domain.timer.DeleteTimer
+import com.viam.feeder.data.domain.timer.GetTimerList
 import com.viam.feeder.data.models.ClockTimer
-import com.viam.feeder.data.repository.TimerRepository
-import kotlinx.coroutines.launch
 
 class TimerViewModel @ViewModelInject constructor(
-    private val timerRepository: TimerRepository,
-    private val dispatcherProvider: CoroutinesDispatcherProvider
+    addTimer: AddTimer,
+    deleteTimer: DeleteTimer,
+    getTimerList: GetTimerList
 ) : ViewModel() {
 
-    companion object {
-        const val TIMER_MODE_SCHEDULING = 0
-        const val TIMER_MODE_PERIODIC = 1
-        const val MAX_VALUE = 24 * 60
-        const val MIN_VALUE = 1
-        const val DEFAULT_VALUE = 4 * 60
+    private val _openTimerDialog = MutableLiveData<Event<Unit>>()
+    val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
+
+    private val getTimerListTask = getTimerList.toLiveTask { resource ->
+        resource.onSuccess {
+            controller.setData(it)
+        }
+    }.also {
+        it.execute(Unit)
+    }
+    private val addTimerTask = addTimer.toLiveTask {
+        getTimerListTask.execute(Unit)
+    }
+    private val deleteTimerTask = deleteTimer.toLiveTask {
+        getTimerListTask.execute(Unit)
     }
 
-    private val _loading = MutableLiveData<Boolean>()
-    val loading: LiveData<Boolean> = _loading
+    val compositeTask = compositeTask(
+        addTimerTask,
+        getTimerListTask,
+        deleteTimerTask
+    )
 
     private val _timerMode = MutableLiveData<Int>()
     val timerMode: LiveData<Int> = _timerMode
@@ -39,49 +52,16 @@ class TimerViewModel @ViewModelInject constructor(
             }
         }
 
-    init {
-        getTimes()
-    }
-
-    private fun getTimes() {
-        _loading.postValue(true)
-        viewModelScope.launch {
-            timerRepository.getTimes().let {
-                controller.setData(it.dataOrNull())
-                _loading.postValue(false)
-            }
-        }
-    }
-
-    private val _openTimerDialog = MutableLiveData<Event<Unit>>()
-    val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
-
     private fun removeTimer(timer: ClockTimer) {
-        _loading.value = true
-        viewModelScope.launch(dispatcherProvider.io) {
-            timerRepository.removeTime(timer).onSuccess {
-                getTimes()
-            }.also {
-                _loading.postValue(false)
-            }
-        }
+        deleteTimerTask.execute(timer)
     }
-
 
     fun onClickAddClock() {
         _openTimerDialog.postValue(Event(Unit))
     }
 
     fun onTimeSet(newHour: Int, newMinute: Int) {
-        _loading.value = true
-        viewModelScope.launch(dispatcherProvider.io) {
-            timerRepository.addTime(ClockTimer(hour = newHour, minute = newMinute)).onSuccess {
-                getTimes()
-            }.also {
-                _loading.postValue(false)
-            }
-
-        }
+        addTimerTask.execute(ClockTimer(hour = newHour, minute = newMinute))
     }
 
     private val _currentValue = MutableLiveData(DEFAULT_VALUE)
@@ -104,6 +84,14 @@ class TimerViewModel @ViewModelInject constructor(
 
     fun onValueChanged(value: Float) {
         _currentValue.value = value.toInt()
+    }
+
+    companion object {
+        const val TIMER_MODE_SCHEDULING = 0
+        const val TIMER_MODE_PERIODIC = 1
+        const val MAX_VALUE = 24 * 60
+        const val MIN_VALUE = 1
+        const val DEFAULT_VALUE = 4 * 60
     }
 
 }
