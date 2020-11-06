@@ -16,7 +16,7 @@ class CoroutineLiveTask<R, T>(
     private val requestBlock: Block<R, T>,
 ) : MediatorLiveData<LiveTask<R, T>>(), LiveTask<R, T>,
     PromiseTaskScope<R, T> {
-    private var logger: EventLogger = TaskEventLogger
+    private val logger: EventLogger = TaskEventLogger
 
     // currently running block job.
     private var runningJob: Job? = null
@@ -53,6 +53,7 @@ class CoroutineLiveTask<R, T>(
             requestBlock(this@CoroutineLiveTask, params!!)
             runningJob?.cancel()
             runningJob = null
+            context = null
         }
     }
 
@@ -115,6 +116,7 @@ class CoroutineLiveTask<R, T>(
 
         runningJob?.cancel()
         runningJob = null
+        context = null
     }
 
 }

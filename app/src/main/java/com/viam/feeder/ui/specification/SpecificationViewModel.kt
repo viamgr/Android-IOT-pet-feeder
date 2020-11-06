@@ -1,10 +1,7 @@
 package com.viam.feeder.ui.specification
 
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
+import androidx.lifecycle.*
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.livedata.Event
@@ -16,6 +13,7 @@ import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.ui.wifi.ConnectionUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
@@ -45,6 +43,7 @@ class SpecificationViewModel @ViewModelInject constructor(
             }
         }
     }
+
     private val _openRecordDialog = MutableLiveData<Event<Unit>>()
     val openRecordDialog: LiveData<Event<Unit>> = _openRecordDialog
 
@@ -59,15 +58,24 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     val convertAndUploadSoundRequest2: LiveTask<String, Unit> = livaTask {
         emit(Resource.Loading)
-        delay(2000)
+        delay(50)
         emit(Resource.Success(Unit))
-        delay(2000)
+        delay(50)
         emit(Resource.Loading)
-        delay(2000)
+        delay(50)
         emit(Resource.Success(Unit))
-        delay(2000)
+        delay(50)
         emit(Resource.Error(Exception("Custom Error")))
-        delay(2000)
+    }
+
+    init {
+        viewModelScope.launch {
+            repeat(1000) {
+
+                delay(300)
+                convertAndUploadSoundRequest2.retry()
+            }
+        }
     }
 
     val compositeTask: LiveTask<Any, Any> = compositeTask(
