@@ -38,9 +38,10 @@ class MainActivity : AppCompatActivity() {
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
                 if (it.isConnectionError() && !viewModel.isWifiDialogShowing) {
-                    Toast.makeText(this, it.toMessage(this), Toast.LENGTH_SHORT).show()
                     setIsWifiDialogShowing(true)
                     navController.navigate(R.id.wifi_fragment)
+                } else {
+                    Toast.makeText(this, it.toMessage(this), Toast.LENGTH_SHORT).show()
                 }
             }
         })
