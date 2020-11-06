@@ -25,13 +25,12 @@
         android:id="@+id/progress"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:baselineAlignBottom="true"
+        android:layout_height="2dp"
         android:indeterminate="true"
-        android:minHeight="0dp"
-        app:layout_constraintEnd_toEndOf="@id/error"
-        app:layout_constraintStart_toStartOf="@id/error"
-        app:layout_constraintTop_toBottomOf="@id/error"
+        android:minHeight="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:progress="100" />
 
     <TextView
