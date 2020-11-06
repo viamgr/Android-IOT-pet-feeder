@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:clickable="true"
     android:focusable="true"
-    android:padding="12dp"
+    android:padding="1dp"
     tools:layout_height="300dp">
 
     <eightbitlab.com.blurview.BlurView

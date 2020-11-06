@@ -7,7 +7,7 @@ import java.net.ConnectException
 
 fun Throwable.toMessage(context: Context): String {
     return if (this is CompositeException) {
-        this.errors.joinToString("\n") { it.toMessage(context) }
+        this.errors.map { it.toMessage(context) }.distinct().joinToString("\n")
     } else if (isConnectionError()) {
         context.getString(R.string.wrong_connected)
     } else {
