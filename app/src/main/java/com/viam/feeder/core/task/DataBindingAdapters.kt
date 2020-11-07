@@ -19,8 +19,8 @@ import java.util.concurrent.CancellationException
 
 
 @BindingAdapter("taskProgress")
-fun View.taskProgress(promiseTask: LiveTask<*, *>?) {
-    val state = promiseTask?.state()
+fun View.taskProgress(liveTask: LiveTask<*, *>?) {
+    val state = liveTask?.state()
     val isLoading = state?.isLoading() == true
     val showError = state is Resource.Error && state.exception !is CancellationException
     val isVisible = isLoading || showError
@@ -76,7 +76,7 @@ fun View.taskProgress(promiseTask: LiveTask<*, *>?) {
         val closeView = view.findViewById<View>(R.id.close)
 
         view.findViewById<View>(R.id.progress).isVisible = isLoading
-        closeView.isVisible = promiseTask?.isCancelable() == true
+        closeView.isVisible = liveTask?.isCancelable() == true
         retryView.isVisible = state?.isError() == true
         if (state is Resource.Error) {
             errorView.text = state.exception.toMessage(context)
@@ -93,10 +93,10 @@ fun View.taskProgress(promiseTask: LiveTask<*, *>?) {
                 .setHasFixedTransformationMatrix(true)
 
             retryView.setOnClickListener {
-                promiseTask?.retry()
+                liveTask?.retry()
             }
             closeView.setOnClickListener {
-                promiseTask?.cancel()
+                liveTask?.cancel()
             }
         }
 

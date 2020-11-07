@@ -13,7 +13,7 @@ import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-internal typealias Block<P, R> = suspend PromiseTaskScope<P, R>.(params: P?) -> Unit
+internal typealias Block<P, R> = suspend LiveTaskScope<P, R>.(params: P?) -> Unit
 
 class CoroutineLiveTask<P, R>(
     context: CoroutineContext = EmptyCoroutineContext,
@@ -21,7 +21,7 @@ class CoroutineLiveTask<P, R>(
     private val logger: TaskEventLogger = TaskEventLogger,
     private val autoRetryHandler: LiveData<Boolean> = AutoRetryHandler,
 ) : MediatorLiveData<LiveTask<P, R>>(), LiveTask<P, R>,
-    PromiseTaskScope<P, R> {
+    LiveTaskScope<P, R> {
     private var debounceTime: Long = 250
     private var successBlock: ((resource: R?) -> Unit)? = null
     private var runningJob: Job? = null
