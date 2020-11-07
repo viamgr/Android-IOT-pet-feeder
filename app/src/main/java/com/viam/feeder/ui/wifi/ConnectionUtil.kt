@@ -102,7 +102,7 @@ object ConnectionUtil {
         }
     }
 
-    private fun getWifiName(): String {
+    private fun getWifiName(): String? {
         return wifiManager.deviceName()
     }
 
@@ -112,8 +112,8 @@ object ConnectionUtil {
      *
      * Returns blank string if received "SSID <unknown ssid>" which you get when location is turned off
      */
-    private fun WifiManager.deviceName(): String = connectionInfo.ssid.run {
-        if (this.contains("<unknown ssid>")) "UNKNOWN" else this
+    private fun WifiManager.deviceName(): String? = connectionInfo.ssid.run {
+        if (this.contains("<unknown ssid>")) null else this
     }
 
     private fun setStatus(status: Boolean) {

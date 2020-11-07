@@ -13,7 +13,7 @@ import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-internal typealias Block<P, R> = suspend PromiseTaskScope<P, R>.(params: P) -> Unit
+internal typealias Block<P, R> = suspend PromiseTaskScope<P, R>.(params: P?) -> Unit
 
 class CoroutineLiveTask<P, R>(
     context: CoroutineContext = EmptyCoroutineContext,
@@ -27,6 +27,7 @@ class CoroutineLiveTask<P, R>(
     private var runningJob: Job? = null
     private var _state: Resource<R>? = null
     private var params: P? = null
+    private var cancelable: Boolean = true
 
     private var retryAfterActive: Boolean? = null
     private var scope: CoroutineScope
@@ -54,7 +55,7 @@ class CoroutineLiveTask<P, R>(
                     notifyValue()
                 }
             }
-            requestBlock(this@CoroutineLiveTask, params!!)
+            requestBlock(this@CoroutineLiveTask, params)
             notifyValue()
             loadingJob.cancel()
         }
@@ -66,7 +67,8 @@ class CoroutineLiveTask<P, R>(
         if (runningJob?.isCompleted == false) {
             retryAfterActive = true
         }
-        cancel()
+        runningJob?.cancel()
+        runningJob = null
     }
 
     override fun onActive() {
@@ -90,8 +92,12 @@ class CoroutineLiveTask<P, R>(
 
     @MainThread
     override fun cancel() {
+        if (!cancelable) {
+            return
+        }
         runningJob?.cancel()
         runningJob = null
+        _state = null
         notifyValue()
     }
 
@@ -109,7 +115,7 @@ class CoroutineLiveTask<P, R>(
             maybeRun()
     }
 
-    override fun post(params: P) {
+    override fun post(params: P?) {
         this.params = params
         maybeRun()
     }
@@ -140,8 +146,15 @@ class CoroutineLiveTask<P, R>(
 
     override fun postWithCancel(params: P?) {
         cancel()
-        post(params ?: this.params!!)
+        post(params ?: this.params)
     }
+
+    override fun cancelable(cancelable: Boolean) {
+        this.cancelable = cancelable
+    }
+
+    override fun isCancelable() = this.cancelable
+    override fun params(): P? = params
 }
 
 

@@ -7,4 +7,6 @@ interface PromiseTaskScope<P, R> {
     fun onSuccess(block: (resource: R?) -> Unit)
     fun debounce(timeInMillis: Long)
     fun initialParams(params: P)
+    fun cancelable(cancelable: Boolean = true)
+    fun params(): P?
 }

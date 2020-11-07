@@ -6,7 +6,7 @@ import kotlin.random.Random
 
 suspend inline fun <T> randomException(
     delayTime: Int = 5000,
-    possibility: Int = 200,
+    possibility: Int = 40,
     crossinline body: suspend () -> T
 ): T {
     delay(Random.nextInt(0, delayTime).toLong())

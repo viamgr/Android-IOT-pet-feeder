@@ -71,7 +71,7 @@ class WifiFragment : DialogFragment() {
         })
         mainViewModel.connectionStatus.observe(this, {
             if (it.isAvailable) {
-                if (!it.isWifi || it.deviceName == "\"V. M\"")
+                if (!it.isWifi || it.deviceName == null || it.deviceName == "\"V. M\"")
                     dismiss()
             }
         })

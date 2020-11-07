@@ -54,11 +54,12 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     val convertAndUploadSoundRequest: LiveTask<Pair<String, String>, Unit> =
         livaTask { params ->
-            emit(convertAndUploadSoundUseCase(params))
+            emit(convertAndUploadSoundUseCase(params!!))
         }
 
 
     val convertAndUploadSoundRequest2: LiveTask<String, Unit> = livaTask {
+        cancelable(false)
         emit(Resource.Loading)
         delay(500)
         emit(Resource.Success(Unit))
@@ -73,7 +74,9 @@ class SpecificationViewModel @ViewModelInject constructor(
     val compositeTask: LiveTask<Any, Any> = compositeTask(
         convertAndUploadSoundRequest,
         convertAndUploadSoundRequest2
-    )
+    ) {
+        cancelable(false)
+    }
     private val _feedVolumeList = MutableLiveData(
         listOf(
             FeedVolume(1, 0.33f, R.string.little),

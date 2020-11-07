@@ -13,6 +13,7 @@ class CompositeTask(
 ) : LiveTask<Any, Any>, CompositeTaskBuilder, MediatorLiveData<LiveTask<*, *>>() {
     private var onSuccessBlock: ((resource: Any?) -> Unit)? = null
     private var state: Resource<Any>? = null
+    private var cancelable: Boolean = true
 
     init {
         requestBlock?.invoke(this)
@@ -66,7 +67,7 @@ class CompositeTask(
     }
 
     override fun state() = state
-    override fun post(params: Any) {
+    override fun post(params: Any?) {
         requests.map {
             it.retry()
         }
@@ -82,6 +83,12 @@ class CompositeTask(
         cancel()
         retry()
     }
+
+    override fun cancelable(cancelable: Boolean) {
+        this.cancelable = cancelable
+    }
+
+    override fun isCancelable() = cancelable
 }
 
 fun compositeTask(

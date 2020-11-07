@@ -9,7 +9,7 @@ fun <P, R> UseCase<P, R>.toLiveTask(
 ): LiveTask<P, R> {
     return livaTask { params ->
         requestBlock?.invoke(this, params)
-        val resource = this@toLiveTask.invoke(params)
+        val resource = this@toLiveTask.invoke(this.params()!!)
         emit(resource)
     }
 }

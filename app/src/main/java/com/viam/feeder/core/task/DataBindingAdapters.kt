@@ -76,7 +76,7 @@ fun View.taskProgress(promiseTask: LiveTask<*, *>?) {
         val closeView = view.findViewById<View>(R.id.close)
 
         view.findViewById<View>(R.id.progress).isVisible = isLoading
-
+        closeView.isVisible = promiseTask?.isCancelable() == true
         retryView.isVisible = state?.isError() == true
         if (state is Resource.Error) {
             errorView.text = state.exception.toMessage(context)
