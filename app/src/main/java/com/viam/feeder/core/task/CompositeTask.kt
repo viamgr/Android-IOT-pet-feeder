@@ -7,7 +7,7 @@ import com.viam.feeder.core.Resource
 
 internal typealias CompositeBlock = (CompositeTaskBuilder.() -> Unit)?
 
-class CompositeRequest(
+class CompositeTask(
     requestBlock: CompositeBlock,
     private vararg val requests: LiveTask<*, *>
 ) : LiveTask<Any, Any>, CompositeTaskBuilder, MediatorLiveData<LiveTask<*, *>>() {
@@ -66,7 +66,7 @@ class CompositeRequest(
     }
 
     override fun state() = state
-    override fun execute(params: Any) {
+    override fun post(params: Any) {
         requests.map {
             it.retry()
         }
@@ -77,11 +77,16 @@ class CompositeRequest(
     override fun onSuccess(block: (resource: Any?) -> Unit) {
         onSuccessBlock = block
     }
+
+    override fun postWithCancel(params: Any?) {
+        cancel()
+        retry()
+    }
 }
 
 fun compositeTask(
     vararg requests: LiveTask<*, *>,
     requestBlock: CompositeBlock = null
 ): LiveTask<Any, Any> {
-    return CompositeRequest(requestBlock, *requests)
+    return CompositeTask(requestBlock, *requests)
 }

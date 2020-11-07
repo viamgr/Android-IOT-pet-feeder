@@ -45,31 +45,28 @@ class CoroutineLiveTask<P, R>(
 
     @MainThread
     fun maybeRun() {
-        runningJob?.cancel()
         runningJob = scope.launch {
-            try {
-                _state = Resource.Loading
-                val loadingJob = launch {
-                    delay(debounceTime)
-                    if (isActive) {
-                        _state = Resource.Loading
-                        notifyValue()
-                    }
+            _state = Resource.Loading
+            val loadingJob = launch {
+                delay(debounceTime)
+                if (isActive) {
+                    _state = Resource.Loading
+                    notifyValue()
                 }
-                requestBlock(this@CoroutineLiveTask, params!!)
-                notifyValue()
-                loadingJob.cancel()
-
-            } catch (e: Exception) {
             }
-
+            requestBlock(this@CoroutineLiveTask, params!!)
+            notifyValue()
+            loadingJob.cancel()
         }
     }
 
     override fun onInactive() {
         super.onInactive()
         removeSource(autoRetryHandler)
-        cancel(false)
+        if (runningJob?.isCompleted == false) {
+            retryAfterActive = true
+        }
+        cancel()
     }
 
     override fun onActive() {
@@ -93,31 +90,26 @@ class CoroutineLiveTask<P, R>(
 
     @MainThread
     override fun cancel() {
-        cancel(true)
+        runningJob?.cancel()
+        runningJob = null
+        notifyValue()
     }
 
     override suspend fun emit(resource: Resource<R>?) {
-        /*context?.let {
-            withContext(it) {
-                _state = resource
-                notifyValue()
-            }
-        }*/
         _state = if (resource is Resource.Error && resource.exception is CancellationException) {
             null
         } else {
             resource
         }
-
         notifyValue()
     }
 
     override fun retry() {
-        if (params != null && _state is Resource.Error && (_state as Resource.Error).exception !is CancellationException)
+        if (_state is Resource.Error && (_state as Resource.Error).exception !is CancellationException)
             maybeRun()
     }
 
-    override fun execute(params: P) {
+    override fun post(params: P) {
         this.params = params
         maybeRun()
     }
@@ -134,29 +126,21 @@ class CoroutineLiveTask<P, R>(
         logger.newEvent(_state)
     }
 
-    private fun cancel(userCanceled: Boolean) {
-        if (runningJob?.isCompleted == false) {
-            retryAfterActive = true
-        }
-
-        /*if (runningJob?.isActive == true)
-            _state = Resource.Error(CancellationException())
-        else if (userCanceled) {
-            _state = null
-        }
-        notifyValue()
-*/
-        runningJob?.cancel()
-        runningJob = null
-        notifyValue()
-    }
-
     override fun onSuccess(block: (resource: R?) -> Unit) {
         successBlock = block
     }
 
     override fun debounce(timeInMillis: Long) {
         debounceTime = timeInMillis
+    }
+
+    override fun initialParams(params: P) {
+        this.params = params
+    }
+
+    override fun postWithCancel(params: P?) {
+        cancel()
+        post(params ?: this.params!!)
     }
 }
 

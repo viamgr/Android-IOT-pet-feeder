@@ -136,12 +136,12 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     fun onRecordFile(input: String, output: String) {
-        convertAndUploadSoundRequest.execute(Pair(input, output))
+        convertAndUploadSoundRequest.post(Pair(input, output))
 //        convertAndUploadSoundRequest2.execute("Test")
     }
 
     init {
-        convertAndUploadSoundRequest2.execute("asdasd")
+        convertAndUploadSoundRequest2.post("asdasd")
 
     }
 }

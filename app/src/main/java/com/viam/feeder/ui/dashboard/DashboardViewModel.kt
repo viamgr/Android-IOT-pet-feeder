@@ -12,6 +12,6 @@ class DashboardViewModel @ViewModelInject constructor(sendEvent: SendEvent) :
 
     val sendRequestEvent = sendEvent.toLiveTask()
     fun sendTriggerEvent() {
-        sendRequestEvent.execute(KeyValue(EVENT_TRIGGER))
+        sendRequestEvent.post(KeyValue(EVENT_TRIGGER))
     }
 }

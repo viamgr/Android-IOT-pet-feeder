@@ -4,7 +4,8 @@ import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
 
 interface LiveTask<P, R> {
-    fun execute(params: P)
+    fun post(params: P)
+    fun postWithCancel(params: P? = null)
     fun state(): Resource<R>?
     fun asLiveData(): MediatorLiveData<LiveTask<P, R>>
     fun cancel()

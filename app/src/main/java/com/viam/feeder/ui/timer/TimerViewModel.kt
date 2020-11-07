@@ -33,29 +33,29 @@ class TimerViewModel @ViewModelInject constructor(
             controller.setData(it)
         }
     }.also {
-        it.execute(Unit)
+        it.post(Unit)
     }
 
     private val addTimerTask = addTimer.toLiveTask {
         onSuccess {
-            getTimerListTask.execute(Unit)
+            getTimerListTask.post(Unit)
         }
     }
 
     private val deleteTimerTask = deleteTimer.toLiveTask {
         onSuccess {
-            getTimerListTask.execute(Unit)
+            getTimerListTask.post(Unit)
         }
     }
 
     private val sendEventTask = sendEvent.toLiveTask {
+        initialParams(KeyValue(SETTING_INTERVAL))
         debounce(1000)
     }
 
     init {
         sendEventTask.asLiveData().addSource(_currentValue) {
-//            sendEventTask.cancel()
-            sendEventTask.execute(KeyValue(SETTING_INTERVAL))
+            sendEventTask.postWithCancel()
         }
     }
 
@@ -77,7 +77,7 @@ class TimerViewModel @ViewModelInject constructor(
         }
 
     private fun removeTimer(timer: ClockTimer) {
-        deleteTimerTask.execute(timer)
+        deleteTimerTask.post(timer)
     }
 
     fun onClickAddClock() {
@@ -85,7 +85,7 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     fun onTimeSet(newHour: Int, newMinute: Int) {
-        addTimerTask.execute(ClockTimer(hour = newHour, minute = newMinute))
+        addTimerTask.post(ClockTimer(hour = newHour, minute = newMinute))
     }
 
 
