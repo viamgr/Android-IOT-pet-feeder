@@ -16,7 +16,7 @@ import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.interfaces.OnItemClickListener
 import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.utility.dexter.checkPermission
+import com.viam.feeder.core.utility.dexter.checkPermissionsResult
 import com.viam.feeder.databinding.FragmentSpecificationBinding
 import com.viam.feeder.feedVolume
 import com.viam.feeder.ui.record.RecordFragment.Companion.PATH
@@ -32,7 +32,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
 
     private val viewModel: SpecificationViewModel by viewModels()
     val output = lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
-
+    val permissionResult = checkPermissionsResult()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -41,7 +41,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         }
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
-            requireView().checkPermission(Manifest.permission.RECORD_AUDIO) {
+            permissionResult.request(Manifest.permission.CALL_COMPANION_APP) {
                 findNavController().navigate(R.id.record_fragment)
             }
         })
@@ -148,7 +148,15 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         }
 
     private fun openChooseIntent() {
-        getContent.launch("audio/mpeg")
+        permissionResult.request(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            requiredPermissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+        ) {
+            getContent.launch("audio/mpeg")
+        }
     }
+
 
 }

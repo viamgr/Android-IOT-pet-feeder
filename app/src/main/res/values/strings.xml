@@ -56,5 +56,10 @@
     <string name="time_to_start">Time To Start: %s</string>
     <string name="error_happened">An Error Happened</string>
     <string name="permission_denied_message">Permission %s is required</string>
-    <string name="write_external_storage">WRITE_EXTERNAL_STORAGE</string>
+    <string name="write_external_storage">write_external_storage</string>
+    <string name="read_external_storage">read_external_storage</string>
+    <string name="access_fine_location">access_fine_location</string>
+    <string name="any_denied_multiple_permissions">any_denied_multiple_permissions</string>
+    <string name="permisssion_required">*</string>
+    <string name="permission_setting_required">Manually Set Permission</string>
 </resources>

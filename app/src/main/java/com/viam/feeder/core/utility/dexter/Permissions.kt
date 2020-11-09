@@ -1,18 +1,38 @@
 package com.viam.feeder.core.utility.dexter
 
 import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringDef
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.listener.PermissionGrantedResponse
-import com.karumi.dexter.listener.single.BasePermissionListener
-import com.karumi.dexter.listener.single.CompositePermissionListener
-import com.karumi.dexter.listener.single.SnackbarOnDeniedPermissionListener
+import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.view.isVisible
+import androidx.core.view.postDelayed
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.viam.feeder.R
 
-val permissions = mapOf(
-    Manifest.permission.RECORD_AUDIO to R.string.record_audio,
-    Manifest.permission.WRITE_EXTERNAL_STORAGE to R.string.write_external_storage,
+
+val appPermissionList = mapOf(
+    Manifest.permission.RECORD_AUDIO to Pair(R.string.record_audio, R.string.record_audio),
+    Manifest.permission.WRITE_EXTERNAL_STORAGE to Pair(
+        R.string.record_audio,
+        R.string.record_audio
+    ),
+    Manifest.permission.READ_EXTERNAL_STORAGE to Pair(
+        R.string.read_external_storage,
+        R.string.read_external_storage
+    ),
+    Manifest.permission.ACCESS_FINE_LOCATION to Pair(
+        R.string.access_fine_location,
+        R.string.access_fine_location
+    ),
 )
 
 @Retention(AnnotationRetention.SOURCE)
@@ -22,32 +42,148 @@ val permissions = mapOf(
 )
 annotation class PermissionConstant
 
-fun View.checkPermission(
-    @PermissionConstant permission: String,
-    callback: () -> Unit
-) {
-    Dexter.withContext(context)
-        .withPermission(permission)
-        .withListener(
-            CompositePermissionListener(
-                object : BasePermissionListener() {
-                    override fun onPermissionGranted(p0: PermissionGrantedResponse?) {
-                        callback()
+interface PermissionRequester {
+    fun request(
+        @PermissionConstant vararg permissions: String,
+        requiredPermissions: Array<out String>? = permissions,
+        callback: () -> Unit
+    )
+}
+
+fun Fragment.checkPermissionsResult(): PermissionRequester {
+    var requestedPermissions: Array<out String>? = null
+    var requestedRequiredPermissions: Array<out String>? = null
+    var requestedCallback: (() -> Unit)? = null
+    fun getDeniedPermissions(permissions: List<String>): List<String> {
+        return permissions.filter {
+            checkSelfPermission(
+                requireContext(),
+                it
+            ) == PackageManager.PERMISSION_DENIED
+        }
+    }
+
+    fun registerListener() {
+        val value = object : FragmentManager.FragmentLifecycleCallbacks() {
+            override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
+                super.onFragmentResumed(fm, f)
+                val permissions = requestedPermissions!!.filter {
+                    requestedRequiredPermissions?.contains(it) == true
+                }
+                if (getDeniedPermissions(permissions).isNullOrEmpty()) {
+                    requireView().postDelayed(300L) {
+                        view?.let {
+                            requestedCallback?.invoke()
+                        }
                     }
-                },
-                SnackbarOnDeniedPermissionListener.Builder
-                    .with(
-                        this,
-                        context.getString(
-                            R.string.permission_denied_message,
-                            context.getString(
-                                permissions[permission] ?: error("Unknown permission")
-                            )
-                        )
-                    )
-                    .withOpenSettingsButton(context.getString(R.string.settings))
-                    .withDuration(Int.MAX_VALUE).build()
+                }
+                parentFragmentManager.unregisterFragmentLifecycleCallbacks(this)
+            }
+        }
+        parentFragmentManager.registerFragmentLifecycleCallbacks(value, false)
+    }
+
+    fun showSettingSnackBar() {
+        Snackbar.make(requireView(), R.string.permission_setting_required, Snackbar.LENGTH_LONG)
+            .setAction("Settings") {
+                registerListener()
+                val intent = Intent(
+                    "android.settings.APPLICATION_DETAILS_SETTINGS",
+                    Uri.parse("package:" + requireContext().packageName)
+                )
+                intent.addCategory("android.intent.category.DEFAULT")
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+            }
+            .show()
+    }
+
+
+    val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { grantResults ->
+            if (!grantResults
+                    .filter { requestedRequiredPermissions?.contains(it.key) == true }
+                    .any { it.value == false }
+            ) {
+                requestedCallback?.invoke()
+            } else {
+                showSettingSnackBar()
+            }
+        }
+
+    fun requestPermissions() {
+        requestPermissionLauncher.launch(requestedPermissions)
+    }
+
+
+    fun showRationalDialog(
+        requestedPermissions: List<String>,
+        requestedRequiredPermissions: Array<out String>? = null
+    ) {
+
+        val parentLayout =
+            View.inflate(requireContext(), R.layout.layout_permission_wrapper, null) as ViewGroup
+
+        requestedPermissions.forEach {
+            val view = View.inflate(
+                requireContext(),
+                R.layout.layout_permission_item, null
             )
-        )
-        .check()
+            val permission = appPermissionList[it] ?: error("Invalid Permission ")
+            view.findViewById<TextView>(R.id.label).text =
+                requireContext().getString(permission.first)
+            view.findViewById<TextView>(R.id.description).text =
+                requireContext().getString(permission.second)
+            view.findViewById<View>(R.id.required).isVisible =
+                requestedRequiredPermissions?.contains(it) == true
+            parentLayout.findViewById<ViewGroup>(R.id.wrapper).addView(view)
+        }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setView(parentLayout)
+            .setPositiveButton("Continue") { _, _ ->
+                requestPermissions()
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+
+                val permissions = requestedPermissions.filter {
+                    requestedRequiredPermissions?.contains(it) == true
+                }
+                if (permissions.isNullOrEmpty()) {
+                    requestedCallback?.invoke()
+                } else {
+                    showSettingSnackBar()
+                }
+
+            }
+            .show()
+    }
+
+    return object : PermissionRequester {
+        override fun request(
+            vararg permissions: String,
+            requiredPermissions: Array<out String>?,
+            callback: () -> Unit
+        ) {
+            requestedPermissions = permissions
+            requestedCallback = callback
+            requestedRequiredPermissions = requiredPermissions
+            val shouldShowRequestPermissionRationale = true
+            val deniedPermissions = getDeniedPermissions(permissions.toList())
+
+            when {
+                deniedPermissions.isEmpty() -> {
+                    callback()
+                }
+                shouldShowRequestPermissionRationale -> {
+                    showRationalDialog(deniedPermissions, requestedRequiredPermissions)
+                }
+                else -> {
+                    requestPermissions()
+                }
+            }
+        }
+    }
 }
