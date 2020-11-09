@@ -85,7 +85,7 @@ class RecordViewModel @ViewModelInject constructor() : ViewModel() {
         }
     }
 
-    fun onPermissionGranted() {
+    init {
         viewModelScope.launch {
             STARTING.timerAsync {
                 if (it == STARTING) {

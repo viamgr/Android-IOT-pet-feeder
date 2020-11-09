@@ -19,6 +19,6 @@
     <item
         android:id="@+id/fragment_setting"
         android:icon="@drawable/ic_baseline_settings_24"
-        android:title="@string/setting"
+        android:title="@string/settings"
         app:showAsAction="never" />
 </menu>

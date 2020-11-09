@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 @ActivityScoped
 class TimerRepository @Inject constructor(private val timerDataSource: TimerDataSource) {
-    suspend fun getList(): List<ClockTimer> = timerDataSource.getList()
+    suspend fun getList() = timerDataSource.getList()
 
     suspend fun add(clockTimer: ClockTimer) = timerDataSource.add(clockTimer)
 

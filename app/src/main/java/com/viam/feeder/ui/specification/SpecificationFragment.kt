@@ -1,5 +1,6 @@
 package com.viam.feeder.ui.specification
 
+import android.Manifest
 import android.app.RecoverableSecurityException
 import android.net.Uri
 import android.os.Build
@@ -15,6 +16,7 @@ import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.interfaces.OnItemClickListener
 import com.viam.feeder.core.livedata.EventObserver
+import com.viam.feeder.core.utility.dexter.checkPermission
 import com.viam.feeder.databinding.FragmentSpecificationBinding
 import com.viam.feeder.feedVolume
 import com.viam.feeder.ui.record.RecordFragment.Companion.PATH
@@ -39,7 +41,9 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         }
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
-            findNavController().navigate(R.id.record_fragment)
+            requireView().checkPermission(Manifest.permission.RECORD_AUDIO) {
+                findNavController().navigate(R.id.record_fragment)
+            }
         })
         viewModel.chooseIntentSound.observe(viewLifecycleOwner, EventObserver {
             openChooseIntent()

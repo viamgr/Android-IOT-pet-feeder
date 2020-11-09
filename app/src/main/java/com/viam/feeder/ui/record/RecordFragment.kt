@@ -1,6 +1,5 @@
 package com.viam.feeder.ui.record
 
-import android.Manifest
 import android.content.DialogInterface
 import android.media.MediaPlayer
 import android.media.MediaRecorder
@@ -15,15 +14,6 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.snackbar.Snackbar
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionDeniedResponse
-import com.karumi.dexter.listener.PermissionGrantedResponse
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.single.CompositePermissionListener
-import com.karumi.dexter.listener.single.PermissionListener
-import com.karumi.dexter.listener.single.SnackbarOnDeniedPermissionListener
 import com.viam.feeder.BR
 import com.viam.feeder.R
 import com.viam.feeder.core.livedata.EventObserver
@@ -71,8 +61,6 @@ class RecordFragment : BottomSheetDialogFragment() {
                 binding = it
             }
 
-        checkPermissions()
-
         viewModel.startRecord.observe(viewLifecycleOwner, EventObserver {
             startRecord()
         })
@@ -112,58 +100,6 @@ class RecordFragment : BottomSheetDialogFragment() {
             recorder = null
         } catch (e: Exception) {
         }
-    }
-
-    private fun checkPermissions() {
-        Dexter.withContext(requireContext())
-            .withPermission(Manifest.permission.RECORD_AUDIO)
-            .withListener(
-                CompositePermissionListener(
-                    object : PermissionListener {
-                        override fun onPermissionGranted(p0: PermissionGrantedResponse?) {
-                            viewModel.onPermissionGranted()
-                        }
-
-                        override fun onPermissionDenied(p0: PermissionDeniedResponse?) {}
-                        override fun onPermissionRationaleShouldBeShown(
-                            p0: PermissionRequest?,
-                            p1: PermissionToken?
-                        ) {
-
-                        }
-                    },
-                    SnackbarOnDeniedPermissionListener.Builder
-                        .with(
-                            dialog?.window?.decorView,
-                            "Camera access is needed to take pictures of your dog"
-                        )
-                        .withOpenSettingsButton("Settings")
-                        .withDuration(Int.MAX_VALUE)
-                        .withCallback(object : Snackbar.Callback() {
-                            override fun onShown(snackbar: Snackbar) {
-                                // Event handler for when the given Snackbar is visible
-                            }
-
-                            override fun onDismissed(snackbar: Snackbar, event: Int) {
-                                // Event handler for when the given Snackbar has been dismissed
-                            }
-                        }).build()
-                )
-            )
-            .check()
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        createPermissionListeners()
-    }
-
-    private fun createPermissionListeners() {
-
-//        allPermissionsListener =
-
-//        checkPermissions()
     }
 
     private fun stopPlaying() {

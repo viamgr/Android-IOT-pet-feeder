@@ -38,6 +38,6 @@
     <fragment
         android:id="@+id/fragment_setting"
         android:name="com.viam.feeder.ui.setting.SettingFragment"
-        android:label="@string/setting"
+        android:label="@string/settings"
         tools:layout="@layout/fragment_dashboard" />
 </navigation>

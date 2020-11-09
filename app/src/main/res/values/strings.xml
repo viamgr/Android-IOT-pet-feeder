@@ -24,7 +24,7 @@
     <string name="turn_on_motor">Turn On Motor</string>
     <string name="turn_off_motor">Turn Off Motor</string>
     <string name="timer">Timer</string>
-    <string name="setting">Setting</string>
+    <string name="settings">Settings</string>
     <string name="little">Little</string>
     <string name="feeding_sound">Feeding Sound</string>
     <string name="choose">Choose</string>
@@ -48,10 +48,13 @@
     <string name="cancel">Cancel</string>
     <string name="input_wrong">Enter a valid %s</string>
     <string name="record_sound">Record Sound</string>
+    <string name="record_audio">record_audio</string>
     <string name="loading">Loading …</string>
     <string name="all_permissions_denied_feedback">all_permissions_denied_feedback</string>
     <string name="permission_rationale_settings_button_text">permission_rationale_settings_button_text</string>
     <string name="apply">Apply</string>
     <string name="time_to_start">Time To Start: %s</string>
     <string name="error_happened">An Error Happened</string>
+    <string name="permission_denied_message">Permission %s is required</string>
+    <string name="write_external_storage">WRITE_EXTERNAL_STORAGE</string>
 </resources>
