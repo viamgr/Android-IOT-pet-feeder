@@ -5,19 +5,21 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
+import android.net.*
+import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
 import com.viam.feeder.core.utility.dexter.permissionContract
 
+
 class ConnectionUtil<T>(
     context: T,
+    private val preferredWifiNetWorkSsid: String?,
+    private val preferredWifiNetWorkPassword: String?,
 ) : LifecycleObserver where T : Context, T : LifecycleOwner {
 
     private val activity = context as AppCompatActivity
@@ -64,11 +66,18 @@ class ConnectionUtil<T>(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     fun onCreate() {
-        permissionResult.request(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            requiredPermissions = emptyArray()
-        ) {
+        if (!preferredWifiNetWorkSsid.isNullOrEmpty()) {
+            permissionResult.request(
+                Manifest.permission.CHANGE_NETWORK_STATE,
+                Manifest.permission.CHANGE_WIFI_STATE,
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                requiredPermissions = null
+            ) {
+                startListen()
+            }
+        } else {
             startListen()
         }
     }
@@ -113,7 +122,7 @@ class ConnectionUtil<T>(
         } else {
             null
         }
-        liveData.postValue(
+        aConnectionState.postValue(
             NetworkStatus(
                 deviceName = deviceName,
                 isAvailable = status,
@@ -122,6 +131,7 @@ class ConnectionUtil<T>(
         )
     }
 
+    @Suppress("DEPRECATION")
     private fun startListen() {
         listening = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -136,17 +146,97 @@ class ConnectionUtil<T>(
             )
 
         } else {
-            @Suppress("DEPRECATION")
             activity.registerReceiver(
                 wifiBroadcastReceiver,
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
         }
+
+        preferredWifiNetWorkSsid?.let {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                connectToPreferredWifiNewVersions()
+            } else {
+                connectToPreferredWifiOldVersions()
+            }
+
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun connectToPreferredWifiNewVersions() {
+        val specifier = WifiNetworkSpecifier.Builder()
+            .setSsid(preferredWifiNetWorkSsid!!)
+            .setWpa2Passphrase(preferredWifiNetWorkPassword!!)
+            .build()
+
+        val request = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .setNetworkSpecifier(specifier)
+            .build()
+
+        val connectivityManager =
+            activity.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val networkCallback = object : ConnectivityManager.NetworkCallback() {
+
+            override fun onAvailable(network: Network?) {
+                connectivityManager.requestNetwork(request, networkCallback)
+            }
+
+            override fun onLosing(network: Network, maxMsToLive: Int) {
+                super.onLosing(network, maxMsToLive)
+            }
+
+            override fun onLost(network: Network) {
+                super.onLost(network)
+            }
+
+            override fun onCapabilitiesChanged(
+                network: Network,
+                networkCapabilities: NetworkCapabilities
+            ) {
+                super.onCapabilitiesChanged(network, networkCapabilities)
+            }
+
+            override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+                super.onLinkPropertiesChanged(network, linkProperties)
+            }
+
+            override fun onBlockedStatusChanged(network: Network, blocked: Boolean) {
+                super.onBlockedStatusChanged(network, blocked)
+            }
+
+            override fun onUnavailable() {
+                connectivityManager.requestNetwork(request, networkCallback)
+            }
+        }
+        connectivityManager.requestNetwork(request, networkCallback)
+
+
+    }
+
+    @Suppress("DEPRECATION")
+    private fun connectToPreferredWifiOldVersions() {
+        val conf = WifiConfiguration()
+        conf.SSID = "\"" + preferredWifiNetWorkSsid + "\""
+        conf.wepKeys[0] = "\"" + preferredWifiNetWorkPassword + "\""
+        conf.wepTxKeyIndex = 0
+        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+        conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40)
+        conf.preSharedKey = "\"" + preferredWifiNetWorkPassword + "\""
+        val wifiManager =
+            activity.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val networkId = wifiManager.addNetwork(conf)
+        val wifiInfo = wifiManager.connectionInfo
+        wifiManager.disableNetwork(wifiInfo.networkId)
+        wifiManager.enableNetwork(networkId, true)
     }
 
     companion object {
-        private val liveData = MutableLiveData<NetworkStatus>()
-        val connectionState: LiveData<NetworkStatus> = liveData
+        private val aConnectionState = MutableLiveData<NetworkStatus>()
+        val connectionState: LiveData<NetworkStatus> = aConnectionState
     }
 
     init {
@@ -154,6 +244,9 @@ class ConnectionUtil<T>(
     }
 }
 
-fun AppCompatActivity.startConnectionListener() {
-    ConnectionUtil(this)
+fun AppCompatActivity.startConnectionListener(
+    preferredWifiNetWorkSsid: String? = null,
+    preferredWifiNetWorkPassword: String? = null
+) {
+    val connection = ConnectionUtil(this, preferredWifiNetWorkSsid, preferredWifiNetWorkPassword)
 }

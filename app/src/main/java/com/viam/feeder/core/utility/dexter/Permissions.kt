@@ -44,6 +44,18 @@ val appPermissionList = mapOf(
         R.string.access_coarse_location,
         R.string.access_coarse_location
     ),
+    Manifest.permission.CHANGE_WIFI_STATE to Pair(
+        R.string.change_wifi_state,
+        R.string.change_wifi_state
+    ),
+    Manifest.permission.ACCESS_WIFI_STATE to Pair(
+        R.string.access_wifi_state,
+        R.string.access_wifi_state
+    ),
+    Manifest.permission.CHANGE_NETWORK_STATE to Pair(
+        R.string.change_network_state,
+        R.string.change_network_state
+    ),
 )
 
 @Retention(AnnotationRetention.SOURCE)
@@ -82,6 +94,7 @@ class PermissionContract<T>(
     private var requestedCallback: (() -> Unit)? = null
     private var requestedPermissions: Array<out String>? = null
     private var requestedRequiredPermissions: Array<out String>? = null
+    private var deniedPermissions: List<String>? = null
     override fun request(
         vararg permissions: String,
         requiredPermissions: Array<out String>?,
@@ -96,14 +109,14 @@ class PermissionContract<T>(
         requestedRequiredPermissions = requiredPermissions
         // TODO: 11/11/2020 get it from host
         val shouldShowRequestPermissionRationale = true
-        val deniedPermissions = getDeniedPermissions(permissions.toList())
+        deniedPermissions = getDeniedPermissions()
 
         when {
-            deniedPermissions.isEmpty() -> {
+            deniedPermissions.isNullOrEmpty() -> {
                 requestedCallback?.invoke()
             }
             shouldShowRequestPermissionRationale -> {
-                showRationalDialog(deniedPermissions, requestedRequiredPermissions)
+                showRationalDialog(deniedPermissions!!)
             }
             else -> {
                 requestPermissions()
@@ -115,10 +128,7 @@ class PermissionContract<T>(
     fun onResume() {
         if (listenerEnabled) {
             listenerEnabled = false
-            val permissions = requestedPermissions!!.filter {
-                requestedRequiredPermissions?.contains(it) == true
-            }
-            if (getDeniedPermissions(permissions).isNullOrEmpty()) {
+            if (deniedPermissions.isNullOrEmpty()) {
                 getView()?.postDelayed(300L) {
                     getView()?.let {
                         requestedCallback?.invoke()
@@ -129,8 +139,8 @@ class PermissionContract<T>(
 
     }
 
-    private fun getDeniedPermissions(permissions: List<String>): List<String> {
-        return permissions.filter {
+    private fun getDeniedPermissions(): List<String>? {
+        return requestedPermissions?.filter {
             checkSelfPermission(
                 requireContext(),
                 it
@@ -148,17 +158,14 @@ class PermissionContract<T>(
     }
 
     private fun requestPermissions() {
-        requestPermissionLauncher.launch(requestedPermissions)
+        requestPermissionLauncher.launch(deniedPermissions!!.toTypedArray())
     }
 
     private fun requireContext(): Context {
         return if (isFragment()) (fragmentActivity as Fragment).requireContext() else fragmentActivity as Context
     }
 
-    private fun showRationalDialog(
-        requestedPermissions: List<String>,
-        requestedRequiredPermissions: Array<out String>? = null
-    ) {
+    private fun showRationalDialog(requestedPermissions: List<String>) {
 
         val parentLayout =
             View.inflate(requireContext(), R.layout.layout_permission_wrapper, null) as ViewGroup

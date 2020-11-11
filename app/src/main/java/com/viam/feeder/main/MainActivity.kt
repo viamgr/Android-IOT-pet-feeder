@@ -36,7 +36,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         setupViews()
-        startConnectionListener()
+        startConnectionListener(
+            preferredWifiNetWorkSsid = "V. M",
+            preferredWifiNetWorkPassword = "6037991302"
+        )
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {

@@ -47,7 +47,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         }
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
-            permissionResult.request(Manifest.permission.CALL_COMPANION_APP) {
+            permissionResult.request(Manifest.permission.RECORD_AUDIO) {
                 findNavController().navigate(R.id.record_fragment)
             }
         })

@@ -64,4 +64,7 @@
     <string name="permisssion_required">*</string>
     <string name="permission_setting_required">Manually Set Permission</string>
     <string name="access_coarse_location">access_coarse_location</string>
+    <string name="access_wifi_state">access_wifi_state</string>
+    <string name="change_network_state">change_network_state</string>
+    <string name="change_wifi_state">change_wifi_state</string>
 </resources>
