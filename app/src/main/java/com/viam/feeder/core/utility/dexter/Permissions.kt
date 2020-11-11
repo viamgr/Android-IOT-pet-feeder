@@ -1,19 +1,26 @@
 package com.viam.feeder.core.utility.dexter
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringDef
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.checkSelfPermission
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.viam.feeder.R
@@ -33,6 +40,10 @@ val appPermissionList = mapOf(
         R.string.access_fine_location,
         R.string.access_fine_location
     ),
+    Manifest.permission.ACCESS_COARSE_LOCATION to Pair(
+        R.string.access_coarse_location,
+        R.string.access_coarse_location
+    ),
 )
 
 @Retention(AnnotationRetention.SOURCE)
@@ -50,11 +61,54 @@ interface PermissionRequester {
     )
 }
 
-fun Fragment.checkPermissionsResult(): PermissionRequester {
-    var requestedPermissions: Array<out String>? = null
-    var requestedRequiredPermissions: Array<out String>? = null
-    var requestedCallback: (() -> Unit)? = null
-    fun getDeniedPermissions(permissions: List<String>): List<String> {
+
+class PermissionContract<T>(
+    private val context: T,
+) : PermissionRequester, LifecycleObserver where T : LifecycleOwner {
+
+    private var requestedPermissions: Array<out String>? = null
+    private var requestedRequiredPermissions: Array<out String>? = null
+    private var requestedCallback: (() -> Unit)? = null
+    private var listenerEnabled = false
+
+    init {
+        (requireContext() as LifecycleOwner).lifecycle.addObserver(this)
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    fun onResume() {
+        if (listenerEnabled) {
+            listenerEnabled = false
+            val permissions = requestedPermissions!!.filter {
+                requestedRequiredPermissions?.contains(it) == true
+            }
+            if (getDeniedPermissions(permissions).isNullOrEmpty()) {
+                getView()?.postDelayed(300L) {
+                    getView()?.let {
+                        requestedCallback?.invoke()
+                    }
+                }
+            }
+        }
+
+    }
+
+    private fun isFragment() = context is Fragment
+
+    private fun getView(): View? {
+        return if (isFragment()) (context as Fragment).view else (context as Activity).window.decorView.rootView
+    }
+
+    private fun requireContext(): Context {
+        return if (isFragment()) (context as Fragment).requireContext() else context as Context
+    }
+
+    private fun requireActivity(): ComponentActivity {
+        return if (isFragment()) (context as Fragment).requireActivity() else context as ComponentActivity
+    }
+
+
+    private fun getDeniedPermissions(permissions: List<String>): List<String> {
         return permissions.filter {
             checkSelfPermission(
                 requireContext(),
@@ -63,62 +117,47 @@ fun Fragment.checkPermissionsResult(): PermissionRequester {
         }
     }
 
-    fun registerListener() {
-        val value = object : FragmentManager.FragmentLifecycleCallbacks() {
-            override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
-                super.onFragmentResumed(fm, f)
-                val permissions = requestedPermissions!!.filter {
-                    requestedRequiredPermissions?.contains(it) == true
-                }
-                if (getDeniedPermissions(permissions).isNullOrEmpty()) {
-                    requireView().postDelayed(300L) {
-                        view?.let {
-                            requestedCallback?.invoke()
-                        }
-                    }
-                }
-                parentFragmentManager.unregisterFragmentLifecycleCallbacks(this)
-            }
-        }
-        parentFragmentManager.registerFragmentLifecycleCallbacks(value, false)
+    private fun registerListener() {
+        listenerEnabled = true
     }
 
-    fun showSettingSnackBar() {
-        Snackbar.make(requireView(), R.string.permission_setting_required, Snackbar.LENGTH_LONG)
-            .setAction("Settings") {
-                registerListener()
-                val intent = Intent(
-                    "android.settings.APPLICATION_DETAILS_SETTINGS",
-                    Uri.parse("package:" + requireContext().packageName)
-                )
-                intent.addCategory("android.intent.category.DEFAULT")
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-            }
-            .show()
+    private fun showSettingSnackBar() {
+        getView()?.let {
+            Snackbar.make(it, R.string.permission_setting_required, Snackbar.LENGTH_LONG)
+                .setAction("Settings") {
+                    registerListener()
+                    val intent = Intent(
+                        "android.settings.APPLICATION_DETAILS_SETTINGS",
+                        Uri.parse("package:" + requireContext().packageName)
+                    )
+                    intent.addCategory("android.intent.category.DEFAULT")
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    requireContext().startActivity(intent)
+                }
+                .show()
+        }
+    }
+
+    private val requestPermissionLauncher = requireActivity().registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grantResults ->
+        if (!grantResults
+                .filter { requestedRequiredPermissions?.contains(it.key) == true }
+                .any { it.value == false }
+        ) {
+            requestedCallback?.invoke()
+        } else {
+            showSettingSnackBar()
+        }
     }
 
 
-    val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
-        ) { grantResults ->
-            if (!grantResults
-                    .filter { requestedRequiredPermissions?.contains(it.key) == true }
-                    .any { it.value == false }
-            ) {
-                requestedCallback?.invoke()
-            } else {
-                showSettingSnackBar()
-            }
-        }
-
-    fun requestPermissions() {
+    private fun requestPermissions() {
         requestPermissionLauncher.launch(requestedPermissions)
     }
 
 
-    fun showRationalDialog(
+    private fun showRationalDialog(
         requestedPermissions: List<String>,
         requestedRequiredPermissions: Array<out String>? = null
     ) {
@@ -161,30 +200,38 @@ fun Fragment.checkPermissionsResult(): PermissionRequester {
             .show()
     }
 
-    return object : PermissionRequester {
-        override fun request(
-            vararg permissions: String,
-            requiredPermissions: Array<out String>?,
-            callback: () -> Unit
-        ) {
-            requestedPermissions = permissions
-            requestedCallback = callback
-            requestedRequiredPermissions = requiredPermissions
-            // TODO: 11/11/2020 get it from host
-            val shouldShowRequestPermissionRationale = true
-            val deniedPermissions = getDeniedPermissions(permissions.toList())
+    override fun request(
+        vararg permissions: String,
+        requiredPermissions: Array<out String>?,
+        callback: () -> Unit
+    ) {
+        requestedPermissions = permissions
+        requestedCallback = callback
+        requestedRequiredPermissions = requiredPermissions
+        // TODO: 11/11/2020 get it from host
+        val shouldShowRequestPermissionRationale = true
+        val deniedPermissions = getDeniedPermissions(permissions.toList())
 
-            when {
-                deniedPermissions.isEmpty() -> {
-                    callback()
-                }
-                shouldShowRequestPermissionRationale -> {
-                    showRationalDialog(deniedPermissions, requestedRequiredPermissions)
-                }
-                else -> {
-                    requestPermissions()
-                }
+        when {
+            deniedPermissions.isEmpty() -> {
+                callback()
+            }
+            shouldShowRequestPermissionRationale -> {
+                showRationalDialog(deniedPermissions, requestedRequiredPermissions)
+            }
+            else -> {
+                requestPermissions()
             }
         }
     }
+
+}
+
+
+fun Fragment.permissionContract(): PermissionContract<Fragment> {
+    return PermissionContract(this)
+}
+
+fun AppCompatActivity.permissionContract(): PermissionContract<AppCompatActivity> {
+    return PermissionContract(this)
 }

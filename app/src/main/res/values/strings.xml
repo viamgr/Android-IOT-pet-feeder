@@ -63,4 +63,5 @@
     <string name="any_denied_multiple_permissions">any_denied_multiple_permissions</string>
     <string name="permisssion_required">*</string>
     <string name="permission_setting_required">Manually Set Permission</string>
+    <string name="access_coarse_location">access_coarse_location</string>
 </resources>

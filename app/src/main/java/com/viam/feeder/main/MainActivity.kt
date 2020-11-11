@@ -1,5 +1,6 @@
 package com.viam.feeder.main
 
+import android.Manifest
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
@@ -18,6 +19,7 @@ import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
+import com.viam.feeder.core.utility.dexter.permissionContract
 import com.viam.feeder.ui.wifi.ConnectionUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     private lateinit var navController: NavController
+    val permissionResult = permissionContract()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +57,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        ConnectionUtil.withActivity(this).startListen()
+        permissionResult.request(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            requiredPermissions = emptyArray()
+        ) {
+            ConnectionUtil.withActivity(this).startListen()
+        }
     }
 
     override fun onStop() {
