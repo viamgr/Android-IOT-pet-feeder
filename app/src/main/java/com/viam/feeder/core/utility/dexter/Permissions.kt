@@ -9,7 +9,7 @@ import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringDef
 import androidx.appcompat.app.AppCompatActivity
@@ -63,23 +63,22 @@ interface PermissionRequester {
 
 
 class PermissionContract<T>(
-    private val context: T,
+    private val fragmentActivity: T,
 ) : PermissionRequester, LifecycleObserver where T : LifecycleOwner {
 
     var isRequesting = false
     private var listenerEnabled = false
-    private val requestPermissionLauncher = requireActivity().registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { grantResults ->
+    private val onActivityResult: (result: MutableMap<String, Boolean>) -> Unit = { grantResults ->
         if (!grantResults
                 .filter { requestedRequiredPermissions?.contains(it.key) == true }
-                .any { it.value == false }
+                .any { !it.value }
         ) {
             requestedCallback?.invoke()
         } else {
             showSettingSnackBar()
         }
     }
+    private var requestPermissionLauncher: ActivityResultLauncher<Array<out String>>
     private var requestedCallback: (() -> Unit)? = null
     private var requestedPermissions: Array<out String>? = null
     private var requestedRequiredPermissions: Array<out String>? = null
@@ -140,10 +139,10 @@ class PermissionContract<T>(
     }
 
     private fun getView(): View? {
-        return if (isFragment()) (context as Fragment).view else (context as Activity).window.decorView.rootView
+        return if (isFragment()) (fragmentActivity as Fragment).view else (fragmentActivity as Activity).window.decorView.rootView
     }
 
-    private fun isFragment() = context is Fragment
+    private fun isFragment() = fragmentActivity is Fragment
     private fun registerListener() {
         listenerEnabled = true
     }
@@ -152,12 +151,8 @@ class PermissionContract<T>(
         requestPermissionLauncher.launch(requestedPermissions)
     }
 
-    private fun requireActivity(): ComponentActivity {
-        return if (isFragment()) (context as Fragment).requireActivity() else context as ComponentActivity
-    }
-
     private fun requireContext(): Context {
-        return if (isFragment()) (context as Fragment).requireContext() else context as Context
+        return if (isFragment()) (fragmentActivity as Fragment).requireContext() else fragmentActivity as Context
     }
 
     private fun showRationalDialog(
@@ -221,7 +216,20 @@ class PermissionContract<T>(
     }
 
     init {
-        (requireContext() as LifecycleOwner).lifecycle.addObserver(this)
+        if (isFragment()) {
+            requestPermissionLauncher = (fragmentActivity as Fragment).registerForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions(), onActivityResult
+            )
+            (fragmentActivity as LifecycleOwner).lifecycle.addObserver(this)
+
+        } else {
+            requestPermissionLauncher =
+                (fragmentActivity as AppCompatActivity).registerForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions(), onActivityResult
+                )
+            (fragmentActivity as AppCompatActivity).lifecycle.addObserver(this)
+        }
+
     }
 
 }
