@@ -1,5 +1,6 @@
 package com.viam.feeder.ui.wifi
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,24 +12,19 @@ import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.*
+import com.viam.feeder.core.utility.dexter.permissionContract
 
-object ConnectionUtil {
+class ConnectionUtil<T>(
+    context: T,
+) : LifecycleObserver where T : Context, T : LifecycleOwner {
 
-    private val liveData = MutableLiveData<NetworkStatus>()
-    val connectionState: LiveData<NetworkStatus> = liveData
-    private lateinit var activity: FragmentActivity
-
+    private val activity = context as AppCompatActivity
     private val connectivityManager: ConnectivityManager by lazy {
         activity.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
-
-    private val wifiManager: WifiManager by lazy {
-        activity.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    }
-
+    private var listening = false
     private val networkCallback = @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     object : ConnectivityManager.NetworkCallback() {
         override fun onLost(network: Network?) {
@@ -47,7 +43,7 @@ object ConnectionUtil {
             setStatus(true)
         }
     }
-
+    private val permissionResult = activity.permissionContract()
     private val wifiBroadcastReceiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
 
@@ -62,14 +58,72 @@ object ConnectionUtil {
             }
         }
     }
-
-    fun withActivity(activity: FragmentActivity): ConnectionUtil {
-        this.activity = activity
-        return this
+    private val wifiManager: WifiManager by lazy {
+        activity.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
     }
 
-    fun startListen(): ConnectionUtil {
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    fun onCreate() {
+        permissionResult.request(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            requiredPermissions = emptyArray()
+        ) {
+            startListen()
+        }
+    }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onStart() {
+        if (!listening && !permissionResult.isRequesting) {
+            startListen()
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun stopListen() {
+        listening = false
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                connectivityManager.unregisterNetworkCallback(networkCallback)
+            } else {
+                activity.unregisterReceiver(wifiBroadcastReceiver)
+            }
+        } catch (e: Exception) {
+        }
+    }
+
+    /**
+     * Fetches Name of Current Wi-fi Access Point
+     *
+     * Returns blank string if received "SSID <unknown ssid>" which you get when location is turned off
+     */
+    private fun WifiManager.deviceName(): String? = connectionInfo.ssid.run {
+        if (this.contains("<unknown ssid>")) null else this
+    }
+
+    private fun getWifiName(): String? {
+        return wifiManager.deviceName()
+    }
+
+    private fun setStatus(status: Boolean) {
+        val connectedWifi = Connectivity.isConnectedWifi(activity.applicationContext)
+        val deviceName = if (connectedWifi) {
+            getWifiName()
+        } else {
+            null
+        }
+        liveData.postValue(
+            NetworkStatus(
+                deviceName = deviceName,
+                isAvailable = status,
+                isWifi = connectedWifi
+            )
+        )
+    }
+
+    private fun startListen() {
+        listening = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val networkRequest = NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -88,47 +142,18 @@ object ConnectionUtil {
                 IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             )
         }
-        return this
     }
 
-    fun stopListen() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                connectivityManager.unregisterNetworkCallback(networkCallback)
-            } else {
-                activity.unregisterReceiver(wifiBroadcastReceiver)
-            }
-        } catch (e: Exception) {
-        }
+    companion object {
+        private val liveData = MutableLiveData<NetworkStatus>()
+        val connectionState: LiveData<NetworkStatus> = liveData
     }
 
-    private fun getWifiName(): String? {
-        return wifiManager.deviceName()
+    init {
+        context.lifecycle.addObserver(this)
     }
+}
 
-
-    /**
-     * Fetches Name of Current Wi-fi Access Point
-     *
-     * Returns blank string if received "SSID <unknown ssid>" which you get when location is turned off
-     */
-    private fun WifiManager.deviceName(): String? = connectionInfo.ssid.run {
-        if (this.contains("<unknown ssid>")) null else this
-    }
-
-    private fun setStatus(status: Boolean) {
-        val connectedWifi = Connectivity.isConnectedWifi(activity.applicationContext)
-        val deviceName = if (connectedWifi) {
-            getWifiName()
-        } else {
-            null
-        }
-        liveData.postValue(
-            NetworkStatus(
-                deviceName = deviceName,
-                isAvailable = status,
-                isWifi = connectedWifi
-            )
-        )
-    }
+fun AppCompatActivity.startConnectionListener() {
+    ConnectionUtil(this)
 }

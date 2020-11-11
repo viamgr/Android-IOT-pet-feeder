@@ -66,6 +66,7 @@ class PermissionContract<T>(
     private val context: T,
 ) : PermissionRequester, LifecycleObserver where T : LifecycleOwner {
 
+    var isRequesting = false
     private var listenerEnabled = false
     private val requestPermissionLauncher = requireActivity().registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -87,8 +88,12 @@ class PermissionContract<T>(
         requiredPermissions: Array<out String>?,
         callback: () -> Unit
     ) {
+        isRequesting = true
         requestedPermissions = permissions
-        requestedCallback = callback
+        requestedCallback = {
+            isRequesting = false
+            callback.invoke()
+        }
         requestedRequiredPermissions = requiredPermissions
         // TODO: 11/11/2020 get it from host
         val shouldShowRequestPermissionRationale = true
@@ -96,7 +101,7 @@ class PermissionContract<T>(
 
         when {
             deniedPermissions.isEmpty() -> {
-                callback()
+                requestedCallback?.invoke()
             }
             shouldShowRequestPermissionRationale -> {
                 showRationalDialog(deniedPermissions, requestedRequiredPermissions)
@@ -184,7 +189,6 @@ class PermissionContract<T>(
                 requestPermissions()
             }
             .setNegativeButton(R.string.cancel) { _, _ ->
-
                 val permissions = requestedPermissions.filter {
                     requestedRequiredPermissions?.contains(it) == true
                 }
@@ -199,6 +203,7 @@ class PermissionContract<T>(
     }
 
     private fun showSettingSnackBar() {
+        isRequesting = false
         getView()?.let {
             Snackbar.make(it, R.string.permission_setting_required, Snackbar.LENGTH_LONG)
                 .setAction("Settings") {

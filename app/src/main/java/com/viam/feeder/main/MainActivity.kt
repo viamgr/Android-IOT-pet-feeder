@@ -1,6 +1,5 @@
 package com.viam.feeder.main
 
-import android.Manifest
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
@@ -19,8 +18,7 @@ import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
-import com.viam.feeder.core.utility.dexter.permissionContract
-import com.viam.feeder.ui.wifi.ConnectionUtil
+import com.viam.feeder.ui.wifi.startConnectionListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.bottom_nav
@@ -31,13 +29,14 @@ class MainActivity : AppCompatActivity() {
 
     private var backPressedOnce = false
     private lateinit var navController: NavController
-    val permissionResult = permissionContract()
     private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         setupViews()
+        startConnectionListener()
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
@@ -53,22 +52,6 @@ class MainActivity : AppCompatActivity() {
             AutoRetryHandler.value = it.isAvailable
         })
 
-    }
-
-    override fun onStart() {
-        super.onStart()
-        permissionResult.request(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            requiredPermissions = emptyArray()
-        ) {
-            ConnectionUtil.withActivity(this).startListen()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        ConnectionUtil.stopListen()
     }
 
     override fun onBackPressed() {
