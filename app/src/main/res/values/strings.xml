@@ -45,6 +45,7 @@
     <string name="wifi_password">Wifi Password</string>
     <string name="enter_wifi_password">Enter wifi password</string>
     <string name="confirm">Confirm</string>
+    <string name="continue_">Continue</string>
     <string name="cancel">Cancel</string>
     <string name="input_wrong">Enter a valid %s</string>
     <string name="record_sound">Record Sound</string>

@@ -143,10 +143,10 @@ fun Fragment.checkPermissionsResult(): PermissionRequester {
 
         MaterialAlertDialogBuilder(requireContext())
             .setView(parentLayout)
-            .setPositiveButton("Continue") { _, _ ->
+            .setPositiveButton(R.string.continue_) { _, _ ->
                 requestPermissions()
             }
-            .setNegativeButton("Cancel") { _, _ ->
+            .setNegativeButton(R.string.cancel) { _, _ ->
 
                 val permissions = requestedPermissions.filter {
                     requestedRequiredPermissions?.contains(it) == true
@@ -170,6 +170,7 @@ fun Fragment.checkPermissionsResult(): PermissionRequester {
             requestedPermissions = permissions
             requestedCallback = callback
             requestedRequiredPermissions = requiredPermissions
+            // TODO: 11/11/2020 get it from host
             val shouldShowRequestPermissionRationale = true
             val deniedPermissions = getDeniedPermissions(permissions.toList())
 

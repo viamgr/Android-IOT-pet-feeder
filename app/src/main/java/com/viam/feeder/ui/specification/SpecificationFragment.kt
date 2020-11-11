@@ -1,9 +1,7 @@
 package com.viam.feeder.ui.specification
 
 import android.Manifest
-import android.app.RecoverableSecurityException
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -22,6 +20,7 @@ import com.viam.feeder.feedVolume
 import com.viam.feeder.ui.record.RecordFragment.Companion.PATH
 import com.viam.feeder.ui.record.RecordFragment.Companion.REQUEST_KEY
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import java.io.File
 
 
@@ -33,6 +32,16 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
     private val viewModel: SpecificationViewModel by viewModels()
     val output = lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
     val permissionResult = checkPermissionsResult()
+
+    private val getContent =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { it ->
+                permissionResult.request(Manifest.permission.READ_EXTERNAL_STORAGE) {
+                    copyFileToAppData(it)
+                }
+            }
+        }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -107,55 +116,26 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
 
             }
         }
-
     }
 
-
-    private val getContent =
-        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let { uri: Uri ->
-                val filePath = "${requireActivity().externalCacheDir?.absolutePath}/recording.mp3"
-
-                val contentResolver = requireContext().contentResolver
-                try {
-                    contentResolver.openInputStream(uri)?.use {
-                        val file = File(filePath)
-                        it.copyTo(file.outputStream())
-                        viewModel.onRecordFile(file.absolutePath, output.value)
-                    }
-                } catch (securityException: SecurityException) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        val recoverableSecurityException = securityException as?
-                                RecoverableSecurityException ?: throw RuntimeException(
-                            securityException.message,
-                            securityException
-                        )
-                        val intentSender =
-                            recoverableSecurityException.userAction.actionIntent.intentSender
-                        intentSender?.let {
-                            startIntentSenderForResult(
-                                intentSender, 23131,
-                                null, 0, 0, 0, null
-                            )
-                        }
-                    } else {
-                        throw RuntimeException(securityException.message, securityException)
-                    }
-                }
-
-
+    private fun copyFileToAppData(uri: Uri) {
+        try {
+            val filePath =
+                "${requireActivity().externalCacheDir?.absolutePath}/recording.mp3"
+            val contentResolver = requireContext().contentResolver
+            contentResolver.openInputStream(uri)?.use {
+                val file = File(filePath)
+                it.copyTo(file.outputStream())
+                viewModel.onRecordFile(file.absolutePath, output.value)
             }
+        } catch (exception: Exception) {
+            // TODO: 11/11/2020 Post non fatal firebase Exception
+            Timber.e(exception)
         }
+    }
 
     private fun openChooseIntent() {
-        permissionResult.request(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            requiredPermissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-        ) {
-            getContent.launch("audio/mpeg")
-        }
+        getContent.launch("audio/mpeg")
     }
 
 
