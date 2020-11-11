@@ -28,11 +28,6 @@ import java.io.File
 class SpecificationFragment : Fragment(R.layout.fragment_specification) {
 
     private val binding by viewBinding(FragmentSpecificationBinding::bind)
-
-    private val viewModel: SpecificationViewModel by viewModels()
-    val output = lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
-    val permissionResult = permissionContract()
-
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { it ->
@@ -41,7 +36,9 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
                 }
             }
         }
-
+    val output = lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
+    val permissionResult = permissionContract()
+    private val viewModel: SpecificationViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -137,6 +134,5 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
     private fun openChooseIntent() {
         getContent.launch("audio/mpeg")
     }
-
 
 }

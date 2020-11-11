@@ -28,11 +28,11 @@ import kotlinx.android.synthetic.main.content_main.bottom_nav
 @AndroidEntryPoint
 
 class MainActivity : AppCompatActivity() {
-    private val viewModel: MainViewModel by viewModels()
 
+    private var backPressedOnce = false
     private lateinit var navController: NavController
     val permissionResult = permissionContract()
-
+    private val viewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -71,6 +71,24 @@ class MainActivity : AppCompatActivity() {
         ConnectionUtil.stopListen()
     }
 
+    override fun onBackPressed() {
+        if (navController.graph.startDestination == navController.currentDestination?.id) {
+            if (backPressedOnce) {
+                super.onBackPressed()
+                return
+            }
+
+            backPressedOnce = true
+            Toast.makeText(this, "Press BACK again to exit", Toast.LENGTH_SHORT).show()
+
+            Handler().postDelayed(2000) {
+                backPressedOnce = false
+            }
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     fun setIsWifiDialogShowing(isShowing: Boolean) {
         viewModel.isWifiDialogShowing = isShowing
     }
@@ -91,25 +109,5 @@ class MainActivity : AppCompatActivity() {
             )
         )
         setupActionBarWithNavController(navHostFragment.navController, appBarConfiguration)
-    }
-
-    private var backPressedOnce = false
-
-    override fun onBackPressed() {
-        if (navController.graph.startDestination == navController.currentDestination?.id) {
-            if (backPressedOnce) {
-                super.onBackPressed()
-                return
-            }
-
-            backPressedOnce = true
-            Toast.makeText(this, "Press BACK again to exit", Toast.LENGTH_SHORT).show()
-
-            Handler().postDelayed(2000) {
-                backPressedOnce = false
-            }
-        } else {
-            super.onBackPressed()
-        }
     }
 }

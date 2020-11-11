@@ -66,13 +66,45 @@ class PermissionContract<T>(
     private val context: T,
 ) : PermissionRequester, LifecycleObserver where T : LifecycleOwner {
 
+    private var listenerEnabled = false
+    private val requestPermissionLauncher = requireActivity().registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grantResults ->
+        if (!grantResults
+                .filter { requestedRequiredPermissions?.contains(it.key) == true }
+                .any { it.value == false }
+        ) {
+            requestedCallback?.invoke()
+        } else {
+            showSettingSnackBar()
+        }
+    }
+    private var requestedCallback: (() -> Unit)? = null
     private var requestedPermissions: Array<out String>? = null
     private var requestedRequiredPermissions: Array<out String>? = null
-    private var requestedCallback: (() -> Unit)? = null
-    private var listenerEnabled = false
+    override fun request(
+        vararg permissions: String,
+        requiredPermissions: Array<out String>?,
+        callback: () -> Unit
+    ) {
+        requestedPermissions = permissions
+        requestedCallback = callback
+        requestedRequiredPermissions = requiredPermissions
+        // TODO: 11/11/2020 get it from host
+        val shouldShowRequestPermissionRationale = true
+        val deniedPermissions = getDeniedPermissions(permissions.toList())
 
-    init {
-        (requireContext() as LifecycleOwner).lifecycle.addObserver(this)
+        when {
+            deniedPermissions.isEmpty() -> {
+                callback()
+            }
+            shouldShowRequestPermissionRationale -> {
+                showRationalDialog(deniedPermissions, requestedRequiredPermissions)
+            }
+            else -> {
+                requestPermissions()
+            }
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -93,21 +125,6 @@ class PermissionContract<T>(
 
     }
 
-    private fun isFragment() = context is Fragment
-
-    private fun getView(): View? {
-        return if (isFragment()) (context as Fragment).view else (context as Activity).window.decorView.rootView
-    }
-
-    private fun requireContext(): Context {
-        return if (isFragment()) (context as Fragment).requireContext() else context as Context
-    }
-
-    private fun requireActivity(): ComponentActivity {
-        return if (isFragment()) (context as Fragment).requireActivity() else context as ComponentActivity
-    }
-
-
     private fun getDeniedPermissions(permissions: List<String>): List<String> {
         return permissions.filter {
             checkSelfPermission(
@@ -117,45 +134,26 @@ class PermissionContract<T>(
         }
     }
 
+    private fun getView(): View? {
+        return if (isFragment()) (context as Fragment).view else (context as Activity).window.decorView.rootView
+    }
+
+    private fun isFragment() = context is Fragment
     private fun registerListener() {
         listenerEnabled = true
     }
-
-    private fun showSettingSnackBar() {
-        getView()?.let {
-            Snackbar.make(it, R.string.permission_setting_required, Snackbar.LENGTH_LONG)
-                .setAction("Settings") {
-                    registerListener()
-                    val intent = Intent(
-                        "android.settings.APPLICATION_DETAILS_SETTINGS",
-                        Uri.parse("package:" + requireContext().packageName)
-                    )
-                    intent.addCategory("android.intent.category.DEFAULT")
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    requireContext().startActivity(intent)
-                }
-                .show()
-        }
-    }
-
-    private val requestPermissionLauncher = requireActivity().registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { grantResults ->
-        if (!grantResults
-                .filter { requestedRequiredPermissions?.contains(it.key) == true }
-                .any { it.value == false }
-        ) {
-            requestedCallback?.invoke()
-        } else {
-            showSettingSnackBar()
-        }
-    }
-
 
     private fun requestPermissions() {
         requestPermissionLauncher.launch(requestedPermissions)
     }
 
+    private fun requireActivity(): ComponentActivity {
+        return if (isFragment()) (context as Fragment).requireActivity() else context as ComponentActivity
+    }
+
+    private fun requireContext(): Context {
+        return if (isFragment()) (context as Fragment).requireContext() else context as Context
+    }
 
     private fun showRationalDialog(
         requestedPermissions: List<String>,
@@ -200,29 +198,25 @@ class PermissionContract<T>(
             .show()
     }
 
-    override fun request(
-        vararg permissions: String,
-        requiredPermissions: Array<out String>?,
-        callback: () -> Unit
-    ) {
-        requestedPermissions = permissions
-        requestedCallback = callback
-        requestedRequiredPermissions = requiredPermissions
-        // TODO: 11/11/2020 get it from host
-        val shouldShowRequestPermissionRationale = true
-        val deniedPermissions = getDeniedPermissions(permissions.toList())
-
-        when {
-            deniedPermissions.isEmpty() -> {
-                callback()
-            }
-            shouldShowRequestPermissionRationale -> {
-                showRationalDialog(deniedPermissions, requestedRequiredPermissions)
-            }
-            else -> {
-                requestPermissions()
-            }
+    private fun showSettingSnackBar() {
+        getView()?.let {
+            Snackbar.make(it, R.string.permission_setting_required, Snackbar.LENGTH_LONG)
+                .setAction("Settings") {
+                    registerListener()
+                    val intent = Intent(
+                        "android.settings.APPLICATION_DETAILS_SETTINGS",
+                        Uri.parse("package:" + requireContext().packageName)
+                    )
+                    intent.addCategory("android.intent.category.DEFAULT")
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    requireContext().startActivity(intent)
+                }
+                .show()
         }
+    }
+
+    init {
+        (requireContext() as LifecycleOwner).lifecycle.addObserver(this)
     }
 
 }
