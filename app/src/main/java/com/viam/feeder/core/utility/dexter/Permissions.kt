@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringDef
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.checkSelfPermission
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
@@ -79,10 +80,12 @@ class PermissionContract<T>(
 ) : PermissionRequester, LifecycleObserver where T : LifecycleOwner {
 
     var isRequesting = false
+    var isRequested = false
+
     private var listenerEnabled = false
     private val onActivityResult: (result: MutableMap<String, Boolean>) -> Unit = { grantResults ->
         if (!grantResults
-                .filter { requestedRequiredPermissions?.contains(it.key) == true }
+                .filter { requiredPermissions?.contains(it.key) == true }
                 .any { !it.value }
         ) {
             requestedCallback?.invoke()
@@ -93,20 +96,21 @@ class PermissionContract<T>(
     private var requestPermissionLauncher: ActivityResultLauncher<Array<out String>>
     private var requestedCallback: (() -> Unit)? = null
     private var requestedPermissions: Array<out String>? = null
-    private var requestedRequiredPermissions: Array<out String>? = null
+    private var requiredPermissions: Array<out String>? = null
     private var deniedPermissions: List<String>? = null
     override fun request(
         vararg permissions: String,
         requiredPermissions: Array<out String>?,
         callback: () -> Unit
     ) {
+        isRequested = true
         isRequesting = true
         requestedPermissions = permissions
         requestedCallback = {
             isRequesting = false
             callback.invoke()
         }
-        requestedRequiredPermissions = requiredPermissions
+        this.requiredPermissions = requiredPermissions
         // TODO: 11/11/2020 get it from host
         val shouldShowRequestPermissionRationale = true
         deniedPermissions = getDeniedPermissions()
@@ -122,6 +126,14 @@ class PermissionContract<T>(
                 requestPermissions()
             }
         }
+    }
+
+    fun isRequestingOrRequested() = isRequested || isRequesting
+
+    fun isGranted(): Boolean {
+        return getDeniedPermissions()
+            ?.intersect(requiredPermissions?.toList().orEmpty())
+            ?.isNullOrEmpty() ?: false
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -169,7 +181,6 @@ class PermissionContract<T>(
 
         val parentLayout =
             View.inflate(requireContext(), R.layout.layout_permission_wrapper, null) as ViewGroup
-
         requestedPermissions.forEach {
             val view = View.inflate(
                 requireContext(),
@@ -181,18 +192,18 @@ class PermissionContract<T>(
             view.findViewById<TextView>(R.id.description).text =
                 requireContext().getString(permission.second)
             view.findViewById<View>(R.id.required).isVisible =
-                requestedRequiredPermissions?.contains(it) == true
+                requiredPermissions?.contains(it) == true
             parentLayout.findViewById<ViewGroup>(R.id.wrapper).addView(view)
         }
 
-        MaterialAlertDialogBuilder(requireContext())
+        val decorView = MaterialAlertDialogBuilder(requireContext())
             .setView(parentLayout)
             .setPositiveButton(R.string.continue_) { _, _ ->
                 requestPermissions()
             }
             .setNegativeButton(R.string.cancel) { _, _ ->
                 val permissions = requestedPermissions.filter {
-                    requestedRequiredPermissions?.contains(it) == true
+                    requiredPermissions?.contains(it) == true
                 }
                 if (permissions.isNullOrEmpty()) {
                     requestedCallback?.invoke()
@@ -201,7 +212,10 @@ class PermissionContract<T>(
                 }
 
             }
-            .show()
+            .show().window?.decorView
+        ViewCompat.setElevation(decorView!!, Float.MAX_VALUE)
+        decorView.bringToFront()
+
     }
 
     private fun showSettingSnackBar() {

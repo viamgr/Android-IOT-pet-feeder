@@ -27,6 +27,7 @@ import java.io.File
 @AndroidEntryPoint
 class SpecificationFragment : Fragment(R.layout.fragment_specification) {
 
+
     private val binding by viewBinding(FragmentSpecificationBinding::bind)
     private val getContent =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->

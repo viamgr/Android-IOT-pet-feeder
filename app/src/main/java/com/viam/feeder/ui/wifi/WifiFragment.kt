@@ -13,14 +13,12 @@ import android.widget.FrameLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.viam.feeder.BR
 import com.viam.feeder.R
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
-import com.viam.feeder.main.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -32,7 +30,15 @@ class WifiFragment : DialogFragment() {
 
     private lateinit var binding: FragmentWifiBinding
     private val viewModel: WifiViewModel by viewModels()
-    private val mainViewModel: MainViewModel by activityViewModels()
+//    private val mainViewModel: MainViewModel by activityViewModels()
+
+    private val wifiAutoConnect = wifiAutoConnect(
+        preferredWifiNetWorkSsid = preferredWifiNetWorkSsid,
+        preferredWifiNetWorkPassword = "6037991302"
+    ) { isAvailable ->
+        if (isAvailable)
+            dismiss()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +66,11 @@ class WifiFragment : DialogFragment() {
         (requireActivity() as MainActivity).setIsWifiDialogShowing(false)
     }
 
+    override fun onStart() {
+        super.onStart()
+        wifiAutoConnect.start()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.enableWifiClicked.observe(viewLifecycleOwner, EventObserver {
@@ -69,12 +80,21 @@ class WifiFragment : DialogFragment() {
                 startActivity(intent)
             }
         })
-        mainViewModel.connectionStatus.observe(this, {
+
+/*        mainViewModel.connectionStatus.observe(this, {
             if (it.isAvailable) {
                 if (!it.isWifi || it.deviceName == null || it.deviceName == "\"V. M\"")
                     dismiss()
             }
-        })
+        })*/
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        wifiAutoConnect.stop()
+    }
+
+    companion object {
+        val preferredWifiNetWorkSsid: String? = "V. M"
+    }
 }

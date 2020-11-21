@@ -15,11 +15,6 @@
         android:name="com.viam.feeder.ui.record.RecordFragment"
         android:label="@string/record_sound"
         tools:layout="@layout/fragment_record" />
-    <dialog
-        android:id="@+id/loading_fragment"
-        android:name="com.viam.feeder.ui.loading.LoadingFragment"
-        android:label="@string/loading"
-        tools:layout="@layout/fragment_loading" />
     <fragment
         android:id="@+id/fragment_home"
         android:name="com.viam.feeder.ui.dashboard.DashboardFragment"

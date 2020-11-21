@@ -18,6 +18,10 @@ import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
+import com.viam.feeder.core.utility.dexter.PermissionContract
+import com.viam.feeder.core.utility.dexter.permissionContract
+import com.viam.feeder.ui.wifi.NetworkStatus
+import com.viam.feeder.ui.wifi.WifiFragment
 import com.viam.feeder.ui.wifi.startConnectionListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
@@ -30,16 +34,14 @@ class MainActivity : AppCompatActivity() {
     private var backPressedOnce = false
     private lateinit var navController: NavController
     private val viewModel: MainViewModel by viewModels()
+    val connectionUtil = startConnectionListener()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         setupViews()
-        startConnectionListener(
-            preferredWifiNetWorkSsid = "V. M",
-            preferredWifiNetWorkPassword = "6037991302"
-        )
+
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
@@ -51,10 +53,25 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        viewModel.connectionStatus.observe(this, {
+            if (!isConnectedToPreferredDevice(it)) {
+                setIsWifiDialogShowing(true)
+                navController.navigate(R.id.wifi_fragment)
+            }
+        })
+
         viewModel.connectionStatus.observe(this, {
             AutoRetryHandler.value = it.isAvailable
         })
 
+    }
+
+    private val permissionResult: PermissionContract<*> = permissionContract()
+    private fun isConnectedToPreferredDevice(networkState: NetworkStatus): Boolean {
+        return networkState.isAvailable && networkState.isWifi &&
+                (networkState.deviceName == null ||
+                        networkState.deviceName == "\"${WifiFragment.preferredWifiNetWorkSsid}\"")
     }
 
     override fun onBackPressed() {
