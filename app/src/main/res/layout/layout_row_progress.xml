@@ -21,24 +21,22 @@
         android:background="@color/grey_300"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ProgressBar
+    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/progress"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:layout_width="0dp"
-        android:layout_height="2dp"
-        android:indeterminate="true"
-        android:minHeight="2dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="48dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/error"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:progress="100" />
+        app:layout_constraintTop_toTopOf="@id/error"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading" />
 
     <TextView
         android:id="@+id/error"
         style="@style/TextAppearance.MaterialComponents.Headline6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:ellipsize="marquee"
         android:gravity="start"
         app:autoSizeMaxTextSize="16sp"
@@ -48,7 +46,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/retry"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/progress"
         app:layout_constraintTop_toTopOf="parent"
         tools:lines="1"
         tools:text="Loading..." />
@@ -57,11 +55,11 @@
         android:id="@+id/retry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="12dp"
-        android:tint="@color/black"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
+        android:paddingHorizontal="12dp"
+        android:tint="@color/black"
         app:layout_constraintEnd_toStartOf="@id/close"
         app:layout_constraintTop_toTopOf="@id/error"
         app:srcCompat="@drawable/ic_baseline_refresh_24" />

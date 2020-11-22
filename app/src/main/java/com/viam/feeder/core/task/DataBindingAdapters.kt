@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import com.viam.feeder.R
@@ -75,7 +76,7 @@ fun View.taskProgress(liveTask: LiveTask<*, *>?) {
         val retryView = view.findViewById<View>(R.id.retry)
         val closeView = view.findViewById<View>(R.id.close)
 
-        view.findViewById<View>(R.id.progress).isVisible = isLoading
+        view.findViewById<View>(R.id.progress).isInvisible = !isLoading
         closeView.isVisible = liveTask?.isCancelable() == true
         retryView.isVisible = state?.isError() == true
         if (state is Resource.Error) {

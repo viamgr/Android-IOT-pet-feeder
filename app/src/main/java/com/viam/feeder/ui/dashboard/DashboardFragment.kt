@@ -4,14 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
-import com.viam.feeder.core.onLoading
 import com.viam.feeder.databinding.FragmentDashboardBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
@@ -25,15 +21,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             lifecycleOwner = viewLifecycleOwner
             vm = viewModel
         }
-        viewModel.sendRequestEvent.asLiveData()?.observe(viewLifecycleOwner, {
-            it.state()?.onLoading {
-                binding.animationView.playAnimation()
-                viewLifecycleOwner.lifecycleScope.launch {
-                    delay(5000)
-                    binding.animationView.cancelAnimation()
-                }
-            }
-        })
+
     }
 
 }

@@ -24,7 +24,6 @@
             android:clickable="true"
             android:focusable="true"
             android:onClick="@{()->vm.sendTriggerEvent()}"
-            app:cardBackgroundColor="@color/green_200"
             app:cardCornerRadius="400dp"
             app:cardElevation="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -32,23 +31,82 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintHorizontal_bias="0.15"
             app:layout_constraintVertical_bias="0.5"
-            app:layout_constraintWidth_percent="0.8">
+            app:layout_constraintWidth_percent="0.3">
 
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/animation_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:lottie_autoPlay="false"
+                app:lottie_autoPlay="true"
                 app:lottie_loop="true"
                 app:lottie_rawRes="@raw/feeding" />
 
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/mute_view_wrapper"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{()->vm.sendTriggerEvent()}"
+            app:cardCornerRadius="400dp"
+            app:cardElevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="500:500"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.85"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.3"
+            app:layout_constraintWidth_percent="0.3">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/mute_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/mute" />
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/light_view_wrapper"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="@{()->vm.sendTriggerEvent()}"
+            app:cardCornerRadius="400dp"
+            app:cardElevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintDimensionRatio="500:500"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.85"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.7"
+            app:layout_constraintWidth_percent="0.3">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/light_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/light_bulb" />
 
         </androidx.cardview.widget.CardView>
 
 
         <ImageView
             android:id="@+id/imageView"
+            android:visibility="gone"
             android:layout_width="48dp"
             android:layout_height="48dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -63,6 +121,7 @@
             android:id="@+id/imageView3"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageView2"
             app:layout_constraintHorizontal_bias="0.5"
@@ -75,6 +134,7 @@
             android:id="@+id/imageView2"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
