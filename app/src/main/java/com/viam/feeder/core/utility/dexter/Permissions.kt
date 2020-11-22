@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringDef
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.checkSelfPermission
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
@@ -213,8 +212,8 @@ class PermissionContract<T>(
 
             }
             .show().window?.decorView
-        ViewCompat.setElevation(decorView!!, Float.MAX_VALUE)
-        decorView.bringToFront()
+//        ViewCompat.setElevation(decorView!!, Float.MAX_VALUE)
+//        decorView.bringToFront()
 
     }
 

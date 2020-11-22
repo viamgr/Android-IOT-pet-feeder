@@ -47,17 +47,24 @@ class CoroutineLiveTask<P, R>(
     @MainThread
     fun maybeRun() {
         runningJob = scope.launch {
+            val notifyImmediately = _state is Resource.Error
             _state = Resource.Loading
-            val loadingJob = launch {
-                delay(debounceTime)
-                if (isActive) {
-                    _state = Resource.Loading
-                    notifyValue()
+            val loadingJob = if (notifyImmediately) {
+                notifyValue()
+                null
+            } else {
+                launch {
+                    delay(debounceTime)
+                    if (isActive) {
+                        _state = Resource.Loading
+                        notifyValue()
+                    }
                 }
             }
+
             requestBlock(this@CoroutineLiveTask, params)
             notifyValue()
-            loadingJob.cancel()
+            loadingJob?.cancel()
         }
     }
 
