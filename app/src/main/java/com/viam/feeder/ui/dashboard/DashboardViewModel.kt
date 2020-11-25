@@ -7,8 +7,7 @@ import com.viam.feeder.core.domain.toLiveTask
 import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.models.KeyValue
 
-class DashboardViewModel @ViewModelInject constructor(sendEvent: SendEvent) :
-    ViewModel() {
+class DashboardViewModel @ViewModelInject constructor(sendEvent: SendEvent) : ViewModel() {
 
     val sendRequestEvent = sendEvent.toLiveTask()
     fun sendTriggerEvent() {

@@ -1,6 +1,7 @@
 package com.viam.feeder.data.datasource
 
 import com.viam.feeder.data.models.WifiDevice
+import com.viam.feeder.data.utils.randomException
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
@@ -11,9 +12,11 @@ class WifiDataSource @Inject constructor() {
         WifiDevice("New Wifi", "New Wifi", false)
     )
 
-    fun getList() = list
+    suspend fun getList() = randomException {
+        list
+    }
 
-    fun connect(ssid: String, password: String) {
+    suspend fun connect(ssid: String, password: String) = randomException {
 
     }
 }

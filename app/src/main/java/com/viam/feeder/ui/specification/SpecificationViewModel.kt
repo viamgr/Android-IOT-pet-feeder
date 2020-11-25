@@ -4,7 +4,6 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.livedata.Event
@@ -14,9 +13,7 @@ import com.viam.feeder.core.task.livaTask
 import com.viam.feeder.data.domain.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.ui.wifi.ConnectionUtil
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 
 class SpecificationViewModel @ViewModelInject constructor(
@@ -33,18 +30,6 @@ class SpecificationViewModel @ViewModelInject constructor(
         )
     )
     val feedSounds: LiveData<List<String>> = _feedSounds
-
-    val a = liveData<String> {
-        withContext(Dispatchers.IO) {
-
-            repeat(1000) {
-                emit("$it")
-                println("work on $it")
-
-                delay(1000)
-            }
-        }
-    }
 
     private val _openRecordDialog = MutableLiveData<Event<Unit>>()
     val openRecordDialog: LiveData<Event<Unit>> = _openRecordDialog

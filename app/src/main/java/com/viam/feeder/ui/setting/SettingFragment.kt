@@ -11,7 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
-import com.viam.feeder.core.livedata.EventObserver
+import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.databinding.FragmentSettingBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,21 +21,29 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
     private val binding by viewBinding(FragmentSettingBinding::bind)
 
     private val viewModel: SettingViewModel by viewModels()
+    private val controller = WifiController()
+        .also { wifiController ->
+            wifiController.clickListener = {
+                showPasswordDialog(it)
+            }
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
             lifecycleOwner = viewLifecycleOwner
             vm = viewModel
-            wifiList.setController(viewModel.controller)
+            wifiList.setController(controller)
         }
 
-        viewModel.itemClicked.observe(viewLifecycleOwner, EventObserver {
-            showPasswordDialog()
+        viewModel.getWifiListTask.asLiveData().observe(viewLifecycleOwner, {
+            it.onSuccess { list ->
+                controller.setData(list)
+            }
         })
     }
 
-    private fun showPasswordDialog() {
+    private fun showPasswordDialog(wifiDevice: WifiDevice) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_wifi_password, null)
         val inputLayout = dialogView?.findViewById<TextInputLayout>(R.id.password)!!
         val dialog = MaterialAlertDialogBuilder(requireActivity())
@@ -54,16 +62,14 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         inputLayout.editText?.requestFocus()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val text = inputLayout.editText?.text?.toString()
-            if (text.isNullOrEmpty() || text.length < 8) {
+            val password = inputLayout.editText?.text?.toString()
+            if (password.isNullOrEmpty() || password.length < 8) {
                 inputLayout.error =
                     getString(R.string.input_wrong, getString(R.string.wifi_password))
             } else {
                 dialog.dismiss()
-                viewModel.onPasswordConfirmed(text)
+                viewModel.onPasswordConfirmed(wifiDevice, password)
             }
         }
-
     }
-
 }
