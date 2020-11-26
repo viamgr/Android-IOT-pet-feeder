@@ -2,7 +2,7 @@ package com.viam.feeder.data.datasource
 
 import com.viam.feeder.R
 import com.viam.feeder.data.models.ClockTimer
-import com.viam.feeder.data.utils.randomException
+import com.viam.feeder.data.utils.fakeRequest
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
@@ -13,17 +13,17 @@ class TimerDataSource @Inject constructor() {
         ClockTimer(2, 5, 1, R.string.pm),
     )
 
-    suspend fun getList(): List<ClockTimer> = randomException {
+    suspend fun getList(): List<ClockTimer> = fakeRequest {
         list
     }
 
-    suspend fun add(clockTimer: ClockTimer): ClockTimer = randomException {
+    suspend fun add(clockTimer: ClockTimer): ClockTimer = fakeRequest {
         clockTimer.id = (list.size + 1).toLong()
         list.add(clockTimer)
         clockTimer
     }
 
-    suspend fun delete(clockTimer: ClockTimer): Unit = randomException {
+    suspend fun delete(clockTimer: ClockTimer): Unit = fakeRequest {
         list.remove(clockTimer)
     }
 }
