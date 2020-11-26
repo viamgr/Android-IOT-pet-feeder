@@ -36,7 +36,7 @@
 
                 <LinearLayout
                     android:id="@+id/volume"
-                    taskProgress="@{vm.soundVolumeEvent.asLiveData()}"
+                    taskProgress="@{vm.soundVolumeEventTask.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -78,7 +78,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/feeding_sound"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                    taskProgress="@{vm.convertAndUploadSoundUseCaseTask.asLiveData()}"
+                    taskProgress="@{vm.soundTask.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toBottomOf="@+id/volume">
@@ -96,6 +96,7 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/ledEnabled"
+                    taskProgress="@{vm.ledStateTask.asLiveData()}"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -1,4 +1,4 @@
-package com.viam.feeder.data.domain
+package com.viam.feeder.data.domain.specification
 
 import com.viam.feeder.core.domain.UseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider

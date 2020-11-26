@@ -6,18 +6,21 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.R
 import com.viam.feeder.constants.SETTING_FEED_VOLUME
+import com.viam.feeder.constants.SETTING_LED_STATE
 import com.viam.feeder.constants.SETTING_VOLUME
 import com.viam.feeder.core.domain.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
-import com.viam.feeder.data.domain.ConvertUploadSound
 import com.viam.feeder.data.domain.event.SendEvent
+import com.viam.feeder.data.domain.specification.ConvertUploadSound
+import com.viam.feeder.data.domain.specification.UploadSound
 import com.viam.feeder.data.models.KeyValue
 import com.viam.feeder.models.FeedVolume
 
 
 class SpecificationViewModel @ViewModelInject constructor(
-    convertAndUploadSoundUseCase: ConvertUploadSound,
+    convertUploadSound: ConvertUploadSound,
+    uploadSound: UploadSound,
     sendEvent: SendEvent
 ) :
     ViewModel() {
@@ -25,8 +28,8 @@ class SpecificationViewModel @ViewModelInject constructor(
         listOf(
             "From Your Phone",
             "Record",
-            "Cat",
-            "Dog",
+            "Piano",
+            "Come On",
         )
     )
     val feedSounds: LiveData<List<String>> = _feedSounds
@@ -37,23 +40,21 @@ class SpecificationViewModel @ViewModelInject constructor(
     private val _chooseIntentSound = MutableLiveData<Event<Unit>>()
     val chooseIntentSound: LiveData<Event<Unit>> = _chooseIntentSound
 
-    val convertAndUploadSoundUseCaseTask = convertAndUploadSoundUseCase.toLiveTask()
+    private val convertAndUploadSoundUseCaseTask = convertUploadSound.toLiveTask()
+
+    private val uploadSoundTask = uploadSound.toLiveTask()
 
     val feedVolumeEvent = sendEvent.toLiveTask {
-        debounce(1000)
+        debounce(250)
     }
 
-    val soundVolumeEvent = sendEvent.toLiveTask {
-        debounce(1000)
-    }
+    val soundVolumeEventTask = sendEvent.toLiveTask()
 
+    val soundTask = compositeTask(
+        uploadSoundTask, convertAndUploadSoundUseCaseTask
 
-    val compositeTask = compositeTask(
-        convertAndUploadSoundUseCaseTask,
-        feedVolumeEvent
-    ) {
-        cancelable(false)
-    }
+    )
+    val ledStateTask = sendEvent.toLiveTask()
 
     private val _feedVolumeList = MutableLiveData(
         listOf(
@@ -73,7 +74,6 @@ class SpecificationViewModel @ViewModelInject constructor(
         )
     )
     val ledStates: LiveData<List<String>> = _ledStates
-
 
     fun onFeedVolumeClicked(id: Int) {
         _feedVolumeList.value?.toMutableList()?.map {
@@ -102,28 +102,36 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     fun onFeedSoundItemClicked(position: Int) {
-        if (position == 0) {
-            _chooseIntentSound.value = Event(Unit)
-        } else if (position == 1) {
-            _openRecordDialog.value = Event(Unit)
+        when (position) {
+            0 -> _chooseIntentSound.value = Event(Unit)
+            1 -> _openRecordDialog.value = Event(Unit)
+            else -> uploadSoundTask.post(getAudioFileByPosition(position))
+        }
+    }
+
+    private fun getAudioFileByPosition(position: Int): Int {
+        return when (position) {
+            2 -> R.raw.piano
+            3 -> R.raw.come_on
+            else -> R.raw.come_on
         }
     }
 
     fun onLedItemClickListener(position: Int) {
-
+        ledStateTask.postWithCancel(KeyValue(SETTING_LED_STATE, position))
     }
 
     fun onSoundVolumeChanged(value: Float) {
         _currentSoundVolumeValue.value = value
     }
 
-    fun onRecordFile(input: String, output: String) {
+    fun onSoundFilePicked(input: String, output: String) {
         convertAndUploadSoundUseCaseTask.post(Pair(input, output))
     }
 
     init {
-        soundVolumeEvent.asLiveData().addSource(_currentSoundVolumeValue) {
-            soundVolumeEvent.postWithCancel(KeyValue(SETTING_VOLUME))
+        soundVolumeEventTask.asLiveData().addSource(_currentSoundVolumeValue) {
+            soundVolumeEventTask.postWithCancel(KeyValue(SETTING_VOLUME, it))
         }
     }
 

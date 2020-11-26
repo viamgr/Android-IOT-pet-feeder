@@ -109,7 +109,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             if (requestKey == REQUEST_KEY) {
                 val result = bundle.getString(PATH)
                 result?.let {
-                    viewModel.onRecordFile(result, output.value)
+                    viewModel.onSoundFilePicked(result, output.value)
                 }
 
             }
@@ -124,7 +124,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             contentResolver.openInputStream(uri)?.use {
                 val file = File(filePath)
                 it.copyTo(file.outputStream())
-                viewModel.onRecordFile(file.absolutePath, output.value)
+                viewModel.onSoundFilePicked(file.absolutePath, output.value)
             }
         } catch (exception: Exception) {
             // TODO: 11/11/2020 Post non fatal firebase Exception
