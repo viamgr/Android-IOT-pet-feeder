@@ -12,8 +12,7 @@ import com.viam.feeder.data.models.WifiDevice
 class SettingViewModel @ViewModelInject constructor(
     getWifiList: GetWifiList,
     connectWifi: ConnectWifi
-) :
-    ViewModel() {
+) : ViewModel() {
 
     val getWifiListTask = getWifiList.toLiveTask().also {
         it.post(Unit)

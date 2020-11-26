@@ -49,13 +49,12 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     private val sendEventTask = sendEvent.toLiveTask {
-        initialParams(KeyValue(SETTING_INTERVAL))
         debounce(1000)
     }
 
     init {
         sendEventTask.asLiveData().addSource(_currentValue) {
-            sendEventTask.postWithCancel()
+            sendEventTask.postWithCancel(KeyValue(SETTING_INTERVAL, it))
         }
     }
 

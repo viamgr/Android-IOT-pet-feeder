@@ -5,28 +5,28 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.R
-import com.viam.feeder.core.Resource
+import com.viam.feeder.constants.SETTING_FEED_VOLUME
+import com.viam.feeder.constants.SETTING_VOLUME
+import com.viam.feeder.core.domain.toLiveTask
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.task.LiveTask
 import com.viam.feeder.core.task.compositeTask
-import com.viam.feeder.core.task.livaTask
 import com.viam.feeder.data.domain.ConvertUploadSound
+import com.viam.feeder.data.domain.event.SendEvent
+import com.viam.feeder.data.models.KeyValue
 import com.viam.feeder.models.FeedVolume
-import com.viam.feeder.ui.wifi.ConnectionUtil
-import kotlinx.coroutines.delay
 
 
 class SpecificationViewModel @ViewModelInject constructor(
-    private val convertAndUploadSoundUseCase: ConvertUploadSound
+    convertAndUploadSoundUseCase: ConvertUploadSound,
+    sendEvent: SendEvent
 ) :
     ViewModel() {
-    val connectionStatus = ConnectionUtil.connectionState
     private val _feedSounds = MutableLiveData(
         listOf(
+            "From Your Phone",
+            "Record",
             "Cat",
             "Dog",
-            "From Your Phone",
-            "Record"
         )
     )
     val feedSounds: LiveData<List<String>> = _feedSounds
@@ -37,31 +37,24 @@ class SpecificationViewModel @ViewModelInject constructor(
     private val _chooseIntentSound = MutableLiveData<Event<Unit>>()
     val chooseIntentSound: LiveData<Event<Unit>> = _chooseIntentSound
 
-    val convertAndUploadSoundRequest: LiveTask<Pair<String, String>, Unit> =
-        livaTask { params ->
-            emit(convertAndUploadSoundUseCase(params!!))
-        }
+    val convertAndUploadSoundUseCaseTask = convertAndUploadSoundUseCase.toLiveTask()
 
-
-    val convertAndUploadSoundRequest2: LiveTask<String, Unit> = livaTask {
-        cancelable(false)
-        emit(Resource.Loading)
-        delay(500)
-        emit(Resource.Success(Unit))
-        delay(500)
-        emit(Resource.Loading)
-        delay(500)
-        emit(Resource.Success(Unit))
-        delay(500)
-        emit(Resource.Error(Exception("Custom Error")))
+    val feedVolumeEvent = sendEvent.toLiveTask {
+        debounce(1000)
     }
 
-    val compositeTask: LiveTask<Any, Any> = compositeTask(
-        convertAndUploadSoundRequest,
-        convertAndUploadSoundRequest2
+    val soundVolumeEvent = sendEvent.toLiveTask {
+        debounce(1000)
+    }
+
+
+    val compositeTask = compositeTask(
+        convertAndUploadSoundUseCaseTask,
+        feedVolumeEvent
     ) {
         cancelable(false)
     }
+
     private val _feedVolumeList = MutableLiveData(
         listOf(
             FeedVolume(1, 0.33f, R.string.little),
@@ -83,17 +76,18 @@ class SpecificationViewModel @ViewModelInject constructor(
 
 
     fun onFeedVolumeClicked(id: Int) {
-
-        val values = _feedVolumeList.value?.toMutableList()?.map {
+        _feedVolumeList.value?.toMutableList()?.map {
             it.selected = id == it.id
+            if (it.selected) {
+                feedVolumeEvent.postWithCancel(KeyValue(SETTING_FEED_VOLUME, it.scale * 1000))
+            }
             it
-        }
-        values?.let {
+        }?.let {
             _feedVolumeList.value = it
         }
     }
 
-    private val _currentSoundVolumeValue = MutableLiveData(50f)
+    private val _currentSoundVolumeValue = MutableLiveData<Float>()
     val currentSoundVolumeValue: LiveData<Float> = _currentSoundVolumeValue
 
     fun onVolumeUpClicked() {
@@ -108,10 +102,10 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     fun onFeedSoundItemClicked(position: Int) {
-        if (position + 1 == _feedSounds.value?.size) {
-            _openRecordDialog.value = Event(Unit)
-        } else if (position + 2 == _feedSounds.value?.size) {
+        if (position == 0) {
             _chooseIntentSound.value = Event(Unit)
+        } else if (position == 1) {
+            _openRecordDialog.value = Event(Unit)
         }
     }
 
@@ -124,12 +118,13 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     fun onRecordFile(input: String, output: String) {
-        convertAndUploadSoundRequest.post(Pair(input, output))
-//        convertAndUploadSoundRequest2.execute("Test")
+        convertAndUploadSoundUseCaseTask.post(Pair(input, output))
     }
 
     init {
-        convertAndUploadSoundRequest2.post("asdasd")
-
+        soundVolumeEvent.asLiveData().addSource(_currentSoundVolumeValue) {
+            soundVolumeEvent.postWithCancel(KeyValue(SETTING_VOLUME))
+        }
     }
+
 }

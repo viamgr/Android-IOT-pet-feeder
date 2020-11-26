@@ -26,7 +26,7 @@
 
                 <com.airbnb.epoxy.EpoxyRecyclerView
                     android:id="@+id/food_volume"
-                    taskProgress="@{vm.compositeTask.asLiveData()}"
+                    taskProgress="@{vm.feedVolumeEvent.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
                     app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
@@ -34,50 +34,54 @@
                     app:spanCount="3"
                     tools:listitem="@layout/view_holder_feed_volume" />
 
-                <ImageView
-                    android:id="@+id/volume_mute"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="8dp"
-                    android:onClick="@{()->vm.onVolumeDownClicked()}"
-                    android:padding="12dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/volume_up"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/volume_up"
-                    app:srcCompat="@drawable/ic_baseline_volume_mute_24" />
-
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/soundVolume"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:id="@+id/volume"
+                    taskProgress="@{vm.soundVolumeEvent.asLiveData()}"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:stepSize="10.0"
-                    android:value="@{vm.currentSoundVolumeValue}"
-                    android:valueFrom="0.0"
-                    android:valueTo="100.0"
-                    app:layout_constraintBottom_toBottomOf="@+id/volume_up"
-                    app:layout_constraintEnd_toStartOf="@+id/volume_up"
-                    app:layout_constraintStart_toEndOf="@+id/volume_mute"
-                    app:layout_constraintTop_toTopOf="@+id/volume_up"
-                    tools:value="50.0" />
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toBottomOf="@+id/food_volume">
 
-                <ImageView
-                    android:id="@+id/volume_up"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_margin="8dp"
-                    android:onClick="@{()->vm.onVolumeUpClicked()}"
-                    android:padding="12dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/food_volume"
-                    app:srcCompat="@drawable/ic_baseline_volume_up_24" />
+                    <ImageView
+                        android:id="@+id/volume_mute"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_margin="8dp"
+                        android:onClick="@{()->vm.onVolumeDownClicked()}"
+                        android:padding="12dp"
+                        app:srcCompat="@drawable/ic_baseline_volume_mute_24" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/soundVolume"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:stepSize="10.0"
+                        android:value="@{vm.currentSoundVolumeValue}"
+                        android:valueFrom="0.0"
+                        android:valueTo="100.0"
+                        tools:value="50.0" />
+
+                    <ImageView
+                        android:id="@+id/volume_up"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_margin="8dp"
+                        android:onClick="@{()->vm.onVolumeUpClicked()}"
+                        android:padding="12dp"
+                        app:srcCompat="@drawable/ic_baseline_volume_up_24" />
+
+
+                </LinearLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/feeding_sound"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
-                    taskProgress="@{vm.convertAndUploadSoundRequest.asLiveData()}"
+                    taskProgress="@{vm.convertAndUploadSoundUseCaseTask.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@+id/volume_up">
+                    app:layout_constraintTop_toBottomOf="@+id/volume">
 
                     <AutoCompleteTextView
                         android:id="@+id/feeding_sound_drop_down"
@@ -86,6 +90,7 @@
                         android:focusable="false"
                         android:focusableInTouchMode="false"
                         android:hint="@string/feeding_sound"
+                        android:inputType="none"
                         android:text="@string/choose" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -94,7 +99,6 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    taskProgress="@{vm.convertAndUploadSoundRequest2.asLiveData()}"
                     app:layout_constraintTop_toBottomOf="@+id/feeding_sound">
 
                     <AutoCompleteTextView
@@ -104,6 +108,7 @@
                         android:focusable="false"
                         android:focusableInTouchMode="false"
                         android:hint="@string/led_state"
+                        android:inputType="none"
                         android:text="@string/choose" />
                 </com.google.android.material.textfield.TextInputLayout>
 

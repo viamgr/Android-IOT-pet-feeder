@@ -48,11 +48,12 @@ class CoroutineLiveTask<P, R>(
     fun maybeRun() {
         runningJob = scope.launch {
             val notifyImmediately = _state is Resource.Error
-            _state = Resource.Loading
             val loadingJob = if (notifyImmediately) {
+                _state = Resource.Loading
                 notifyValue()
                 null
             } else {
+                _state = null
                 launch {
                     delay(debounceTime)
                     if (isActive) {
