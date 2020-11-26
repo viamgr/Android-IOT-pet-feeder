@@ -11,6 +11,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.google.android.material.snackbar.Snackbar
 import com.viam.feeder.R
 import com.viam.feeder.core.domain.isConnectionError
 import com.viam.feeder.core.domain.toMessage
@@ -18,11 +19,8 @@ import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
-import com.viam.feeder.core.utility.dexter.PermissionContract
-import com.viam.feeder.core.utility.dexter.permissionContract
 import com.viam.feeder.ui.wifi.NetworkStatus
 import com.viam.feeder.ui.wifi.WifiFragment
-import com.viam.feeder.ui.wifi.startConnectionListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.bottom_nav
@@ -34,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private var backPressedOnce = false
     private lateinit var navController: NavController
     private val viewModel: MainViewModel by viewModels()
-    val connectionUtil = startConnectionListener()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +46,7 @@ class MainActivity : AppCompatActivity() {
                     setIsWifiDialogShowing(true)
                     navController.navigate(R.id.wifi_fragment)
                 } else {
-                    Toast.makeText(this, it.toMessage(this), Toast.LENGTH_SHORT).show()
+                    showMessage(it.toMessage(this))
                 }
             }
         })
@@ -67,7 +64,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private val permissionResult: PermissionContract<*> = permissionContract()
+    private fun showMessage(message: String) {
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            message,
+            Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
     private fun isConnectedToPreferredDevice(networkState: NetworkStatus): Boolean {
         return networkState.isAvailable && networkState.isWifi &&
                 (networkState.deviceName == null ||

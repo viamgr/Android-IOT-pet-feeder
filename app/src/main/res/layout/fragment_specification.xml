@@ -97,6 +97,8 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/ledEnabled"
                     taskProgress="@{vm.ledStateTask.asLiveData()}"
+                    doneAnimationDelay="@{1500L}"
+                    doneAnimationLayout="@{@layout/layout_done}"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

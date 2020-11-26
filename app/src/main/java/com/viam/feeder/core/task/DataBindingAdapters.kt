@@ -1,13 +1,16 @@
 package com.viam.feeder.core.task
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.LayoutRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.postDelayed
 import androidx.databinding.BindingAdapter
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
@@ -19,12 +22,19 @@ import eightbitlab.com.blurview.RenderScriptBlur
 import java.util.concurrent.CancellationException
 
 
-@BindingAdapter("taskProgress")
-fun View.taskProgress(liveTask: LiveTask<*, *>?) {
+@BindingAdapter(
+    value = ["taskProgress", "doneAnimationLayout", "doneAnimationDelay"],
+    requireAll = false
+)
+fun View.taskProgress(
+    liveTask: LiveTask<*, *>?,
+    @LayoutRes doneAnimationLayout: Int?,
+    doneAnimationDelay: Long?
+) {
     val state = liveTask?.state()
     val isLoading = state?.isLoading() == true
     val showError = state is Resource.Error && state.exception !is CancellationException
-    val isVisible = isLoading || showError
+    val shouldVisible = isLoading || showError
 
     val parent = if (parent !is ConstraintLayout && this is ConstraintLayout) {
         this
@@ -35,9 +45,19 @@ fun View.taskProgress(liveTask: LiveTask<*, *>?) {
         parent.id = ViewCompat.generateViewId()
     }
 
-    if (!isVisible) {
+    if (!shouldVisible) {
         if (tag != null) {
             parent.removeView(parent.findViewById(tag as Int))
+            if (state is Resource.Success && doneAnimationLayout != null) {
+                val inflater = LayoutInflater.from(context)
+                inflater.inflate(doneAnimationLayout, parent, false).let { doneView ->
+                    ViewCompat.setElevation(doneView, Float.MAX_VALUE)
+                    parent.addView(doneView)
+                    parent.postDelayed(doneAnimationDelay ?: 2500L) {
+                        parent.removeView(doneView)
+                    }
+                }
+            }
         }
     } else {
         val viewId = id

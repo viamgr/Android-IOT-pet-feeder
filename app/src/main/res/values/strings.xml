@@ -67,4 +67,5 @@
     <string name="access_wifi_state">access_wifi_state</string>
     <string name="change_network_state">change_network_state</string>
     <string name="change_wifi_state">change_wifi_state</string>
+    <string name="task_done">Task Done</string>
 </resources>

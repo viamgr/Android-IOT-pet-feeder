@@ -6,8 +6,8 @@ import java.net.ConnectException
 import kotlin.random.Random
 
 suspend inline fun <T> fakeRequest(
-    delayTime: Int = 5000,
-    possibility: Int = 20,
+    delayTime: Int = 2500,
+    possibility: Int = 30,
     crossinline body: suspend () -> T
 ): T {
     if (ConnectionUtil.connectionState.value?.isAvailable == false) {
