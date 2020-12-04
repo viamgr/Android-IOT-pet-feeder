@@ -1,8 +1,5 @@
 package com.viam.feeder.di
 
-import com.viam.feeder.data.api.GlobalConfigService
-import com.viam.feeder.data.api.TimerService
-import com.viam.feeder.data.api.UploadService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

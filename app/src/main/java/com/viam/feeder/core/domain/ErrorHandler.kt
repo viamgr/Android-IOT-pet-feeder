@@ -6,12 +6,16 @@ import com.viam.feeder.core.task.CompositeException
 import java.net.ConnectException
 
 fun Throwable.toMessage(context: Context): String {
-    return if (this is CompositeException) {
-        this.errors.map { it.toMessage(context) }.distinct().joinToString("\n")
-    } else if (isConnectionError()) {
-        context.getString(R.string.wrong_connected)
-    } else {
-        context.getString(R.string.error_happened)
+    return when {
+        this is CompositeException -> {
+            this.errors.map { it.toMessage(context) }.distinct().joinToString("\n")
+        }
+        isConnectionError() -> {
+            context.getString(R.string.wrong_connected)
+        }
+        else -> {
+            context.getString(R.string.error_happened)
+        }
     }
 }
 

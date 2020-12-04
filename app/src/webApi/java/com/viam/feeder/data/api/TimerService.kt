@@ -13,8 +13,8 @@ interface TimerService {
     suspend fun getList(): List<ClockTimer>
 
     @POST("timer/")
-    fun add(clockTimer: ClockTimer): ClockTimer
+    suspend fun add(clockTimer: ClockTimer): ClockTimer
 
     @DELETE("timer/{id}/")
-    fun delete(@Path("id") id: Long): Response<Unit>
+    suspend fun delete(@Path("id") id: Long)
 }
