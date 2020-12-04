@@ -1,4 +1,4 @@
-package com.viam.feeder.core.domain
+package com.viam.feeder.core.domain.utils
 
 import android.content.Context
 import com.viam.feeder.R

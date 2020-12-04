@@ -8,7 +8,7 @@ import javax.inject.Inject
 @ActivityScoped
 class WifiDataSource @Inject constructor() {
     private val list = mutableListOf(
-        WifiDevice("V. M", "V. M", true),
+        WifiDevice("Wifi Name", "Wifi Name", true),
         WifiDevice("New Wifi", "New Wifi", false)
     )
 

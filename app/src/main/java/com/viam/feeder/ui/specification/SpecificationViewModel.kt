@@ -8,7 +8,7 @@ import com.viam.feeder.R
 import com.viam.feeder.constants.SETTING_FEED_VOLUME
 import com.viam.feeder.constants.SETTING_LED_STATE
 import com.viam.feeder.constants.SETTING_VOLUME
-import com.viam.feeder.core.domain.toLiveTask
+import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.data.domain.event.SendEvent

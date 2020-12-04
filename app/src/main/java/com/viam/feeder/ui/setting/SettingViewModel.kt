@@ -2,7 +2,7 @@ package com.viam.feeder.ui.setting
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
-import com.viam.feeder.core.domain.toLiveTask
+import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.data.domain.wifi.ConnectWifi
 import com.viam.feeder.data.domain.wifi.GetWifiList

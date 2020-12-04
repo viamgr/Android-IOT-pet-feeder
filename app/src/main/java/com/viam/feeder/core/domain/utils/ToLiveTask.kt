@@ -1,5 +1,6 @@
-package com.viam.feeder.core.domain
+package com.viam.feeder.core.domain.utils
 
+import com.viam.feeder.core.domain.UseCase
 import com.viam.feeder.core.task.Block
 import com.viam.feeder.core.task.LiveTask
 import com.viam.feeder.core.task.livaTask

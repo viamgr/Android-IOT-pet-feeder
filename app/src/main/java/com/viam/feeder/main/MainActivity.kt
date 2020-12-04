@@ -13,14 +13,14 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import com.viam.feeder.R
-import com.viam.feeder.core.domain.isConnectionError
-import com.viam.feeder.core.domain.toMessage
+import com.viam.feeder.constants.ACCESS_POINT_SSID
+import com.viam.feeder.core.domain.utils.isConnectionError
+import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.ui.wifi.NetworkStatus
-import com.viam.feeder.ui.wifi.WifiFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.bottom_nav
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
     private fun isConnectedToPreferredDevice(networkState: NetworkStatus): Boolean {
         return networkState.isAvailable && networkState.isWifi &&
                 (networkState.deviceName == null ||
-                        networkState.deviceName == "\"${WifiFragment.preferredWifiNetWorkSsid}\"")
+                        networkState.deviceName == "\"$ACCESS_POINT_SSID\"")
     }
 
     override fun onBackPressed() {

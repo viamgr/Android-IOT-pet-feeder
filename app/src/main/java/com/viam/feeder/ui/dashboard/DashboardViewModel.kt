@@ -3,7 +3,7 @@ package com.viam.feeder.ui.dashboard
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.constants.EVENT_TRIGGER
-import com.viam.feeder.core.domain.toLiveTask
+import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.models.KeyValue
 

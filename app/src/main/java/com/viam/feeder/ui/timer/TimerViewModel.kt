@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.constants.SETTING_INTERVAL
-import com.viam.feeder.core.domain.toLiveTask
+import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.data.domain.event.SendEvent

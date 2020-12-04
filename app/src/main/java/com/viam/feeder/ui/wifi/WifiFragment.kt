@@ -16,6 +16,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.viam.feeder.BR
 import com.viam.feeder.R
+import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
+import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
@@ -30,11 +32,10 @@ class WifiFragment : DialogFragment() {
 
     private lateinit var binding: FragmentWifiBinding
     private val viewModel: WifiViewModel by viewModels()
-//    private val mainViewModel: MainViewModel by activityViewModels()
 
     private val wifiAutoConnect = wifiAutoConnect(
-        preferredWifiNetWorkSsid = preferredWifiNetWorkSsid,
-        preferredWifiNetWorkPassword = "6037991302"
+        preferredWifiNetWorkSsid = ACCESS_POINT_SSID,
+        preferredWifiNetWorkPassword = ACCESS_POINT_PASSWORD
     ) { isAvailable ->
         if (isAvailable)
             dismiss()
@@ -43,7 +44,6 @@ class WifiFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
-//        isCancelable = false
     }
 
     override fun onCreateView(
@@ -83,7 +83,7 @@ class WifiFragment : DialogFragment() {
 
 /*        mainViewModel.connectionStatus.observe(this, {
             if (it.isAvailable) {
-                if (!it.isWifi || it.deviceName == null || it.deviceName == "\"V. M\"")
+                if (!it.isWifi || it.deviceName == null || it.deviceName == "\"$ACCESS_POINT_SSID\"")
                     dismiss()
             }
         })*/
@@ -92,9 +92,5 @@ class WifiFragment : DialogFragment() {
     override fun onDestroy() {
         super.onDestroy()
         wifiAutoConnect.stop()
-    }
-
-    companion object {
-        val preferredWifiNetWorkSsid: String? = "V. M"
     }
 }

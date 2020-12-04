@@ -6,7 +6,7 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.viam.feeder.core.Resource
-import com.viam.feeder.core.domain.isConnectionError
+import com.viam.feeder.core.domain.utils.isConnectionError
 import com.viam.feeder.core.onSuccess
 import kotlinx.coroutines.*
 import java.util.concurrent.CancellationException

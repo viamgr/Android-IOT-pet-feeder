@@ -14,7 +14,7 @@ import androidx.core.view.postDelayed
 import androidx.databinding.BindingAdapter
 import com.viam.feeder.R
 import com.viam.feeder.core.Resource
-import com.viam.feeder.core.domain.toMessage
+import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.feeder.core.isError
 import com.viam.feeder.core.isLoading
 import eightbitlab.com.blurview.BlurView
