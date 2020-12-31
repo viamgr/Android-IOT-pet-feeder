@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.viam.feeder.R
 import com.viam.feeder.constants.SETTING_FEED_VOLUME
 import com.viam.feeder.constants.SETTING_LED_STATE
-import com.viam.feeder.constants.SETTING_VOLUME
+import com.viam.feeder.constants.SETTING_SOUND_VOLUME
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
@@ -131,7 +131,7 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     init {
         soundVolumeEventTask.asLiveData().addSource(_currentSoundVolumeValue) {
-            soundVolumeEventTask.postWithCancel(KeyValue(SETTING_VOLUME, it))
+            soundVolumeEventTask.postWithCancel(KeyValue(SETTING_SOUND_VOLUME, it))
         }
     }
 

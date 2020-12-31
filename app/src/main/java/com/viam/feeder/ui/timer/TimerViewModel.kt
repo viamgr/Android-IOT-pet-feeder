@@ -4,7 +4,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.viam.feeder.constants.SETTING_INTERVAL
+import com.viam.feeder.constants.SETTING_FEEDING_INTERVAL
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
@@ -54,7 +54,7 @@ class TimerViewModel @ViewModelInject constructor(
 
     init {
         sendEventTask.asLiveData().addSource(_currentValue) {
-            sendEventTask.postWithCancel(KeyValue(SETTING_INTERVAL, it))
+            sendEventTask.postWithCancel(KeyValue(SETTING_FEEDING_INTERVAL, it))
         }
     }
 

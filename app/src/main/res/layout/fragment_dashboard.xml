@@ -83,7 +83,7 @@
             android:layout_margin="12dp"
             android:clickable="true"
             android:focusable="true"
-            android:onClick="@{()->vm.sendTriggerEvent()}"
+            android:onClick="@{()->vm.sendLightEvent()}"
             app:cardCornerRadius="400dp"
             app:cardElevation="8dp"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -1,26 +1,28 @@
 package com.viam.feeder.di
 
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
-import dagger.hilt.android.scopes.ActivityScoped
+import dagger.hilt.android.components.ApplicationComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
 
 
 @Module
-@InstallIn(ActivityComponent::class)
+@InstallIn(ApplicationComponent::class)
 class NetWorkModule {
     companion object {
         const val API_IP = "192.168.4.1"
         const val API_PORT = 80
     }
 
-    @ActivityScoped
+    @Singleton
     @Provides
     fun getRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
@@ -31,8 +33,14 @@ class NetWorkModule {
     }
 
     @Provides
-    @ActivityScoped
-    fun getHttpClient(): OkHttpClient {
+    @Singleton
+    fun provideNetworkFlipperPlugin(): NetworkFlipperPlugin = NetworkFlipperPlugin()
+
+    @Provides
+    @Singleton
+    fun getHttpClient(
+        networkFlipperPlugin: NetworkFlipperPlugin
+    ): OkHttpClient {
         val okHttpBuilder = OkHttpClient.Builder()
 
         val interceptor = HttpLoggingInterceptor()
@@ -45,6 +53,7 @@ class NetWorkModule {
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
+            .addNetworkInterceptor(FlipperOkhttpInterceptor(networkFlipperPlugin))
             .build()
     }
 
