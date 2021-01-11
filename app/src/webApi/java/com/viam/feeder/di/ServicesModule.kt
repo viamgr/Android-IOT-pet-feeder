@@ -1,9 +1,6 @@
 package com.viam.feeder.di
 
-import com.viam.feeder.data.api.EventService
-import com.viam.feeder.data.api.TimerService
-import com.viam.feeder.data.api.UploadService
-import com.viam.feeder.data.api.WifiService
+import com.viam.feeder.data.api.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +28,12 @@ class ServicesModule {
     @Provides
     fun provideEventService(retroFit: Retrofit): EventService {
         return retroFit.create(EventService::class.java)
+    }
+
+    @ActivityScoped
+    @Provides
+    fun provideConfigsService(retroFit: Retrofit): ConfigsService {
+        return retroFit.create(ConfigsService::class.java)
     }
 
     @ActivityScoped

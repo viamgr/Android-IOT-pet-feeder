@@ -36,7 +36,7 @@
 
                 <LinearLayout
                     android:id="@+id/volume"
-                    taskProgress="@{vm.soundVolumeEventTask.asLiveData()}"
+                    taskProgress="@{vm.soundVolumeLiveTasks.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"

@@ -7,10 +7,11 @@ import androidx.lifecycle.ViewModel
 import com.viam.feeder.R
 import com.viam.feeder.constants.SETTING_FEED_DURATION
 import com.viam.feeder.constants.SETTING_LED_STATE
-import com.viam.feeder.constants.SETTING_SOUND_VOLUME
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.data.domain.config.GetSoundVolume
+import com.viam.feeder.data.domain.config.SetSoundVolume
 import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.specification.ConvertUploadSound
 import com.viam.feeder.data.domain.specification.UploadSound
@@ -21,7 +22,9 @@ import com.viam.feeder.models.FeedVolume
 class SpecificationViewModel @ViewModelInject constructor(
     convertUploadSound: ConvertUploadSound,
     uploadSound: UploadSound,
-    sendEvent: SendEvent
+    sendEvent: SendEvent,
+    getSoundVolume: GetSoundVolume,
+    setSoundVolume: SetSoundVolume,
 ) :
     ViewModel() {
     private val _feedSounds = MutableLiveData(
@@ -48,7 +51,15 @@ class SpecificationViewModel @ViewModelInject constructor(
         debounce(250)
     }
 
-    val soundVolumeEventTask = sendEvent.toLiveTask()
+    private val setSoundVolumeEventTask = setSoundVolume.toLiveTask()
+    private val getSoundVolumeEventTask = getSoundVolume.toLiveTask().also { liveTask ->
+        liveTask.onSuccess {
+            _currentSoundVolumeValue.value = ((it ?: 3.99F) * 100 / 3.99F)
+        }
+        liveTask.post(Unit)
+    }
+
+    val soundVolumeLiveTasks = compositeTask(setSoundVolumeEventTask, getSoundVolumeEventTask)
 
     val soundTask = compositeTask(
         uploadSoundTask, convertAndUploadSoundUseCaseTask
@@ -130,8 +141,8 @@ class SpecificationViewModel @ViewModelInject constructor(
     }
 
     init {
-        soundVolumeEventTask.asLiveData().addSource(_currentSoundVolumeValue) {
-            soundVolumeEventTask.postWithCancel(KeyValue(SETTING_SOUND_VOLUME, it))
+        setSoundVolumeEventTask.asLiveData().addSource(_currentSoundVolumeValue) {
+            setSoundVolumeEventTask.postWithCancel(it / 100 * 3.99F)
         }
     }
 

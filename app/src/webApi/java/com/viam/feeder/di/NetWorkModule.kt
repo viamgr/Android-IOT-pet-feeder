@@ -49,10 +49,10 @@ class NetWorkModule {
         return okHttpBuilder
             .retryOnConnectionFailure(false)
 //            .addInterceptor(interceptor)
-            .callTimeout(10, TimeUnit.SECONDS)
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
+            .callTimeout(100, TimeUnit.SECONDS)
+            .connectTimeout(100, TimeUnit.SECONDS)
+            .readTimeout(100, TimeUnit.SECONDS)
+            .writeTimeout(100, TimeUnit.SECONDS)
             .addNetworkInterceptor(FlipperOkhttpInterceptor(networkFlipperPlugin))
             .build()
     }

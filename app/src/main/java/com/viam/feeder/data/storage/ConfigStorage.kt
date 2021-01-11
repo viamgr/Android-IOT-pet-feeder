@@ -1,6 +1,5 @@
 package com.viam.feeder.data.storage
 
-import android.R.attr.data
 import android.content.Context
 import androidx.annotation.WorkerThread
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -8,34 +7,45 @@ import org.json.JSONObject
 import timber.log.Timber
 import java.io.*
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-
+@Singleton
 class ConfigStorage @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    private val configFileName: String
 ) {
-
-    private val file by lazy {
-        File(appContext.cacheDir, configFileName)
-    }
+    private val configFileName: String = "config.json"
 
     private val configObject = lazy {
         JSONObject(read())
     }
 
-    private fun read(): String {
-        val inputStreamReader = InputStreamReader(file.inputStream())
-        val bufferedReader = BufferedReader(inputStreamReader)
-        return bufferedReader.use { it.readText() }
+    val file by lazy {
+        File(appContext.cacheDir, configFileName)
     }
 
-    private fun write() {
+    var soundVolume by ReadWriteConfig(configObject, "soundVolume", 3.99F)
+
+    fun isConfigured() = configObject.isInitialized()
+
+    fun write(input: InputStream) {
+        val fos = FileOutputStream(file)
+        fos.use { output ->
+            val buffer = ByteArray(4 * 1024) // or other buffer size
+            var read: Int
+            while (input.read(buffer).also { read = it } != -1) {
+                output.write(buffer, 0, read)
+            }
+            output.flush()
+        }
+    }
+
+    fun save() {
         try {
             val openFileOutput = file.outputStream()
             val outputStreamWriter = OutputStreamWriter(openFileOutput)
-            outputStreamWriter.write(data)
+            outputStreamWriter.write(configObject.toString())
             outputStreamWriter.close()
         } catch (e: IOException) {
             Timber.e("File write failed: %s", e.toString())
@@ -46,9 +56,11 @@ class ConfigStorage @Inject constructor(
         return configObject.value.toString()
     }
 
-    var soundVolume by ReadWriteConfig(configObject, "soundVolume", 3.99)
-
-
+    private fun read(): String {
+        val inputStreamReader = InputStreamReader(file.inputStream())
+        val bufferedReader = BufferedReader(inputStreamReader)
+        return bufferedReader.use { it.readText() }
+    }
 }
 
 
