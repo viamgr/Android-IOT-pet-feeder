@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.R
-import com.viam.feeder.constants.SETTING_FEED_VOLUME
+import com.viam.feeder.constants.SETTING_FEED_DURATION
 import com.viam.feeder.constants.SETTING_LED_STATE
 import com.viam.feeder.constants.SETTING_SOUND_VOLUME
 import com.viam.feeder.core.domain.utils.toLiveTask
@@ -79,7 +79,7 @@ class SpecificationViewModel @ViewModelInject constructor(
         _feedVolumeList.value?.toMutableList()?.map {
             it.selected = id == it.id
             if (it.selected) {
-                feedVolumeEvent.postWithCancel(KeyValue(SETTING_FEED_VOLUME, it.scale * 1000))
+                feedVolumeEvent.postWithCancel(KeyValue(SETTING_FEED_DURATION, it.scale * 1000))
             }
             it
         }?.let {
