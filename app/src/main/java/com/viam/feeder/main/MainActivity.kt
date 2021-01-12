@@ -24,6 +24,7 @@ import com.viam.feeder.ui.wifi.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.bottom_nav
+import timber.log.Timber
 
 @AndroidEntryPoint
 
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
+                Timber.e(it)
                 if (it.isConnectionError() && !viewModel.isWifiDialogShowing) {
                     setIsWifiDialogShowing(true)
                     navController.navigate(R.id.wifi_fragment)

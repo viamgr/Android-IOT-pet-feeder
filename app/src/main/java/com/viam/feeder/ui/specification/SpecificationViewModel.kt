@@ -53,7 +53,9 @@ class SpecificationViewModel @ViewModelInject constructor(
         debounce(250)
     }
 
-    private val setSoundVolumeEventTask = setSoundVolume.toLiveTask()
+    private val setSoundVolumeEventTask = setSoundVolume.toLiveTask() {
+        debounce(2000)
+    }
     private val getSoundVolumeEventTask = getSoundVolume.toLiveTask().also { liveTask ->
         liveTask.onSuccess {
             it?.let {
