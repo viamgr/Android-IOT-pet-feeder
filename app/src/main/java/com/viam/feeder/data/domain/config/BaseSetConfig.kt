@@ -28,7 +28,8 @@ abstract class BaseSetConfig<T>(
 
     private suspend fun uploadConfigs() {
         val requestFile: RequestBody =
-            configStorage.toString().toRequestBody("multipart/form-data".toMediaTypeOrNull())
+            configStorage.getJsonString()
+                .toRequestBody("application/octet-stream".toMediaTypeOrNull())
         val body = MultipartBody.Part.createFormData("Config", "config.json", requestFile)
         configsRepository.uploadConfigs(body)
     }

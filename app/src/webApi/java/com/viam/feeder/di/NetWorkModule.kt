@@ -2,6 +2,7 @@ package com.viam.feeder.di
 
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
+import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,6 +32,10 @@ class NetWorkModule {
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
     }
+
+    @Provides
+    @Singleton
+    fun provideMoshi() = Moshi.Builder().build()
 
     @Provides
     @Singleton

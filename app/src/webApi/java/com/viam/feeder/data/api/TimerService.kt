@@ -1,7 +1,6 @@
 package com.viam.feeder.data.api
 
 import com.viam.feeder.data.models.ClockTimer
-import retrofit2.Response
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -16,5 +15,5 @@ interface TimerService {
     suspend fun add(clockTimer: ClockTimer): ClockTimer
 
     @DELETE("timer/{id}/")
-    suspend fun delete(@Path("id") id: Long)
+    suspend fun delete(@Path("id") id: Int)
 }

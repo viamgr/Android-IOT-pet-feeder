@@ -5,20 +5,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.constants.SETTING_FEEDING_INTERVAL
+import com.viam.feeder.core.dataOrNull
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.data.domain.config.GetAlarms
+import com.viam.feeder.data.domain.config.SetAlarms
 import com.viam.feeder.data.domain.event.SendEvent
-import com.viam.feeder.data.domain.timer.AddTimer
 import com.viam.feeder.data.domain.timer.DeleteTimer
-import com.viam.feeder.data.domain.timer.GetTimerList
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValue
 
 class TimerViewModel @ViewModelInject constructor(
-    addTimer: AddTimer,
+    setAlarms: SetAlarms,
     deleteTimer: DeleteTimer,
-    getTimerList: GetTimerList,
+    getAlarms: GetAlarms,
     sendEvent: SendEvent
 ) : ViewModel() {
 
@@ -28,7 +29,7 @@ class TimerViewModel @ViewModelInject constructor(
     private val _currentValue = MutableLiveData(DEFAULT_VALUE)
     val currentValue: LiveData<Int> = _currentValue
 
-    private val getTimerListTask = getTimerList.toLiveTask {
+    private val getTimerListTask = getAlarms.toLiveTask {
         onSuccess {
             controller.setData(it)
         }
@@ -36,7 +37,7 @@ class TimerViewModel @ViewModelInject constructor(
         it.post(Unit)
     }
 
-    private val addTimerTask = addTimer.toLiveTask {
+    private val addTimerTask = setAlarms.toLiveTask {
         onSuccess {
             getTimerListTask.post(Unit)
         }
@@ -84,7 +85,12 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     fun onTimeSet(newHour: Int, newMinute: Int) {
-        addTimerTask.post(ClockTimer(hour = newHour, minute = newMinute))
+        getTimerListTask.state().dataOrNull()?.let {
+            val newList = it.toMutableList()
+            newList.add(ClockTimer(hour = newHour, minute = newMinute))
+            addTimerTask.post(newList)
+        }
+
     }
 
 
