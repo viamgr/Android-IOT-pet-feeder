@@ -7,7 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.postDelayed
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -20,10 +20,10 @@ import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
+import com.viam.feeder.core.utility.bindingAdapter.contentView
+import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.bottom_nav
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -33,13 +33,17 @@ class MainActivity : AppCompatActivity() {
     private var backPressedOnce = false
     private lateinit var navController: NavController
     private val viewModel: MainViewModel by viewModels()
+    private val binding by contentView<MainActivity, ActivityMainBinding>(R.layout.activity_main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
-        setupViews()
 
+        binding.apply {
+            lifecycleOwner = this@MainActivity
+            setSupportActionBar(toolbar)
+        }
+
+        setupViews()
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
@@ -103,10 +107,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_container) as NavHostFragment
-        navController = navHostFragment.navController
-        NavigationUI.setupWithNavController(bottom_nav, navHostFragment.navController)
+        navController = findNavController(R.id.nav_host_container)
+        NavigationUI.setupWithNavController(binding.bottomNav, navController)
 
         //var appBarConfiguration = AppBarConfiguration(navHostFragment.navController.graph)
         val appBarConfiguration = AppBarConfiguration(
@@ -117,6 +119,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.fragment_setting
             )
         )
-        setupActionBarWithNavController(navHostFragment.navController, appBarConfiguration)
+        setupActionBarWithNavController(navController, appBarConfiguration)
     }
 }

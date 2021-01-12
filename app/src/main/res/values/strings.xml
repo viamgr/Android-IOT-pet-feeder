@@ -37,7 +37,7 @@
     <string name="am">AM</string>
     <string name="pm">PM</string>
     <string name="clock_format">%d:%02d</string>
-    <string name="dashboard">Dashboard</string>
+    <string name="dashboard">FEEDER</string>
     <string name="specification">Specification</string>
     <string name="scheduling">scheduling</string>
     <string name="periodic">Periodic</string>
@@ -68,4 +68,9 @@
     <string name="change_network_state">change_network_state</string>
     <string name="change_wifi_state">change_wifi_state</string>
     <string name="task_done">Task Done</string>
+    <string name="actions">ACTIONS</string>
+    <string name="feeding_process">Feeding Process</string>
+    <string name="feeding">Feeding</string>
+    <string name="calling">Calling</string>
+    <string name="lighting">Lighting</string>
 </resources>

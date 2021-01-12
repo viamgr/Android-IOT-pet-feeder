@@ -1,9 +1,12 @@
 package com.viam.feeder.core.databinding
 
+import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.Button
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
+import coil.load
 import com.google.android.material.button.MaterialButton
 import com.viam.feeder.core.Resource
 import com.viam.feeder.core.isLoading
@@ -28,4 +31,10 @@ fun MaterialButton.setIcon(icon: Int) {
 @BindingAdapter("visibleOnLoading")
 fun View.visibleOnLoading(resource: Resource<*>?) {
     isVisible = resource?.isLoading() ?: false
+}
+
+
+@BindingAdapter("imageUrl")
+fun ImageView.imageUrl(resource: Drawable) {
+    load(resource)
 }
