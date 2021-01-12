@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 abstract class BaseSetConfig<T>(
     coroutineDispatcher: CoroutineDispatcher,
@@ -27,9 +27,8 @@ abstract class BaseSetConfig<T>(
     protected abstract suspend fun setConfigField(value: T)
 
     private suspend fun uploadConfigs() {
-        configStorage.save()
         val requestFile: RequestBody =
-            configStorage.file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+            configStorage.toString().toRequestBody("multipart/form-data".toMediaTypeOrNull())
         val body = MultipartBody.Part.createFormData("Config", "config.json", requestFile)
         configsRepository.uploadConfigs(body)
     }

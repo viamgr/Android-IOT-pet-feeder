@@ -83,7 +83,8 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
         })
 
         binding.soundVolume.addOnChangeListener { _, value, fromUser ->
-            viewModel.onSoundVolumeChanged(value)
+            if (fromUser)
+                viewModel.onSoundVolumeChanged(value)
         }
 
         viewModel.feedVolumeList.observe(viewLifecycleOwner, { list ->

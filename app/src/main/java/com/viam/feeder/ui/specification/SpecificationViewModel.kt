@@ -17,6 +17,8 @@ import com.viam.feeder.data.domain.specification.ConvertUploadSound
 import com.viam.feeder.data.domain.specification.UploadSound
 import com.viam.feeder.data.models.KeyValue
 import com.viam.feeder.models.FeedVolume
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
 
 class SpecificationViewModel @ViewModelInject constructor(
@@ -54,7 +56,9 @@ class SpecificationViewModel @ViewModelInject constructor(
     private val setSoundVolumeEventTask = setSoundVolume.toLiveTask()
     private val getSoundVolumeEventTask = getSoundVolume.toLiveTask().also { liveTask ->
         liveTask.onSuccess {
-            _currentSoundVolumeValue.value = ((it ?: 3.99F) * 100 / 3.99F)
+            it?.let {
+                _currentSoundVolumeValue.value = (it * 10 / 3.99F).toInt() * 10F
+            }
         }
         liveTask.post(Unit)
     }
@@ -134,16 +138,16 @@ class SpecificationViewModel @ViewModelInject constructor(
 
     fun onSoundVolumeChanged(value: Float) {
         _currentSoundVolumeValue.value = value
+        setSoundVolumeEventTask.postWithCancel((value / 100 * 3.99F).roundTo(1))
     }
 
     fun onSoundFilePicked(input: String, output: String) {
         convertAndUploadSoundUseCaseTask.post(Pair(input, output))
     }
 
-    init {
-        setSoundVolumeEventTask.asLiveData().addSource(_currentSoundVolumeValue) {
-            setSoundVolumeEventTask.postWithCancel(it / 100 * 3.99F)
-        }
-    }
+}
 
+fun Float.roundTo(numFractionDigits: Int): Float {
+    val factor = 10.0F.pow(numFractionDigits.toFloat())
+    return (this * factor).roundToInt() / factor
 }
