@@ -35,10 +35,6 @@ class NetWorkModule {
 
     @Provides
     @Singleton
-    fun provideMoshi() = Moshi.Builder().build()
-
-    @Provides
-    @Singleton
     fun provideNetworkFlipperPlugin(): NetworkFlipperPlugin = NetworkFlipperPlugin()
 
     @Provides

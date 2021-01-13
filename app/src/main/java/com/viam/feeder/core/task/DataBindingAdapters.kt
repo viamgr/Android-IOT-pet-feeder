@@ -23,13 +23,34 @@ import java.util.concurrent.CancellationException
 
 
 @BindingAdapter(
-    value = ["taskProgress", "doneAnimationLayout", "doneAnimationDelay"],
-    requireAll = false
+    value = ["resource", "doneAnimationLayout", "doneAnimationDelay"],
+    requireAll = true
 )
-fun View.taskProgress(
-    liveTask: LiveTask<*, *>?,
+fun View.doneAnimationLayout(
+    resource: Resource<*>?,
     @LayoutRes doneAnimationLayout: Int?,
     doneAnimationDelay: Long?
+) {
+    if (resource is Resource.Success && doneAnimationLayout != null) {
+        val inflater = LayoutInflater.from(context)
+        val viewGroup = parent as ViewGroup
+        inflater.inflate(doneAnimationLayout, viewGroup, false).let { doneView ->
+            ViewCompat.setElevation(doneView, Float.MAX_VALUE)
+            viewGroup.addView(doneView)
+            viewGroup.postDelayed(doneAnimationDelay ?: 2500L) {
+                viewGroup.removeView(doneView)
+            }
+        }
+    }
+
+}
+
+@BindingAdapter(
+    value = ["taskProgress"],
+    requireAll = true
+)
+fun View.taskProgress(
+    liveTask: LiveTask<*, *>?
 ) {
     val state = liveTask?.state()
     val isLoading = state?.isLoading() == true
@@ -48,16 +69,6 @@ fun View.taskProgress(
     if (!shouldVisible) {
         if (tag != null) {
             parent.removeView(parent.findViewById(tag as Int))
-            if (state is Resource.Success && doneAnimationLayout != null) {
-                val inflater = LayoutInflater.from(context)
-                inflater.inflate(doneAnimationLayout, parent, false).let { doneView ->
-                    ViewCompat.setElevation(doneView, Float.MAX_VALUE)
-                    parent.addView(doneView)
-                    parent.postDelayed(doneAnimationDelay ?: 2500L) {
-                        parent.removeView(doneView)
-                    }
-                }
-            }
         }
     } else {
         val viewId = id

@@ -12,11 +12,9 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
-import com.viam.feeder.core.interfaces.OnItemClickListener
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.utility.dexter.permissionContract
 import com.viam.feeder.databinding.FragmentSpecificationBinding
-import com.viam.feeder.feedVolume
 import com.viam.feeder.ui.record.RecordFragment.Companion.PATH
 import com.viam.feeder.ui.record.RecordFragment.Companion.REQUEST_KEY
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,11 +67,40 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             }
         })
 
+        viewModel.feedVolumeList.observe(viewLifecycleOwner, { list ->
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                list.map { getString(it.label) }
+            ).also { adapter ->
+                binding.feedingVolumeDropDown.setAdapter(adapter)
+                binding.feedingVolumeDropDown.setOnItemClickListener { _, _, position, _ ->
+                    viewModel.onFeedingVolumeClicked(position)
+                }
+            }
+        })
+        viewModel.feedingVolumeValue.observe(viewLifecycleOwner, {
+            binding.feedingVolumeDropDown.setText(getString(it), false)
+        })
+
+        viewModel.soundVolumeList.observe(viewLifecycleOwner, { list ->
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                list.map { getString(it.label) }
+            ).also { adapter ->
+                binding.soundVolumeDropDown.setAdapter(adapter)
+                binding.soundVolumeDropDown.setOnItemClickListener { _, _, position, _ ->
+                    viewModel.onSoundVolumeChanged(position)
+                }
+            }
+        })
+
         viewModel.ledStates.observe(viewLifecycleOwner, { list ->
             ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
-                list
+                list.map { getString(it.label) }
             ).also { adapter ->
                 binding.ledDropdown.setAdapter(adapter)
                 binding.ledDropdown.setOnItemClickListener { _, _, position, _ ->
@@ -82,29 +109,21 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             }
         })
 
-        binding.soundVolume.addOnChangeListener { _, value, fromUser ->
-            if (fromUser)
-                viewModel.onSoundVolumeChanged(value)
-        }
-
-        viewModel.feedVolumeList.observe(viewLifecycleOwner, { list ->
-            binding.foodVolume.withModels {
-                list.forEach {
-                    feedVolume {
-                        id(it.id)
-                        identifier(it.id)
-                        label(it.label)
-                        scale(it.scale)
-                        selected(it.selected)
-                        listener(object : OnItemClickListener {
-                            override fun onItemClick(item: Any?) {
-                                viewModel.onFeedVolumeClicked(item as Int)
-                            }
-                        })
-                    }
+        viewModel.ledTimerList.observe(viewLifecycleOwner, { list ->
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                list.map { getString(it.label, it.value / 1000) }
+            ).also { adapter ->
+                binding.ledTimerDropDown.setAdapter(adapter)
+                binding.ledTimerDropDown.setOnItemClickListener { _, _, position, _ ->
+                    viewModel.onLedTimerItemClickListener(position)
                 }
             }
         })
+        viewModel.ledTimerValue.observe(viewLifecycleOwner) {
+            binding.ledTimerDropDown.setText(getString(it.label, it.value / 1000))
+        }
 
         setFragmentResultListener(REQUEST_KEY) { requestKey, bundle ->
             if (requestKey == REQUEST_KEY) {

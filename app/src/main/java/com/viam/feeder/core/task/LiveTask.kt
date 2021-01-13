@@ -10,6 +10,6 @@ interface LiveTask<P, R> {
     fun asLiveData(): MediatorLiveData<LiveTask<P, R>>
     fun cancel()
     fun retry()
-    fun onSuccess(block: (resource: R?) -> Unit)
+    fun onSuccess(block: (resource: R?) -> Unit): LiveTask<P, R>
     fun isCancelable(): Boolean
 }

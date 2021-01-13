@@ -2,8 +2,10 @@ package com.viam.feeder.core.databinding
 
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.ImageView
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import coil.load
@@ -37,4 +39,9 @@ fun View.visibleOnLoading(resource: Resource<*>?) {
 @BindingAdapter("imageUrl")
 fun ImageView.imageUrl(resource: Drawable) {
     load(resource)
+}
+
+@BindingAdapter("noFilterText")
+fun AutoCompleteTextView.noFilterText(@StringRes stringRes: Int) {
+    setText(context.getString(stringRes), false)
 }

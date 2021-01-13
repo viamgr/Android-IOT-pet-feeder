@@ -25,6 +25,9 @@ class ConfigStorageImpl @Inject constructor(
 ) {
 
     var soundVolume by ReadWriteConfig(configObject, "soundVolume", 3.99F)
+    var feedingDuration by ReadWriteConfig(configObject, "feedingDuration", 2000)
+    var ledState by ReadWriteConfig(configObject, "ledState", 2)
+    var ledTurnOffDelay by ReadWriteConfig(configObject, "ledTurnOffDelay", 60000)
     var alarms by ArrayConfig<String>(
         moshi = moshi,
         configObject = configObject,
@@ -33,6 +36,7 @@ class ConfigStorageImpl @Inject constructor(
         type = String::class.java
     )
 
+    @Synchronized
     fun isConfigured(): Boolean {
         return configObject.json.toString() != "{}"
     }

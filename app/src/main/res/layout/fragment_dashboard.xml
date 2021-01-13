@@ -18,6 +18,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             doneAnimationDelay="@{1500L}"
             doneAnimationLayout="@{@layout/layout_done}"
+            resource="@{vm.sendRequestEvent.asLiveData().state()}"
             taskProgress="@{vm.sendRequestEvent.asLiveData()}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

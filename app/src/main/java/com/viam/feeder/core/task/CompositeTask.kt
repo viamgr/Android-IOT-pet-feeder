@@ -75,8 +75,9 @@ class CompositeTask(
 
     @Suppress("UNCHECKED_CAST")
     override fun asLiveData() = this as MediatorLiveData<LiveTask<Any, Any>>
-    override fun onSuccess(block: (resource: Any?) -> Unit) {
+    override fun onSuccess(block: (resource: Any?) -> Unit): CompositeTask {
         onSuccessBlock = block
+        return this
     }
 
     override fun postWithCancel(params: Any?) {

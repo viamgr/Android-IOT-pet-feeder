@@ -9,6 +9,8 @@
         <item name="textAppearanceListItem">@style/TextAppearanceListItem</item>
         <item name="toolbarStyle">@style/AppTheme.Toolbar</item>
         <item name="bottomNavigationStyle">@style/BottomNavigationView</item>
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox
+        </item>
 
     </style>
 
@@ -21,7 +23,7 @@
     </style>
 
     <style name="TextAppearanceListItem" parent="TextAppearance.AppCompat.Subhead">
-        <item name="android:textColor">@color/white</item>
+        <!--        <item name="android:textColor">@color/white</item>-->
     </style>
 
     <style name="BorderlessButtonStyle" parent="Widget.AppCompat.Button.Borderless">

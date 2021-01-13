@@ -140,8 +140,9 @@ class CoroutineLiveTask<P, R>(
         logger.newEvent(_state)
     }
 
-    override fun onSuccess(block: (resource: R?) -> Unit) {
+    override fun onSuccess(block: (resource: R?) -> Unit): LiveTask<P, R> {
         successBlock = block
+        return this
     }
 
     override fun debounce(timeInMillis: Long) {
