@@ -13,6 +13,6 @@ interface ConfigsService {
     suspend fun downloadConfigs(): Response<ResponseBody>
 
     @Multipart
-    @POST("upload/")
+    @POST("config/")
     suspend fun uploadConfigs(@Part configs: MultipartBody.Part): Response<Unit>
 }

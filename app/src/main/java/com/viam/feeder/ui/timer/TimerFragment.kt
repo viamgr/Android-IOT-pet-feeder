@@ -41,11 +41,6 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
             }
         })
 
-
-        binding.periodSlider.addOnChangeListener { _, value, _ ->
-            viewModel.onValueChanged(value)
-        }
-
         viewModel.openTimerDialog.observe(viewLifecycleOwner, EventObserver {
             showFrameworkTimePicker()
         })

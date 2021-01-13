@@ -12,13 +12,11 @@ import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.data.domain.config.GetAlarms
 import com.viam.feeder.data.domain.config.SetAlarms
 import com.viam.feeder.data.domain.event.SendEvent
-import com.viam.feeder.data.domain.timer.DeleteTimer
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValue
 
 class TimerViewModel @ViewModelInject constructor(
     setAlarms: SetAlarms,
-    deleteTimer: DeleteTimer,
     getAlarms: GetAlarms,
     sendEvent: SendEvent
 ) : ViewModel() {
@@ -43,12 +41,6 @@ class TimerViewModel @ViewModelInject constructor(
         }
     }
 
-    private val deleteTimerTask = deleteTimer.toLiveTask {
-        onSuccess {
-            getTimerListTask.post(Unit)
-        }
-    }
-
     private val sendEventTask = sendEvent.toLiveTask {
         debounce(1000)
     }
@@ -62,7 +54,6 @@ class TimerViewModel @ViewModelInject constructor(
     val compositeTask = compositeTask(
         addTimerTask,
         getTimerListTask,
-        deleteTimerTask,
         sendEventTask,
     )
 
@@ -77,7 +68,10 @@ class TimerViewModel @ViewModelInject constructor(
         }
 
     private fun removeTimer(timer: ClockTimer) {
-        deleteTimerTask.post(timer)
+        getTimerList()?.let { newList ->
+            newList.removeAll { timer.id == it.id }
+            addTimerTask.post(newList)
+        }
     }
 
     fun onClickAddClock() {
@@ -85,33 +79,19 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     fun onTimeSet(newHour: Int, newMinute: Int) {
-        getTimerListTask.state().dataOrNull()?.let {
-            val newList = it.toMutableList()
+        getTimerList()?.let { newList ->
             newList.add(ClockTimer(hour = newHour, minute = newMinute))
             addTimerTask.post(newList)
         }
 
     }
 
-
-    fun onUpClicked() {
-        _currentValue.value =
-            _currentValue.value?.plus(1)?.coerceAtMost(MAX_VALUE)
-    }
-
-    fun onDownClicked() {
-        _currentValue.value =
-            _currentValue.value?.minus(1)?.coerceAtLeast(MIN_VALUE)
-
-    }
+    private fun getTimerList() = getTimerListTask.state().dataOrNull()?.toMutableList()
 
     fun onTabChanged(position: Int?) {
         _timerMode.value = if (position == 0) TIMER_MODE_SCHEDULING else TIMER_MODE_PERIODIC
     }
 
-    fun onValueChanged(value: Float) {
-        _currentValue.value = value.toInt()
-    }
 
     companion object {
         const val TIMER_MODE_SCHEDULING = 0
