@@ -1,7 +1,8 @@
 package com.viam.feeder.data.domain.config
 
+import androidx.annotation.CallSuper
 import com.viam.feeder.core.domain.UseCase
-import com.viam.feeder.data.repository.ConfigsRepository
+import com.viam.feeder.data.repository.UploadRepository
 import com.viam.feeder.data.storage.ConfigStorageImpl
 import kotlinx.coroutines.CoroutineDispatcher
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -12,8 +13,10 @@ import okhttp3.RequestBody.Companion.toRequestBody
 abstract class BaseSetConfig<T>(
     coroutineDispatcher: CoroutineDispatcher,
     private val configStorage: ConfigStorageImpl,
-    private val configsRepository: ConfigsRepository,
+    private val uploadRepository: UploadRepository,
 ) : UseCase<T, Unit>(coroutineDispatcher) {
+
+    @CallSuper
     override suspend fun execute(parameters: T) {
         setConfigField(parameters)
         if (configStorage.isConfigured()) {
@@ -30,7 +33,7 @@ abstract class BaseSetConfig<T>(
         val requestFile: RequestBody =
             configStorage.getJsonString()
                 .toRequestBody("application/octet-stream".toMediaTypeOrNull())
-        val body = MultipartBody.Part.createFormData("Config", "config.json", requestFile)
-        configsRepository.uploadConfigs(body)
+        val body = MultipartBody.Part.createFormData("data", "config.json", requestFile)
+        uploadRepository.uploadFile(body)
     }
 }

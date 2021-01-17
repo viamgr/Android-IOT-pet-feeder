@@ -7,5 +7,5 @@ import javax.inject.Inject
 
 @ActivityScoped
 class UploadRepository @Inject constructor(private val uploadDataSource: UploadDataSource) {
-    suspend fun uploadSound(body: Part) = uploadDataSource.uploadEating(body)
+    suspend fun uploadFile(body: Part) = uploadDataSource.upload(body)
 }

@@ -8,7 +8,7 @@ import javax.inject.Inject
 @ActivityScoped
 class UploadDataSource @Inject constructor(private val uploadService: UploadService) {
 
-    suspend fun uploadEating(body: MultipartBody.Part) {
+    suspend fun upload(body: MultipartBody.Part) {
         uploadService.uploadEating(body)
     }
 

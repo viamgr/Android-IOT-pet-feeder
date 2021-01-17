@@ -15,16 +15,19 @@ import kotlin.reflect.KProperty
 
 @Singleton
 class ConfigObject @Inject constructor() {
+    @Volatile
     var json: JSONObject = JSONObject()
 }
 
 @Singleton
 class ConfigStorageImpl @Inject constructor(
     private val configObject: ConfigObject,
-    private val moshi: Moshi
+    moshi: Moshi
 ) {
 
     var soundVolume by ReadWriteConfig(configObject, "soundVolume", 3.99F)
+    var wifiSsid by ReadWriteConfig(configObject, "wifiSsid", "")
+    var wifiPassword by ReadWriteConfig(configObject, "wifiPassword", "")
     var feedingDuration by ReadWriteConfig(configObject, "feedingDuration", 2000)
     var ledState by ReadWriteConfig(configObject, "ledState", 2)
     var ledTurnOffDelay by ReadWriteConfig(configObject, "ledTurnOffDelay", 60000)

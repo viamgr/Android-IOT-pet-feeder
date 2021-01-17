@@ -4,28 +4,21 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.viam.feeder.constants.SETTING_FEEDING_INTERVAL
 import com.viam.feeder.core.dataOrNull
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.data.domain.config.GetAlarms
 import com.viam.feeder.data.domain.config.SetAlarms
-import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.models.ClockTimer
-import com.viam.feeder.data.models.KeyValue
 
 class TimerViewModel @ViewModelInject constructor(
     setAlarms: SetAlarms,
     getAlarms: GetAlarms,
-    sendEvent: SendEvent
 ) : ViewModel() {
 
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
-
-    private val _currentValue = MutableLiveData(DEFAULT_VALUE)
-    val currentValue: LiveData<Int> = _currentValue
 
     private val getTimerListTask = getAlarms.toLiveTask {
         onSuccess {
@@ -41,20 +34,10 @@ class TimerViewModel @ViewModelInject constructor(
         }
     }
 
-    private val sendEventTask = sendEvent.toLiveTask {
-        debounce(1000)
-    }
-
-    init {
-        sendEventTask.asLiveData().addSource(_currentValue) {
-            sendEventTask.postWithCancel(KeyValue(SETTING_FEEDING_INTERVAL, it))
-        }
-    }
 
     val compositeTask = compositeTask(
         addTimerTask,
         getTimerListTask,
-        sendEventTask,
     )
 
     private val _timerMode = MutableLiveData<Int>()
@@ -96,9 +79,6 @@ class TimerViewModel @ViewModelInject constructor(
     companion object {
         const val TIMER_MODE_SCHEDULING = 0
         const val TIMER_MODE_PERIODIC = 1
-        const val MAX_VALUE = 24 * 60
-        const val MIN_VALUE = 1
-        const val DEFAULT_VALUE = 4 * 60
     }
 
 }

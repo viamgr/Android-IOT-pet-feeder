@@ -1,6 +1,9 @@
 package com.viam.feeder.di
 
-import com.viam.feeder.data.api.*
+import com.viam.feeder.data.api.ConfigsService
+import com.viam.feeder.data.api.EventService
+import com.viam.feeder.data.api.UploadService
+import com.viam.feeder.data.api.WifiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,11 +15,6 @@ import retrofit2.Retrofit
 @Module
 @InstallIn(ActivityComponent::class)
 class ServicesModule {
-
-    @ActivityScoped
-    @Provides
-    fun provideTimerService(retroFit: Retrofit): TimerService =
-        retroFit.create(TimerService::class.java)
 
     @ActivityScoped
     @Provides

@@ -122,7 +122,7 @@ class SpecificationFragment : Fragment(R.layout.fragment_specification) {
             }
         })
         viewModel.ledTimerValue.observe(viewLifecycleOwner) {
-            binding.ledTimerDropDown.setText(getString(it.label, it.value / 1000))
+            binding.ledTimerDropDown.setText(getString(it.label, it.value / 1000), false)
         }
 
         setFragmentResultListener(REQUEST_KEY) { requestKey, bundle ->

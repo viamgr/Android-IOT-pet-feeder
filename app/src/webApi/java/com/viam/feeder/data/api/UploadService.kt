@@ -8,6 +8,6 @@ import retrofit2.http.Part
 
 interface UploadService {
     @Multipart
-    @POST("upload/")
+    @POST("upload")
     suspend fun uploadEating(@Part image: MultipartBody.Part): Response<Unit>
 }

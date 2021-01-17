@@ -1,12 +1,11 @@
 package com.viam.feeder.data.api
 
-import com.viam.feeder.data.models.KeyValue
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.GET
+import retrofit2.http.Query
 
 interface EventService {
 
-    @POST("events/")
-    suspend fun save(@Body event: KeyValue)
+    @GET("events")
+    suspend fun send(@Query("name") name: String)
 
 }

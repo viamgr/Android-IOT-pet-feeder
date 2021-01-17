@@ -11,7 +11,7 @@ class WifiController : TypedEpoxyController<List<WifiDevice>>() {
             wifiList {
                 id(wifiDevice.ssid)
                 ssid(wifiDevice.ssid)
-                lock(wifiDevice.lock)
+                lock(wifiDevice.secure != 7)
                 clickListener { _ ->
                     clickListener(wifiDevice)
                 }

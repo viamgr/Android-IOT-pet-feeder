@@ -33,7 +33,11 @@ fun View.doneAnimationLayout(
 ) {
     if (resource is Resource.Success && doneAnimationLayout != null) {
         val inflater = LayoutInflater.from(context)
-        val viewGroup = parent as ViewGroup
+        val viewGroup = if (parent !is ConstraintLayout && this is ConstraintLayout) {
+            this
+        } else {
+            parent as ViewGroup
+        }
         inflater.inflate(doneAnimationLayout, viewGroup, false).let { doneView ->
             ViewCompat.setElevation(doneView, Float.MAX_VALUE)
             viewGroup.addView(doneView)

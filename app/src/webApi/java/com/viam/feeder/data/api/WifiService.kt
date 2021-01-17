@@ -6,10 +6,10 @@ import retrofit2.http.POST
 
 interface WifiService {
 
-    @GET("wifi/list/")
+    @GET("wifi/list")
     suspend fun list(): List<WifiDevice>
 
-    @POST("wifi/")
+    @POST("wifi/connect")
     suspend fun connect(ssid: String, password: String)
 
 }

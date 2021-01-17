@@ -18,10 +18,11 @@ class UploadSound @Inject constructor(
 ) : UseCase<Int, Unit>(coroutinesDispatcherProvider.io) {
     override suspend fun execute(parameters: Int) {
         val inputStream = appContext.resources.openRawResource(parameters)
-        val body = MultipartBody.Part.createFormData(
-            "filename", "$parameters", inputStream.readBytes().toRequestBody()
-        )
-        uploadRepository.uploadSound(body)
+        val readBytes = inputStream.readBytes()
+        val body = readBytes.toRequestBody()
+        val part = MultipartBody.Part.createFormData("data", "feeding.mp3", body)
+        uploadRepository.uploadFile(part)
     }
+
 
 }
