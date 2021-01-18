@@ -2,21 +2,21 @@ package com.viam.feeder.data.datasource
 
 import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.data.utils.fakeRequest
-import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ActivityScoped
-class WifiDataSource @Inject constructor() {
+@Singleton
+class WifiDataSourceImpl @Inject constructor() : WifiDataSource {
     private val list = mutableListOf(
         WifiDevice("Wifi Name", "Wifi Name", 8),
         WifiDevice("New Wifi", "New Wifi", 7)
     )
 
-    suspend fun getList() = fakeRequest {
+    override suspend fun getList() = fakeRequest {
         list
     }
 
-    suspend fun connect(ssid: String, password: String) = fakeRequest {
+    override suspend fun connect(ssid: String, password: String) = fakeRequest {
 
     }
 }
