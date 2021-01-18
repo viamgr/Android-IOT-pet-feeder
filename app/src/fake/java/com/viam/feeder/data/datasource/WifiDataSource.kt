@@ -8,8 +8,8 @@ import javax.inject.Inject
 @ActivityScoped
 class WifiDataSource @Inject constructor() {
     private val list = mutableListOf(
-        WifiDevice("Wifi Name", "Wifi Name", true),
-        WifiDevice("New Wifi", "New Wifi", false)
+        WifiDevice("Wifi Name", "Wifi Name", 8),
+        WifiDevice("New Wifi", "New Wifi", 7)
     )
 
     suspend fun getList() = fakeRequest {

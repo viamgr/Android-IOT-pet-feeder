@@ -4,8 +4,9 @@ import com.viam.feeder.data.utils.fakeRequest
 import dagger.hilt.android.scopes.ActivityScoped
 import okhttp3.MultipartBody
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ActivityScoped
+@Singleton
 class ConfigsDataSource @Inject constructor() {
 
     suspend fun downloadConfigs() = fakeRequest {
