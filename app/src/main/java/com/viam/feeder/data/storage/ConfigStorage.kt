@@ -4,9 +4,11 @@ import androidx.annotation.WorkerThread
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import com.viam.feeder.data.repository.ConfigsRepository
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.reflect.Type
+import java.util.concurrent.Semaphore
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.properties.ReadWriteProperty
@@ -14,13 +16,36 @@ import kotlin.reflect.KProperty
 
 
 @Singleton
-class ConfigObject @Inject constructor() {
-    @Volatile
+class ConfigObject @Inject constructor(
+    private val configsRepository: ConfigsRepository,
+) {
+    private val semaphore = Semaphore(1)
     var json: JSONObject = JSONObject()
+
+    fun isConfigured(): Boolean {
+        return json.toString() != "{}"
+    }
+
+    suspend fun downloadOrSet() {
+        try {
+            semaphore.acquire()
+            if (!isConfigured()) {
+                downloadConfigs()
+            }
+        } finally {
+            semaphore.release()
+        }
+
+    }
+
+    private suspend fun downloadConfigs() {
+        json =
+            JSONObject(configsRepository.downloadConfigs().bufferedReader().use { it.readText() })
+    }
 }
 
 @Singleton
-class ConfigStorageImpl @Inject constructor(
+class ConfigStorage @Inject constructor(
     private val configObject: ConfigObject,
     moshi: Moshi
 ) {
@@ -39,15 +64,8 @@ class ConfigStorageImpl @Inject constructor(
         type = String::class.java
     )
 
-    @Synchronized
-    fun isConfigured(): Boolean {
-        return configObject.json.toString() != "{}"
-    }
-
-    fun setup(input: String) {
-        configObject.json = JSONObject(input)
-    }
-
+    fun isConfigured() = configObject.isConfigured()
+    suspend fun downloadOrSet() = configObject.downloadOrSet()
     fun getJsonString() = configObject.json.toString()
 
 }

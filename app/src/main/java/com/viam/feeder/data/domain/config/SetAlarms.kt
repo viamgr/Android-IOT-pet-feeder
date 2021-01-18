@@ -4,14 +4,14 @@ import com.viam.feeder.R
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.repository.UploadRepository
-import com.viam.feeder.data.storage.ConfigStorageImpl
+import com.viam.feeder.data.storage.ConfigStorage
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
 @ActivityScoped
 class SetAlarms @Inject constructor(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
-    private val configStorage: ConfigStorageImpl,
+    private val configStorage: ConfigStorage,
     uploadRepository: UploadRepository,
 ) : BaseSetConfig<List<ClockTimer>>(
     coroutinesDispatcherProvider.io,
