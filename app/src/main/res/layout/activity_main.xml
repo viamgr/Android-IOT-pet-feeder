@@ -11,32 +11,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.viam.feeder.main.MainActivity">
-
-        <ImageView
-            imageUrl="@{@drawable/preview_cat}"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:adjustViewBounds="true"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/preview_cat" />
-
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:theme="@style/AppTheme.AppBarOverlay">
+            android:background="@null"
+            android:layout_height="wrap_content">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
+                android:background="@color/transBack"
                 android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
                 app:title="@string/app_name" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+            android:background="@color/grey_100"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:layout_height="match_parent">
 
             <fragment
                 android:id="@+id/nav_host_container"

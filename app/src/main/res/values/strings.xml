@@ -85,4 +85,5 @@
     <string name="turn_on_feeding">Turn on when feeding</string>
     <string name="always_on">Always turn on</string>
     <string name="always_off">Always turn off</string>
+    <string name="connect_to">%s</string>
 </resources>

@@ -9,15 +9,14 @@
         <item name="textAppearanceListItem">@style/TextAppearanceListItem</item>
         <item name="toolbarStyle">@style/AppTheme.Toolbar</item>
         <item name="bottomNavigationStyle">@style/BottomNavigationView</item>
-        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox
-        </item>
+        <item name="textInputStyle">@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox</item>
 
     </style>
 
     <style name="BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="itemIconTint">@color/white</item>
+        <item name="itemIconTint">@color/mainColor</item>
         <item name="android:background">@color/transBack</item>
-        <item name="itemTextColor">@color/white</item>
+        <item name="itemTextColor">@color/mainColor</item>
 
 
     </style>
@@ -27,7 +26,8 @@
     </style>
 
     <style name="BorderlessButtonStyle" parent="Widget.AppCompat.Button.Borderless">
-        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimary">@color/mainColor</item>
+        <item name="android:textColor">@color/mainColor</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -35,13 +35,12 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="colorPrimary">#AB000000</item>
+    <style name="AppTheme.AppBarOverlay" parent="Widget.MaterialComponents.AppBarLayout.PrimarySurface">
 
     </style>
 
     <style name="AppTheme.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
-        <item name="titleTextColor">@color/white</item>
+        <item name="titleTextColor">@color/mainColor</item>
 
     </style>
 

@@ -32,18 +32,6 @@ class NetWorkModule {
         return okHttpBuilder
             .retryOnConnectionFailure(true)
             .addInterceptor(interceptor)
-            .addInterceptor {
-                val newBuilder = it.request().newBuilder()
-                    .header("Accept", "*/*")
-                    .header("Accept-Encoding", "gzip, deflate")
-//                    .header("Connection", "close")
-                    .header("User-Agent", "test")
-//                    .addHeader("Transfer-Encoding", "chunked")
-//                    .header("test", "test")
-
-                val request = newBuilder.build()
-                it.proceed(request)
-            }
             .callTimeout(100, TimeUnit.SECONDS)
             .protocols(listOf(Protocol.HTTP_1_1))
 
@@ -69,7 +57,7 @@ class NetWorkModule {
     fun provideNetworkFlipperPlugin(): NetworkFlipperPlugin = NetworkFlipperPlugin()
 
     companion object {
-        const val BASE_URL = "http://192.168.1.35/"
+        const val BASE_URL = "http://192.168.4.1/"
         const val API_PORT = 80
     }
 

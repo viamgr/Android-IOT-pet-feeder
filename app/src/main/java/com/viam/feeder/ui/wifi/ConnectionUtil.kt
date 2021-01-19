@@ -17,9 +17,11 @@ import androidx.lifecycle.*
 import com.viam.feeder.core.utility.dexter.PermissionContract
 import com.viam.feeder.core.utility.dexter.permissionContract
 
+internal typealias ConnectionListener = (networkStatus: NetworkStatus) -> Unit
 
 class ConnectionUtil<T>(
-    context: T
+    context: AppCompatActivity,
+    private val listener: ConnectionListener
 ) : LifecycleObserver where T : Context, T : LifecycleOwner {
 
 
@@ -115,7 +117,7 @@ class ConnectionUtil<T>(
     }
 
     private fun setStatus(isAvailable: Boolean) {
-        aConnectionState.postValue(
+        listener(
             NetworkStatus(
                 deviceName = getWifiName(),
                 isAvailable = isAvailable,
@@ -162,7 +164,6 @@ class ConnectionUtil<T>(
     }
 }
 
-fun AppCompatActivity.startConnectionListener(
-): ConnectionUtil<AppCompatActivity> {
-    return ConnectionUtil(this)
+fun AppCompatActivity.startConnectionListener(listener: ConnectionListener): ConnectionUtil<AppCompatActivity> {
+    return ConnectionUtil(this, listener)
 }

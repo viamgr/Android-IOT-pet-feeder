@@ -3,6 +3,7 @@ package com.viam.feeder.ui.setting
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -46,6 +47,7 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
     private fun showPasswordDialog(wifiDevice: WifiDevice) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_wifi_password, null)
         val inputLayout = dialogView?.findViewById<TextInputLayout>(R.id.password)!!
+        val title = dialogView.findViewById<TextView>(R.id.title)!!
         val dialog = MaterialAlertDialogBuilder(requireActivity())
             .setView(dialogView)
             .setPositiveButton(R.string.confirm, null)
@@ -53,6 +55,7 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
             .setNegativeButton(R.string.cancel, null)
             .create()
 
+        title.text = wifiDevice.ssid
         inputLayout.editText?.doAfterTextChanged {
             inputLayout.error = null
         }

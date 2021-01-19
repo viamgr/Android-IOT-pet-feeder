@@ -8,6 +8,7 @@
         <variable
             name="vm"
             type="com.viam.feeder.ui.wifi.WifiViewModel" />
+        <import type="com.viam.feeder.constants.AccessPointKt" />
     </data>
 
     <androidx.cardview.widget.CardView
@@ -42,7 +43,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="@string/wrong_connected"
+                android:text="@{@string/wrong_connected(AccessPointKt.ACCESS_POINT_SSID)}"
                 app:layout_constraintBottom_toTopOf="@id/animation_view"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

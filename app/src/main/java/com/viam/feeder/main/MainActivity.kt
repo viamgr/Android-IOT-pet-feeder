@@ -18,11 +18,11 @@ import com.viam.feeder.core.domain.utils.isConnectionError
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
-import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.NetworkStatus
+import com.viam.feeder.ui.wifi.startConnectionListener
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -57,16 +57,23 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+/*
         viewModel.connectionStatus.observe(this, {
             if (!isConnectedToPreferredDevice(it)) {
                 setIsWifiDialogShowing(true)
                 navController.navigate(R.id.wifi_fragment)
             }
-        })
-
-        viewModel.connectionStatus.observe(this, {
             AutoRetryHandler.value = it.isAvailable
         })
+*/
+
+
+        startConnectionListener {
+            if (!isConnectedToPreferredDevice(it)) {
+                setIsWifiDialogShowing(true)
+                navController.navigate(R.id.wifi_fragment)
+            }
+        }
 
     }
 

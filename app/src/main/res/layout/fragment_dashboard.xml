@@ -29,9 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="12dp"
-                app:cardBackgroundColor="#AB000000"
                 app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -50,14 +48,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/actions"
-                            android:textAppearance="?attr/textAppearanceListItem" />
+                            android:textAppearance="?attr/textAppearanceHeadline6" />
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="2dp"
                             android:layout_marginTop="12dp"
                             android:alpha="0.6"
-                            android:background="@color/grey_700" />
+                            android:background="@color/grey_200" />
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -72,6 +70,7 @@
 
                             <androidx.cardview.widget.CardView
                                 android:layout_width="wrap_content"
+                                app:cardBackgroundColor="@color/transBack"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_marginTop="8dp"
@@ -116,6 +115,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
+                                    app:cardBackgroundColor="@color/transBack"
                                     android:layout_marginTop="8dp"
                                     app:cardCornerRadius="400dp"
                                     app:cardElevation="8dp">
@@ -155,6 +155,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
+                                    app:cardBackgroundColor="@color/transBack"
                                     android:layout_marginTop="8dp"
                                     app:cardCornerRadius="400dp"
                                     app:cardElevation="8dp">
@@ -195,6 +196,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:layout_marginTop="8dp"
+                                    app:cardBackgroundColor="@color/transBack"
                                     app:cardCornerRadius="400dp"
                                     app:cardElevation="8dp">
 
