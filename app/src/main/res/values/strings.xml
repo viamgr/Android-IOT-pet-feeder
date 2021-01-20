@@ -59,7 +59,8 @@
     <string name="time_to_start">Time To Start: %s</string>
     <string name="error_happened">An Error Happened</string>
     <string name="permission_denied_message">Permission %s is required</string>
-    <string name="write_external_storage">write_external_storage</string>
+    <string name="write_external_storage">Write External Storage</string>
+    <string name="write_external_storage_desc">Write external storage is required</string>
     <string name="read_external_storage">read_external_storage</string>
     <string name="access_fine_location">access_fine_location</string>
     <string name="any_denied_multiple_permissions">any_denied_multiple_permissions</string>
@@ -89,4 +90,5 @@
     <string name="connect_to">%s</string>
     <string name="calendar">Calendar</string>
     <string name="time_and_date_setting">Date And Time Settings</string>
+    <string name="required_permissions">Required Permissions</string>
 </resources>

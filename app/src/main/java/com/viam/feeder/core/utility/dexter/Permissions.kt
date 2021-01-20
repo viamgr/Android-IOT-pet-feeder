@@ -29,8 +29,8 @@ import com.viam.feeder.R
 val appPermissionList = mapOf(
     Manifest.permission.RECORD_AUDIO to Pair(R.string.record_audio, R.string.record_audio),
     Manifest.permission.WRITE_EXTERNAL_STORAGE to Pair(
-        R.string.record_audio,
-        R.string.record_audio
+        R.string.write_external_storage,
+        R.string.write_external_storage_desc
     ),
     Manifest.permission.READ_EXTERNAL_STORAGE to Pair(
         R.string.read_external_storage,
