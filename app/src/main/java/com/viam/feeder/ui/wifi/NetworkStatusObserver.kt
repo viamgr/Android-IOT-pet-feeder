@@ -70,7 +70,7 @@ class NetworkStatusObserver @Inject constructor() {
         return this
     }
 
-    fun start() {
+    fun start(): NetworkStatusObserver {
         permissionResult.request(
             Manifest.permission.CHANGE_NETWORK_STATE,
             Manifest.permission.CHANGE_WIFI_STATE,
@@ -81,6 +81,8 @@ class NetworkStatusObserver @Inject constructor() {
         ) {
             startNetworkListening()
         }
+
+        return this
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)

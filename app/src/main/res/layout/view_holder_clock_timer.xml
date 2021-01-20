@@ -57,7 +57,7 @@
                 android:gravity="center"
                 android:text="@{time}"
                 android:textColor="?android:textColorSecondary"
-                app:layout_constraintBottom_toBottomOf="@id/clock"
+                app:layout_constraintBaseline_toBaselineOf="@+id/clock"
                 app:layout_constraintStart_toEndOf="@id/clock"
                 tools:text="AM" />
 

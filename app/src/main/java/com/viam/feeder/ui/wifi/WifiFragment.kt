@@ -10,9 +10,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.viam.feeder.BR
 import com.viam.feeder.R
@@ -24,10 +24,6 @@ import com.viam.feeder.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
 @AndroidEntryPoint
 class WifiFragment : DialogFragment() {
 
@@ -40,19 +36,11 @@ class WifiFragment : DialogFragment() {
     @Inject
     lateinit var wifiAutoConnect: WifiAutoConnect
 
-/*    private val wifiAutoConnect = wifiAutoConnect(
-        preferredWifiNetWorkSsid = ACCESS_POINT_SSID,
-        preferredWifiNetWorkPassword = ACCESS_POINT_PASSWORD
-    ) { isAvailable ->
-        if (isAvailable)
-            dismiss()
-    }*/
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
-        wifiAutoConnect.connect(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD) {
-            if (it) dismiss()
+        wifiAutoConnect.connect(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD) { connected ->
+            if (connected) dismiss()
         }
     }
 
@@ -77,10 +65,6 @@ class WifiFragment : DialogFragment() {
         (requireActivity() as MainActivity).setIsWifiDialogShowing(false)
     }
 
-    override fun onStart() {
-        super.onStart()
-//        wifiAutoConnect.start()
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -102,11 +86,11 @@ class WifiFragment : DialogFragment() {
     }
 
     private fun showWrongWifiDialog() {
-        dismiss()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-//        wifiAutoConnect.stop()
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.wrong_connected, ACCESS_POINT_SSID),
+            Toast.LENGTH_SHORT
+        ).show()
+//        dismiss()
     }
 }

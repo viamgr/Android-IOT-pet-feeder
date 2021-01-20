@@ -86,4 +86,6 @@
     <string name="always_on">Always turn on</string>
     <string name="always_off">Always turn off</string>
     <string name="connect_to">%s</string>
+    <string name="calendar">Calendar</string>
+    <string name="time_and_date_setting">Date And Time Settings</string>
 </resources>

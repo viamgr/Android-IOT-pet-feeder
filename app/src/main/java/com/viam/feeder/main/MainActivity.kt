@@ -18,6 +18,7 @@ import com.viam.feeder.core.domain.utils.isConnectionError
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.onError
+import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.databinding.ActivityMainBinding
@@ -49,13 +50,16 @@ class MainActivity : AppCompatActivity() {
         connectionUtil
             .withActivity(this)
             .start()
-
-        connectionUtil.observe(this) {
-            if (!viewModel.isWifiDialogShowing && !isConnectedToPreferredDevice(it)) {
-                setIsWifiDialogShowing(true)
-                navController.navigate(R.id.wifi_fragment)
+            .observe(this) {
+                AutoRetryHandler.value = it.isAvailable
+                if (!viewModel.isWifiDialogShowing && !it.isConnectedToPreferredDevice(
+                        ACCESS_POINT_SSID
+                    )
+                ) {
+                    setIsWifiDialogShowing(true)
+                    navController.navigate(R.id.wifi_fragment)
+                }
             }
-        }
 
         setupViews()
 

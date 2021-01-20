@@ -31,7 +31,7 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
         }
         binding.tab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                viewModel.onTabChanged(tab?.position)
+//                viewModel.onTabChanged(tab?.position)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
