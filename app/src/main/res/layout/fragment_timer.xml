@@ -81,7 +81,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="2dp"
-                        android:text="@{vm.time}"
+                        android:text="@{vm.ampm}"
                         android:textColor="?android:textColorSecondary"
                         app:layout_constraintBaseline_toBaselineOf="@+id/time"
                         app:layout_constraintStart_toEndOf="@id/time"

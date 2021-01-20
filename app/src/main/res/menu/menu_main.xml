@@ -7,18 +7,13 @@
         android:icon="@drawable/ic_baseline_home_24"
         android:title="@string/home" />
     <item
-        android:id="@+id/fragment_specification"
-        android:icon="@drawable/ic_pet_food"
-        android:title="@string/specification"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/fragment_timer"
         android:icon="@drawable/ic_baseline_timer_24"
         android:title="@string/timer"
         app:showAsAction="never" />
     <item
         android:id="@+id/fragment_setting"
-        android:icon="@drawable/ic_baseline_settings_24"
+        android:icon="@drawable/ic_baseline_signal_wifi_4_bar_24"
         android:title="@string/settings"
         app:showAsAction="never" />
 </menu>

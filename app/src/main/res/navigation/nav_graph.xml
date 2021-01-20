@@ -21,11 +21,6 @@
         android:label="@string/dashboard"
         tools:layout="@layout/fragment_dashboard" />
     <fragment
-        android:id="@+id/fragment_specification"
-        android:name="com.viam.feeder.ui.specification.SpecificationFragment"
-        android:label="@string/specification"
-        tools:layout="@layout/fragment_dashboard" />
-    <fragment
         android:id="@+id/fragment_timer"
         android:name="com.viam.feeder.ui.timer.TimerFragment"
         android:label="@string/timer"

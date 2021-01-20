@@ -131,7 +131,6 @@ class MainActivity : AppCompatActivity() {
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.fragment_home,
-                R.id.fragment_specification,
                 R.id.fragment_timer,
                 R.id.fragment_setting
             )

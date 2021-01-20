@@ -76,6 +76,7 @@
     <string name="calling">Calling</string>
     <string name="lighting">Lighting</string>
     <string name="feeding_options">Feeding Options</string>
+    <string name="connect_device_to_wifi">Connect Device To Wifi</string>
     <string name="sound_options">Sound Options</string>
     <string name="feeding_volume">Feeding Volume</string>
     <string name="sound_volume">Sound Volume</string>

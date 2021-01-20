@@ -23,7 +23,7 @@ import java.util.concurrent.CancellationException
 
 
 @BindingAdapter(
-    value = ["resource", "doneAnimationLayout", "doneAnimationDelay"],
+    value = ["animationResource", "doneAnimationLayout", "doneAnimationDelay"],
     requireAll = true
 )
 fun View.doneAnimationLayout(

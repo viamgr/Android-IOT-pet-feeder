@@ -20,6 +20,12 @@ class TimerViewModel @ViewModelInject constructor(
     private val _time = MutableLiveData<String>("2:08")
     val time: LiveData<String> = _time
 
+    private val _date = MutableLiveData<String>("1 DECEMBER, 2025")
+    val date: LiveData<String> = _date
+
+    private val _ampm = MutableLiveData<String>("AM")
+    val ampm: LiveData<String> = _ampm
+
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 

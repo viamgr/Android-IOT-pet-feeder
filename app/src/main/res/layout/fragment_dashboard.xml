@@ -18,25 +18,24 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             doneAnimationDelay="@{1500L}"
             doneAnimationLayout="@{@layout/layout_done}"
-            resource="@{vm.sendRequestEvent.asLiveData().state()}"
-            taskProgress="@{vm.sendRequestEvent.asLiveData()}"
+            animationResource="@{vm.tasks.asLiveData().state()}"
+            taskProgress="@{vm.tasks.asLiveData()}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:context=".ui.dashboard.DashboardFragment">
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_margin="12dp"
-                app:cardCornerRadius="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_gravity="center"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -48,14 +47,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/actions"
-                            android:textAppearance="?attr/textAppearanceHeadline6" />
+                            android:textAppearance="?attr/textAppearanceListItem" />
 
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="2dp"
                             android:layout_marginTop="12dp"
                             android:alpha="0.6"
-                            android:background="@color/grey_200" />
+                            android:background="@color/grey_300" />
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -90,6 +89,7 @@
                                 style="?attr/borderlessButtonStyle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:textColor="?android:textColorSecondary"
                                 android:text="@string/feeding_process" />
                         </LinearLayout>
 
@@ -121,8 +121,8 @@
                                     app:cardElevation="8dp">
 
                                     <androidx.appcompat.widget.AppCompatImageView
-                                        android:layout_width="70dp"
-                                        android:layout_height="70dp"
+                                        android:layout_width="76dp"
+                                        android:layout_height="66dp"
                                         android:layout_gravity="center"
                                         android:adjustViewBounds="true"
                                         android:padding="15dp"
@@ -135,6 +135,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="1"
+                                    android:textColor="?android:textColorSecondary"
                                     android:text="@string/calling" />
 
                             </LinearLayout>
@@ -175,6 +176,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="1"
+                                    android:textColor="?android:textColorSecondary"
                                     android:text="@string/lighting" />
 
                             </LinearLayout>
@@ -215,18 +217,199 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="1"
+                                    android:textColor="?android:textColorSecondary"
                                     android:text="@string/feeding" />
-
                             </LinearLayout>
-
                         </LinearLayout>
-
-
                     </LinearLayout>
 
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/feeding_options"
+                            android:textAppearance="?attr/textAppearanceListItem" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:alpha="0.6"
+                            android:background="@color/grey_300" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/feeding_volume"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/feeding_volume"
+                            app:startIconDrawable="@drawable/ic_baseline_blur_on_24">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/feeding_volume_drop_down"
+                                noFilterText="@{vm.feedingVolumeValue}"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/sound_options"
+                            android:textAppearance="?attr/textAppearanceListItem" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:alpha="0.6"
+                            android:background="@color/grey_300" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/feeding_sound"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/feeding_sound"
+                            app:layout_constraintTop_toBottomOf="@+id/volume"
+                            app:startIconDrawable="@drawable/ic_baseline_music_note_24">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/feeding_sound_drop_down"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/soundVolume"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:hint="@string/sound_volume"
+                            app:layout_constraintTop_toBottomOf="@+id/volume"
+                            app:startIconDrawable="@drawable/ic_baseline_volume_up_24">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/soundVolume_drop_down"
+                                noFilterText="@{vm.soundVolumeValue}"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/feeding_options"
+                            android:textAppearance="?attr/textAppearanceListItem" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="2dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:alpha="0.6"
+                            android:background="@color/grey_300" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/ledEnabled"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/led_state"
+                            app:startIconDrawable="@drawable/ic_baseline_wb_sunny_24">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/led_dropdown"
+                                noFilterText="@{vm.ledStateValue}"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:hint="@string/led_timer"
+                            app:startIconDrawable="@drawable/ic_baseline_timer_24">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/led_timer_drop_down"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:focusable="false"
+                                android:focusableInTouchMode="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
