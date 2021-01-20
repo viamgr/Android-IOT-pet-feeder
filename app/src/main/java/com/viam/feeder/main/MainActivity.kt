@@ -22,9 +22,10 @@ import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.NetworkStatus
-import com.viam.feeder.ui.wifi.startConnectionListener
+import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 
@@ -35,12 +36,25 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     private val binding by contentView<MainActivity, ActivityMainBinding>(R.layout.activity_main)
 
+    @Inject
+    lateinit var connectionUtil: NetworkStatusObserver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding.apply {
             lifecycleOwner = this@MainActivity
             setSupportActionBar(toolbar)
+        }
+
+        connectionUtil
+            .withActivity(this)
+            .start()
+
+        connectionUtil.observe(this) {
+            if (!viewModel.isWifiDialogShowing && !isConnectedToPreferredDevice(it)) {
+                setIsWifiDialogShowing(true)
+                navController.navigate(R.id.wifi_fragment)
+            }
         }
 
         setupViews()
@@ -66,14 +80,6 @@ class MainActivity : AppCompatActivity() {
             AutoRetryHandler.value = it.isAvailable
         })
 */
-
-
-        startConnectionListener {
-            if (!isConnectedToPreferredDevice(it)) {
-                setIsWifiDialogShowing(true)
-                navController.navigate(R.id.wifi_fragment)
-            }
-        }
 
     }
 

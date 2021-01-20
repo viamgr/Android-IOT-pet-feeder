@@ -1,16 +1,18 @@
 package com.viam.feeder.data.utils
 
-import com.viam.feeder.ui.wifi.ConnectionUtil
+import android.content.Context
+import com.viam.feeder.ui.wifi.Connectivity
 import kotlinx.coroutines.delay
 import java.net.ConnectException
 import kotlin.random.Random
 
 suspend inline fun <T> fakeRequest(
+    context: Context,
     delayTime: Int = 2500,
     possibility: Int = 30,
     crossinline body: suspend () -> T
 ): T {
-    if (ConnectionUtil.connectionState.value?.isAvailable == false) {
+    if (!Connectivity.isConnected(context)) {
         throw ConnectException()
     }
     delay(Random.nextInt(0, delayTime).toLong())

@@ -16,10 +16,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.viam.feeder.BR
 import com.viam.feeder.R
+import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
+import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 /**
@@ -30,6 +33,12 @@ class WifiFragment : DialogFragment() {
 
     private lateinit var binding: FragmentWifiBinding
     private val viewModel: WifiViewModel by viewModels()
+
+    @Inject
+    lateinit var connectionUtil: NetworkStatusObserver
+
+    @Inject
+    lateinit var wifiAutoConnect: WifiAutoConnect
 
 /*    private val wifiAutoConnect = wifiAutoConnect(
         preferredWifiNetWorkSsid = ACCESS_POINT_SSID,
@@ -42,6 +51,9 @@ class WifiFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
+        wifiAutoConnect.connect(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD) {
+            if (it) dismiss()
+        }
     }
 
     override fun onCreateView(
@@ -61,6 +73,7 @@ class WifiFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        wifiAutoConnect.stop()
         (requireActivity() as MainActivity).setIsWifiDialogShowing(false)
     }
 
@@ -79,12 +92,17 @@ class WifiFragment : DialogFragment() {
             }
         })
 
-/*        mainViewModel.connectionStatus.observe(this, {
-            if (it.isAvailable) {
-                if (!it.isWifi || it.deviceName == null || it.deviceName == "\"$ACCESS_POINT_SSID\"")
-                    dismiss()
+        connectionUtil.observe(viewLifecycleOwner) {
+            if (it.isUnknownWifi()) {
+                showWrongWifiDialog()
+            } else if (it.isConnectedToPreferredDevice(ACCESS_POINT_SSID)) {
+                dismiss()
             }
-        })*/
+        }
+    }
+
+    private fun showWrongWifiDialog() {
+        dismiss()
     }
 
     override fun onDestroy() {

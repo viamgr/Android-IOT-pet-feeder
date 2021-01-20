@@ -1,64 +1,73 @@
-package com.viam.feeder.ui.wifi;
+package com.viam.feeder.ui.wifi
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
+import android.os.Build
 
-/**
- * Check device's network connectivity and speed
- *
- * @author emil http://stackoverflow.com/users/220710/emil
- */
-public class Connectivity {
+object Connectivity {
+
+    fun isConnected(context: Context?): Boolean {
+        if (context == null) return false
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null) {
+                when {
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                        return true
+                    }
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                        return true
+                    }
+                }
+            }
+        } else {
+            val wifiManager =
+                context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            return wifiManager.isWifiEnabled
+        }
+        return false
+    }
+
+    fun isWifi(context: Context?): Boolean {
+        if (context == null) return false
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val capabilities =
+                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            if (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                return true
+            }
+        } else {
+            val wifiManager =
+                context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            return wifiManager.isWifiEnabled
+        }
+        return false
+    }
+
 
     /**
-     * Get the network info
+     * Fetches Name of Current Wi-fi Access Point
      *
-     * @param context
-     * @return
+     * Returns blank string if received "SSID <unknown ssid>" which you get when location is turned off
      */
-    public static NetworkInfo getNetworkInfo(Context context) {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo();
+    fun getWifiName(context: Context): String? {
+        val wifiManager =
+            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+        return wifiManager.connectionInfo.ssid.run {
+            if (this.contains("<unknown ssid>")) null else this
+        }
     }
 
-    /**
-     * Check if there is any connectivity
-     *
-     * @param context
-     * @return
-     */
-    public static boolean isConnected(Context context) {
-        NetworkInfo info = Connectivity.getNetworkInfo(context);
-        return (info != null && info.isConnected());
-    }
-
-    /**
-     * Check if there is any connectivity to a Wifi network
-     *
-     * @param context
-     * @return
-     */
-    public static boolean isConnectedWifi(Context context) {
-        NetworkInfo info = Connectivity.getNetworkInfo(context);
-        return (info != null && info.isConnected() && info.getType() == ConnectivityManager.TYPE_WIFI);
-    }
-
-    public static boolean isEnabledWifi(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        return wifiManager.isWifiEnabled();
-    }
-
-    /**
-     * Check if there is any connectivity to a mobile network
-     *
-     * @param context
-     * @return
-     */
-    public static boolean isConnectedMobile(Context context) {
-        NetworkInfo info = Connectivity.getNetworkInfo(context);
-        return (info != null && info.isConnected() && info.getType() == ConnectivityManager.TYPE_MOBILE);
-    }
 
 }

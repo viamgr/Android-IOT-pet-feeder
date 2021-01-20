@@ -1,6 +1,5 @@
 package com.viam.feeder.ui.wifi
 
-import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -10,38 +9,36 @@ import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.LifecycleOwner
+import javax.inject.Inject
 
-class WifiAutoConnect<T>(
-    private val fragmentActivity: T,
-    private val preferredWifiNetWorkSsid: String?,
-    private val preferredWifiNetWorkPassword: String?,
-    private val availableCallback: (Boolean) -> Unit
-) : LifecycleObserver where T : LifecycleOwner {
+class WifiAutoConnect @Inject constructor() {
+    private lateinit var context: Context
+
+    private var preferredWifiNetWorkSsid: String? = null
+    private var preferredWifiNetWorkPassword: String? = null
+    private var resultListener: ((Boolean) -> Unit)? = null
 
     val connectivityManager by lazy {
-        requireContext().applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
     private val networkCallback by lazy {
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network?) {
                 connectivityManager.unregisterNetworkCallback(this)
-                availableCallback(true)
+                resultListener?.invoke(true)
             }
 
             override fun onUnavailable() {
-                availableCallback(false)
-                stop()
+                resultListener?.invoke(false)
                 super.onUnavailable()
             }
         }
     }
 
-    fun start() {
+    fun connect(ssid: String, password: String?, resultListener: ((Boolean) -> Unit)? = null) {
+        this.preferredWifiNetWorkSsid = ssid
+        this.preferredWifiNetWorkPassword = password
         startListen()
     }
 
@@ -67,7 +64,6 @@ class WifiAutoConnect<T>(
             .setNetworkSpecifier(specifier)
             .build()
 
-
         connectivityManager.requestNetwork(request, networkCallback)
     }
 
@@ -81,16 +77,11 @@ class WifiAutoConnect<T>(
         conf.allowedGroupCiphers.set(android.net.wifi.WifiConfiguration.GroupCipher.WEP40)
         conf.preSharedKey = "\"" + preferredWifiNetWorkPassword + "\""
         val wifiManager =
-            requireContext().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val networkId = wifiManager.addNetwork(conf)
         val wifiInfo = wifiManager.connectionInfo
         wifiManager.disableNetwork(wifiInfo.networkId)
         wifiManager.enableNetwork(networkId, true)
-    }
-
-    private fun isFragment() = fragmentActivity is Fragment
-    private fun requireContext(): Context {
-        return if (isFragment()) (fragmentActivity as Fragment).requireActivity() else (fragmentActivity as Activity)
     }
 
     private fun startListen() {
@@ -100,25 +91,4 @@ class WifiAutoConnect<T>(
             connectToPreferredWifiOldVersions()
         }
     }
-
-    init {
-        if (isFragment()) {
-            (fragmentActivity as LifecycleOwner).lifecycle.addObserver(this)
-
-        } else {
-            (fragmentActivity as AppCompatActivity).lifecycle.addObserver(this)
-        }
-    }
-}
-
-fun Fragment.wifiAutoConnect(
-    preferredWifiNetWorkSsid: String? = null,
-    preferredWifiNetWorkPassword: String? = null, availableCallback: (Boolean) -> Unit
-): WifiAutoConnect<Fragment> {
-    return WifiAutoConnect(
-        this,
-        preferredWifiNetWorkSsid,
-        preferredWifiNetWorkPassword,
-        availableCallback
-    )
 }

@@ -9,23 +9,24 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.wifi.WifiManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.*
 import com.viam.feeder.core.utility.dexter.PermissionContract
 import com.viam.feeder.core.utility.dexter.permissionContract
+import com.viam.feeder.ui.wifi.Connectivity.isConnected
+import com.viam.feeder.ui.wifi.Connectivity.isWifi
+import javax.inject.Inject
+import javax.inject.Singleton
 
-internal typealias ConnectionListener = (networkStatus: NetworkStatus) -> Unit
+@Singleton
+class NetworkStatusObserver @Inject constructor() {
+    private lateinit var activity: AppCompatActivity
+    private val permissionResult: PermissionContract<*> by lazy {
+        activity.permissionContract()
+    }
 
-class ConnectionUtil<T>(
-    context: AppCompatActivity,
-    private val listener: ConnectionListener
-) : LifecycleObserver where T : Context, T : LifecycleOwner {
-
-
-    private val activity = context as AppCompatActivity
     private val connectivityManager: ConnectivityManager by lazy {
         activity.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
@@ -47,8 +48,8 @@ class ConnectionUtil<T>(
             setStatus(true)
         }
     }
-    private val permissionResult: PermissionContract<*> = activity.permissionContract()
-    private var startNetworkListening = false
+
+    private var startedNetworkListening = false
     private val wifiBroadcastReceiver: BroadcastReceiver by lazy {
         object : BroadcastReceiver() {
 
@@ -63,12 +64,13 @@ class ConnectionUtil<T>(
             }
         }
     }
-    private val wifiManager: WifiManager by lazy {
-        activity.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+
+    fun withActivity(activity: AppCompatActivity): NetworkStatusObserver {
+        this.activity = activity
+        return this
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    fun onCreate() {
+    fun start() {
         permissionResult.request(
             Manifest.permission.CHANGE_NETWORK_STATE,
             Manifest.permission.CHANGE_WIFI_STATE,
@@ -77,22 +79,13 @@ class ConnectionUtil<T>(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             requiredPermissions = null
         ) {
-            startListen()
+            startNetworkListening()
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onStart() {
-        if (!startNetworkListening) {
-            /*if (preferredWifiNetWorkSsid.isNullOrEmpty() || permissionResult.isGranted()) {
-                startListen()
-            }*/
-        }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun stopListen() {
-        startNetworkListening = false
+        startedNetworkListening = false
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 connectivityManager.unregisterNetworkCallback(networkCallback)
@@ -103,21 +96,15 @@ class ConnectionUtil<T>(
         }
     }
 
-    /**
-     * Fetches Name of Current Wi-fi Access Point
-     *
-     * Returns blank string if received "SSID <unknown ssid>" which you get when location is turned off
-     */
-    private fun WifiManager.deviceName(): String? = connectionInfo.ssid.run {
-        if (this.contains("<unknown ssid>")) null else this
+    private fun getWifiName(): String? {
+        return Connectivity.getWifiName(activity)
     }
 
-    private fun getWifiName(): String? {
-        return wifiManager.deviceName()
-    }
+    private val _networkStatus = MutableLiveData<NetworkStatus>()
+    val networkStatus: LiveData<NetworkStatus> = _networkStatus
 
     private fun setStatus(isAvailable: Boolean) {
-        listener(
+        _networkStatus.postValue(
             NetworkStatus(
                 deviceName = getWifiName(),
                 isAvailable = isAvailable,
@@ -126,35 +113,10 @@ class ConnectionUtil<T>(
         )
     }
 
-    fun isWifi(context: Context?): Boolean {
-        if (context == null) return false
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val capabilities =
-                connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            if (capabilities != null) {
-                when {
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                        return true
-                    }
-                }
-            }
-        } else {
-            val wifiManager =
-                context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            return wifiManager.isWifiEnabled
-        }
-        return false
-    }
-
-    private fun startListen() {
-        startNetworkListening = true
-        startNetworkListening()
-    }
-
     private fun startNetworkListening() {
-        setStatus(Connectivity.isConnected(activity.applicationContext))
+        startedNetworkListening = true
+
+        setStatus(isConnected(activity.applicationContext))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val networkRequest = NetworkRequest.Builder()
@@ -176,16 +138,7 @@ class ConnectionUtil<T>(
         }
     }
 
-    companion object {
-        private val aConnectionState = MutableLiveData<NetworkStatus>()
-        val connectionState: LiveData<NetworkStatus> = aConnectionState
+    fun observe(owner: LifecycleOwner, observer: Observer<NetworkStatus>) {
+        _networkStatus.observe(owner, observer)
     }
-
-    init {
-        context.lifecycle.addObserver(this)
-    }
-}
-
-fun AppCompatActivity.startConnectionListener(listener: ConnectionListener): ConnectionUtil<AppCompatActivity> {
-    return ConnectionUtil(this, listener)
 }
