@@ -12,4 +12,8 @@ data class NetworkStatus(
     fun isUnknownWifi(): Boolean {
         return isAvailable && isWifi && (deviceName == null)
     }
+
+    fun isEnoughWifiConnection(ssid: String): Boolean {
+        return isAvailable && isWifi && (deviceName == null || deviceName == "\"$ssid\"")
+    }
 }

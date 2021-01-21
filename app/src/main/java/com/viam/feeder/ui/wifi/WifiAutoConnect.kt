@@ -91,4 +91,9 @@ class WifiAutoConnect @Inject constructor() {
             connectToPreferredWifiOldVersions()
         }
     }
+
+    fun withContext(context: Context): WifiAutoConnect {
+        this.context = context
+        return this
+    }
 }

@@ -52,10 +52,8 @@ class MainActivity : AppCompatActivity() {
             .start()
             .observe(this) {
                 AutoRetryHandler.value = it.isAvailable
-                if (!viewModel.isWifiDialogShowing && !it.isConnectedToPreferredDevice(
-                        ACCESS_POINT_SSID
-                    )
-                ) {
+                val isEnoughWifiConnection = it.isEnoughWifiConnection(ACCESS_POINT_SSID)
+                if (!viewModel.isWifiDialogShowing && !isEnoughWifiConnection) {
                     setIsWifiDialogShowing(true)
                     navController.navigate(R.id.wifi_fragment)
                 }

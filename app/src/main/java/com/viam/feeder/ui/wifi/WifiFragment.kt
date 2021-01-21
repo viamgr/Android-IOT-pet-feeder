@@ -16,7 +16,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import com.viam.feeder.BR
 import com.viam.feeder.R
-import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
 import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
@@ -33,15 +32,15 @@ class WifiFragment : DialogFragment() {
     @Inject
     lateinit var connectionUtil: NetworkStatusObserver
 
-    @Inject
-    lateinit var wifiAutoConnect: WifiAutoConnect
+//    @Inject
+//    lateinit var wifiAutoConnect: WifiAutoConnect
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
-        wifiAutoConnect.connect(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD) { connected ->
-            if (connected) dismiss()
-        }
+//        wifiAutoConnect.withContext(requireContext()).connect(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD) { connected ->
+//            if (connected) dismiss()
+//        }
     }
 
     override fun onCreateView(
@@ -61,7 +60,7 @@ class WifiFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        wifiAutoConnect.stop()
+//        wifiAutoConnect.stop()
         (requireActivity() as MainActivity).setIsWifiDialogShowing(false)
     }
 
@@ -91,6 +90,6 @@ class WifiFragment : DialogFragment() {
             getString(R.string.wrong_connected, ACCESS_POINT_SSID),
             Toast.LENGTH_SHORT
         ).show()
-//        dismiss()
+        dismiss()
     }
 }
