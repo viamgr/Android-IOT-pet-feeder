@@ -24,6 +24,7 @@ import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.NetworkStatus
 import com.viam.feeder.ui.wifi.NetworkStatusObserver
+import com.viam.feeder.ui.wifi.WifiFragmentDirections
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
             setSupportActionBar(toolbar)
         }
 
+        setupViews()
         connectionUtil
             .withActivity(this)
             .start()
@@ -55,33 +57,22 @@ class MainActivity : AppCompatActivity() {
                 val isEnoughWifiConnection = it.isEnoughWifiConnection(ACCESS_POINT_SSID)
                 if (!viewModel.isWifiDialogShowing && !isEnoughWifiConnection) {
                     setIsWifiDialogShowing(true)
-                    navController.navigate(R.id.wifi_fragment)
+                    navController.navigate(WifiFragmentDirections.toWifiFragment(true))
                 }
             }
 
-        setupViews()
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
                 Timber.e(it)
                 if (it.isConnectionError() && !viewModel.isWifiDialogShowing) {
                     setIsWifiDialogShowing(true)
-                    navController.navigate(R.id.wifi_fragment)
+                    navController.navigate(WifiFragmentDirections.toWifiFragment(false))
                 } else {
                     showMessage(it.toMessage(this))
                 }
             }
         })
-
-/*
-        viewModel.connectionStatus.observe(this, {
-            if (!isConnectedToPreferredDevice(it)) {
-                setIsWifiDialogShowing(true)
-                navController.navigate(R.id.wifi_fragment)
-            }
-            AutoRetryHandler.value = it.isAvailable
-        })
-*/
 
     }
 

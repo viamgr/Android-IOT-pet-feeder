@@ -76,11 +76,14 @@ class WifiFragment : DialogFragment() {
         })
 
         connectionUtil.observe(viewLifecycleOwner) {
-            if (it.isUnknownWifi()) {
-                showWrongWifiDialog()
-            } else if (it.isConnectedToPreferredDevice(ACCESS_POINT_SSID)) {
+            if ((viewModel.allowUnknownWifi || viewModel.connectedToAnyWifi) && it.isEnoughWifiConnection(
+                    ACCESS_POINT_SSID
+                )
+            ) {
                 dismiss()
             }
+            if (it.isAvailable)
+                viewModel.connectedToAnyWifi = true
         }
     }
 

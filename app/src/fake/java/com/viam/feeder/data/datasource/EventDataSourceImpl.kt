@@ -1,15 +1,14 @@
 package com.viam.feeder.data.datasource
 
-import android.content.Context
 import com.viam.feeder.data.utils.fakeRequest
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class EventDataSourceImpl @Inject constructor(@ApplicationContext private val context: Context) :
+class EventDataSourceImpl @Inject constructor(private val networkStatusObserver: NetworkStatusObserver) :
     EventDataSource {
-    override suspend fun sendEvent(event: String) = fakeRequest(context) {
+    override suspend fun sendEvent(event: String) = fakeRequest(networkStatusObserver) {
 
     }
 }

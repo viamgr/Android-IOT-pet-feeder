@@ -25,6 +25,15 @@
         android:name="com.viam.feeder.ui.timer.TimerFragment"
         android:label="@string/timer"
         tools:layout="@layout/fragment_dashboard" />
+
+    <action
+        android:id="@+id/to_wifi_fragment"
+        app:destination="@+id/wifi_fragment">
+        <argument
+            android:name="allowUnknownWifi"
+            app:argType="boolean" />
+    </action>
+
     <fragment
         android:id="@+id/fragment_setting"
         android:name="com.viam.feeder.ui.setting.SettingFragment"
