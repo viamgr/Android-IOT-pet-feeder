@@ -22,7 +22,7 @@ import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.databinding.ActivityMainBinding
-import com.viam.feeder.ui.wifi.NetworkStatus
+import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import com.viam.feeder.ui.wifi.WifiFragmentDirections
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
     private val binding by contentView<MainActivity, ActivityMainBinding>(R.layout.activity_main)
 
     @Inject
-    lateinit var connectionUtil: NetworkStatusObserver
+    lateinit var networkStatusObserver: NetworkStatusObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,23 +49,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupViews()
-        connectionUtil
+        networkStatusObserver
             .withActivity(this)
             .start()
+            .onPermissionCallback {
+                viewModel.askedWifiPermissions.set(true)
+            }
             .observe(this) {
                 AutoRetryHandler.value = it.isAvailable
-                val isEnoughWifiConnection = it.isEnoughWifiConnection(ACCESS_POINT_SSID)
-                if (!viewModel.isWifiDialogShowing && !isEnoughWifiConnection) {
+                val isUnknownOrKnownWifiConnection =
+                    isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
+                if (!viewModel.isWifiDialogShowing && !isUnknownOrKnownWifiConnection) {
                     setIsWifiDialogShowing(true)
                     navController.navigate(WifiFragmentDirections.toWifiFragment(true))
                 }
             }
 
-
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {
                 Timber.e(it)
-                if (it.isConnectionError() && !viewModel.isWifiDialogShowing) {
+                if (it.isConnectionError() && !viewModel.isWifiDialogShowing && viewModel.askedWifiPermissions.get()) {
                     setIsWifiDialogShowing(true)
                     navController.navigate(WifiFragmentDirections.toWifiFragment(false))
                 } else {
@@ -76,18 +79,17 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        networkStatusObserver.stop()
+    }
+
     private fun showMessage(message: String) {
         Snackbar.make(
             findViewById(android.R.id.content),
             message,
             Snackbar.LENGTH_SHORT
         ).show()
-    }
-
-    private fun isConnectedToPreferredDevice(networkState: NetworkStatus): Boolean {
-        return networkState.isAvailable && networkState.isWifi &&
-                (networkState.deviceName == null ||
-                        networkState.deviceName == "\"$ACCESS_POINT_SSID\"")
     }
 
     override fun onBackPressed() {

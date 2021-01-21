@@ -12,16 +12,19 @@ import android.net.NetworkRequest
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.*
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.viam.feeder.core.utility.dexter.PermissionContract
 import com.viam.feeder.core.utility.dexter.permissionContract
-import com.viam.feeder.ui.wifi.Connectivity.isConnected
-import com.viam.feeder.ui.wifi.Connectivity.isWifi
+import com.viam.feeder.ui.wifi.Connectivity.isWifiConnected
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NetworkStatusObserver @Inject constructor() {
+    private lateinit var permissionCallback: () -> Unit
     private lateinit var activity: AppCompatActivity
     private val permissionResult: PermissionContract<*> by lazy {
         activity.permissionContract()
@@ -79,14 +82,14 @@ class NetworkStatusObserver @Inject constructor() {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             requiredPermissions = null
         ) {
+            permissionCallback()
             startNetworkListening()
         }
 
         return this
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun stopListen() {
+    fun stop() {
         startedNetworkListening = false
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -98,27 +101,17 @@ class NetworkStatusObserver @Inject constructor() {
         }
     }
 
-    private fun getWifiName(): String? {
-        return Connectivity.getWifiName(activity)
-    }
-
     private val _networkStatus = MutableLiveData<NetworkStatus>()
     val networkStatus: LiveData<NetworkStatus> = _networkStatus
 
     private fun setStatus(isAvailable: Boolean) {
-        _networkStatus.postValue(
-            NetworkStatus(
-                deviceName = getWifiName(),
-                isAvailable = isAvailable,
-                isWifi = isWifi(activity.applicationContext),
-            )
-        )
+        _networkStatus.postValue(NetworkStatus(isAvailable = isAvailable))
     }
 
     private fun startNetworkListening() {
         startedNetworkListening = true
 
-        setStatus(isConnected(activity.applicationContext))
+        setStatus(activity.isWifiConnected())
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val networkRequest = NetworkRequest.Builder()
@@ -141,5 +134,10 @@ class NetworkStatusObserver @Inject constructor() {
 
     fun observe(owner: LifecycleOwner, observer: Observer<NetworkStatus>) {
         _networkStatus.observe(owner, observer)
+    }
+
+    fun onPermissionCallback(block: () -> Unit): NetworkStatusObserver {
+        this.permissionCallback = block
+        return this
     }
 }

@@ -1,19 +1,19 @@
 package com.viam.feeder.data.utils
 
+import android.content.Context
 import com.viam.feeder.constants.ACCESS_POINT_SSID
-import com.viam.feeder.ui.wifi.NetworkStatusObserver
+import com.viam.feeder.ui.wifi.Connectivity.getWifiName
 import kotlinx.coroutines.delay
 import java.net.ConnectException
 import kotlin.random.Random
 
 suspend inline fun <T> fakeRequest(
-    networkStatusObserver: NetworkStatusObserver,
+    context: Context,
     delayTime: Int = 2500,
     possibility: Int = 30,
     crossinline body: suspend () -> T
 ): T {
-    if (networkStatusObserver.networkStatus.value?.isConnectedToPreferredDevice(ACCESS_POINT_SSID) == false
-    ) {
+    if (context.getWifiName() != ACCESS_POINT_SSID) {
         throw ConnectException()
     }
     delay(Random.nextInt(0, delayTime).toLong())

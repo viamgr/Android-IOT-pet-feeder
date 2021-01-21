@@ -20,6 +20,7 @@ import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
+import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -76,14 +77,12 @@ class WifiFragment : DialogFragment() {
         })
 
         connectionUtil.observe(viewLifecycleOwner) {
-            if ((viewModel.allowUnknownWifi || viewModel.connectedToAnyWifi) && it.isEnoughWifiConnection(
-                    ACCESS_POINT_SSID
-                )
-            ) {
+            val ignoredInitialValue = !viewModel.ignoredInitialValue.compareAndSet(false, true)
+            val unknownOrKnownWifiConnection =
+                requireContext().isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
+            if (ignoredInitialValue && unknownOrKnownWifiConnection) {
                 dismiss()
             }
-            if (it.isAvailable)
-                viewModel.connectedToAnyWifi = true
         }
     }
 
