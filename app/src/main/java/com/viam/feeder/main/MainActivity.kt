@@ -51,7 +51,6 @@ class MainActivity : AppCompatActivity() {
         setupViews()
         networkStatusObserver
             .withActivity(this)
-            .start()
             .onPermissionCallback {
                 viewModel.askedWifiPermissions.set(true)
             }
@@ -64,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(WifiFragmentDirections.toWifiFragment(true))
                 }
             }
+            .start()
 
         TaskEventLogger.events.observe(this, EventObserver { resource ->
             resource?.onError {

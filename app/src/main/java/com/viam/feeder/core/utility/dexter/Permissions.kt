@@ -27,22 +27,22 @@ import com.viam.feeder.R
 
 
 val appPermissionList = mapOf(
-    Manifest.permission.RECORD_AUDIO to Pair(R.string.record_audio, R.string.record_audio),
+    Manifest.permission.RECORD_AUDIO to Pair(R.string.record_audio, R.string.record_audio_desc),
     Manifest.permission.WRITE_EXTERNAL_STORAGE to Pair(
         R.string.write_external_storage,
         R.string.write_external_storage_desc
     ),
     Manifest.permission.READ_EXTERNAL_STORAGE to Pair(
         R.string.read_external_storage,
-        R.string.read_external_storage
+        R.string.read_external_storage_desc
     ),
     Manifest.permission.ACCESS_FINE_LOCATION to Pair(
         R.string.access_fine_location,
-        R.string.access_fine_location
+        R.string.access_fine_location_desc
     ),
     Manifest.permission.ACCESS_COARSE_LOCATION to Pair(
         R.string.access_coarse_location,
-        R.string.access_coarse_location
+        R.string.access_coarse_location_desc
     ),
     Manifest.permission.CHANGE_WIFI_STATE to Pair(
         R.string.change_wifi_state,
@@ -180,7 +180,7 @@ class PermissionContract<T>(
 
         val parentLayout =
             View.inflate(requireContext(), R.layout.layout_permission_wrapper, null) as ViewGroup
-        requestedPermissions.forEach {
+        requestedPermissions.forEachIndexed { index, it ->
             val view = View.inflate(
                 requireContext(),
                 R.layout.layout_permission_item, null
@@ -192,6 +192,7 @@ class PermissionContract<T>(
                 requireContext().getString(permission.second)
             view.findViewById<View>(R.id.required).isVisible =
                 requiredPermissions?.contains(it) == true
+            view.findViewById<View>(R.id.divider).isVisible = index < requestedPermissions.size - 1
             parentLayout.findViewById<ViewGroup>(R.id.wrapper).addView(view)
         }
 
@@ -220,8 +221,8 @@ class PermissionContract<T>(
     private fun showSettingSnackBar() {
         isRequesting = false
         getView()?.let {
-            Snackbar.make(it, R.string.permission_setting_required, Snackbar.LENGTH_LONG)
-                .setAction("Settings") {
+            Snackbar.make(it, R.string.permission_setting_required, 5000)
+                .setAction(requireContext().getString(R.string.settings)) {
                     registerListener()
                     val intent = Intent(
                         "android.settings.APPLICATION_DETAILS_SETTINGS",

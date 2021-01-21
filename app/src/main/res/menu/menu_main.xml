@@ -14,6 +14,6 @@
     <item
         android:id="@+id/fragment_setting"
         android:icon="@drawable/ic_baseline_signal_wifi_4_bar_24"
-        android:title="@string/settings"
+        android:title="@string/wifi"
         app:showAsAction="never" />
 </menu>

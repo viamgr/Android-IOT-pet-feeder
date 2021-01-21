@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_marginVertical="8dp"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
@@ -11,7 +12,6 @@
         style="@style/TextAppearance.MaterialComponents.Subtitle1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:paddingHorizontal="8dp"
         tools:text="Write External Storage" />
 
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="4dp"
-            android:text="@string/permisssion_required"
+            android:text="@string/permission_required"
             android:textColor="@color/red_500"
             app:srcCompat="@drawable/ic_baseline_error_24" />
 
@@ -45,8 +45,9 @@
     </LinearLayout>
 
     <View
+        android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginVertical="8dp"
         android:background="@color/grey_300" />
 </LinearLayout>

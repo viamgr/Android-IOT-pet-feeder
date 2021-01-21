@@ -73,7 +73,7 @@ class NetworkStatusObserver @Inject constructor() {
         return this
     }
 
-    fun start(): NetworkStatusObserver {
+    fun start() {
         permissionResult.request(
             Manifest.permission.CHANGE_NETWORK_STATE,
             Manifest.permission.CHANGE_WIFI_STATE,
@@ -85,8 +85,6 @@ class NetworkStatusObserver @Inject constructor() {
             permissionCallback()
             startNetworkListening()
         }
-
-        return this
     }
 
     fun stop() {
@@ -132,8 +130,9 @@ class NetworkStatusObserver @Inject constructor() {
         }
     }
 
-    fun observe(owner: LifecycleOwner, observer: Observer<NetworkStatus>) {
+    fun observe(owner: LifecycleOwner, observer: Observer<NetworkStatus>): NetworkStatusObserver {
         _networkStatus.observe(owner, observer)
+        return this
     }
 
     fun onPermissionCallback(block: () -> Unit): NetworkStatusObserver {

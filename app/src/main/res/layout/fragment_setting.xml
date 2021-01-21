@@ -16,42 +16,12 @@
         android:layout_height="match_parent"
         tools:context=".ui.setting.SettingFragment">
 
-        <com.google.android.material.card.MaterialCardView
+        <com.airbnb.epoxy.EpoxyRecyclerView
+            android:id="@+id/wifi_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="12dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="0dp"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/connect_device_to_wifi"
-                    android:textAppearance="?attr/textAppearanceListItem" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="2dp"
-                    android:layout_marginTop="12dp"
-                    android:alpha="0.6"
-                    android:background="@color/grey_300" />
-
-                <com.airbnb.epoxy.EpoxyRecyclerView
-                    android:id="@+id/wifi_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:listitem="@layout/view_holder_wifi_list" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:listitem="@layout/view_holder_wifi_list" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
