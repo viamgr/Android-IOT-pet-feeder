@@ -371,7 +371,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/feeding_options"
+                            android:text="@string/lamp_options"
                             android:textAppearance="?attr/textAppearanceListItem" />
 
                         <View

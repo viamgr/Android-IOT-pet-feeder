@@ -100,4 +100,5 @@
     <string name="manual_set_time">Manually Set Time</string>
     <string name="set_time_in_date">%s</string>
     <string name="confirm_date_set">Set This Time</string>
+    <string name="lamp_options">Lighting Options</string>
 </resources>

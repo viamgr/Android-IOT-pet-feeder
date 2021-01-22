@@ -57,14 +57,17 @@ class TimerViewModel @ViewModelInject constructor(
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 
+    private var list = mutableListOf<ClockTimer>()
     val getTimerListTask = getAlarms.toLiveTask().also {
         it.post(Unit)
+    }.onSuccess {
+        it?.let {
+            list = it.toMutableList()
+        }
     }
 
-    private val addTimerTask = setAlarms.toLiveTask {
-        onSuccess {
-            getTimerListTask.post(Unit)
-        }
+    private val addTimerTask = setAlarms.toLiveTask().onSuccess {
+        getTimerListTask.post(Unit)
     }
 
 
@@ -93,7 +96,7 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     fun onAddTime(newHour: Int, newMinute: Int) {
-        getTimerList()?.let { newList ->
+        list.let { newList ->
             newList.add(ClockTimer(hour = newHour, minute = newMinute))
             addTimerTask.post(newList)
         }
@@ -104,7 +107,8 @@ class TimerViewModel @ViewModelInject constructor(
         _showTimeSettingMenu.value = Event(Unit)
     }
 
-    private fun getTimerList() = getTimerListTask.state().dataOrNull()?.toMutableList()
+    private fun getTimerList(): MutableList<ClockTimer>? =
+        getTimerListTask.state().dataOrNull()?.toMutableList()
 
     fun onTabChanged(position: Int?) {
         _timerMode.value = if (position == 0) TIMER_MODE_SCHEDULING else TIMER_MODE_PERIODIC
