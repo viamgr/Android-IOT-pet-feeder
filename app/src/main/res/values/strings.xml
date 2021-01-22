@@ -96,4 +96,8 @@
     <string name="calendar">Calendar</string>
     <string name="time_and_date_setting">Date And Time Settings</string>
     <string name="required_permissions">Required Permissions</string>
+    <string name="time_source">Time Source</string>
+    <string name="manual_set_time">Manually Set Time</string>
+    <string name="set_time_in_date">%s</string>
+    <string name="confirm_date_set">Set This Time</string>
 </resources>

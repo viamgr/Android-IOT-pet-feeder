@@ -1,39 +1,63 @@
 package com.viam.feeder.ui.timer
 
+import android.text.format.DateFormat
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.viam.feeder.constants.STATUS_TIME
 import com.viam.feeder.core.dataOrNull
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
 import com.viam.feeder.data.domain.config.GetAlarms
 import com.viam.feeder.data.domain.config.SetAlarms
+import com.viam.feeder.data.domain.event.GetStatus
+import com.viam.feeder.data.domain.event.SetStatus
+import com.viam.feeder.data.domain.event.Status
 import com.viam.feeder.data.models.ClockTimer
+import java.util.*
 
 class TimerViewModel @ViewModelInject constructor(
     setAlarms: SetAlarms,
     getAlarms: GetAlarms,
+    getStatus: GetStatus,
+    setStatus: SetStatus,
 ) : ViewModel() {
 
-    private val _time = MutableLiveData<String>("2:08")
+    private val _time = MutableLiveData<String>("0:00")
     val time: LiveData<String> = _time
 
-    private val _date = MutableLiveData<String>("1 DECEMBER, 2025")
+    private val _date = MutableLiveData<String>("1 DECEMBER, 1970")
     val date: LiveData<String> = _date
 
     private val _ampm = MutableLiveData<String>("AM")
     val ampm: LiveData<String> = _ampm
 
+    private val _showTimeSettingMenu = MutableLiveData<Event<Unit>>()
+    val showTimeSettingMenu: LiveData<Event<Unit>> = _showTimeSettingMenu
+
+    val getStatusTask = getStatus.toLiveTask().also {
+        it.post(STATUS_TIME)
+    }.onSuccess {
+        it?.let {
+            val timeInMillis = it.toLong()
+            val inDate = Date(timeInMillis)
+            _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
+            _time.value = DateFormat.format("h:mm", inDate).toString()
+            _ampm.value = DateFormat.format("aa", inDate).toString()
+        }
+    }
+
+    val setStatusTask = setStatus.toLiveTask()
+
+    val timeCompositeTask = compositeTask(
+        setStatusTask, getStatusTask
+    )
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 
-    private val getTimerListTask = getAlarms.toLiveTask {
-        onSuccess {
-            controller.setData(it)
-        }
-    }.also {
+    val getTimerListTask = getAlarms.toLiveTask().also {
         it.post(Unit)
     }
 
@@ -52,14 +76,8 @@ class TimerViewModel @ViewModelInject constructor(
     private val _timerMode = MutableLiveData<Int>()
     val timerMode: LiveData<Int> = _timerMode
 
-    val controller = TimerController()
-        .also { timerController ->
-            timerController.clickListener = { clockTimer ->
-                removeTimer(clockTimer)
-            }
-        }
 
-    private fun removeTimer(timer: ClockTimer) {
+    fun removeTimer(timer: ClockTimer) {
         getTimerList()?.let { newList ->
             newList.removeAll { timer.id == it.id }
             addTimerTask.post(newList)
@@ -70,12 +88,20 @@ class TimerViewModel @ViewModelInject constructor(
         _openTimerDialog.postValue(Event(Unit))
     }
 
-    fun onTimeSet(newHour: Int, newMinute: Int) {
+    fun onTimeSet(timeInMillis: Long) {
+        setStatusTask.post(Status(STATUS_TIME, timeInMillis.toString()))
+    }
+
+    fun onAddTime(newHour: Int, newMinute: Int) {
         getTimerList()?.let { newList ->
             newList.add(ClockTimer(hour = newHour, minute = newMinute))
             addTimerTask.post(newList)
         }
 
+    }
+
+    fun onTimeSettingClicked() {
+        _showTimeSettingMenu.value = Event(Unit)
     }
 
     private fun getTimerList() = getTimerListTask.state().dataOrNull()?.toMutableList()

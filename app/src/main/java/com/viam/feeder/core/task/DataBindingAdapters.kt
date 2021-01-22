@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.ViewCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -113,14 +113,11 @@ fun View.taskProgress(
 
     val targetView =
         when {
-            parent !is ConstraintLayout && this is ConstraintLayout -> {
-                this
-            }
-            this is FrameLayout -> {
-                this
+            this is LinearLayout || this !is ViewGroup -> {
+                parent as ViewGroup
             }
             else -> {
-                parent as ViewGroup
+                this
             }
         }
     if (targetView.id == -1) {
@@ -141,33 +138,31 @@ fun View.taskProgress(
             !isNew -> {
                 (targetView).findViewById(viewTag as Int)
             }
-            targetView is ConstraintLayout -> {
-                View.inflate(context, R.layout.layout_row_progress, null).let {
-                    ViewCompat.setElevation(it, Float.MAX_VALUE)
-                    targetView.addView(it)
-                    val generateViewId = ViewCompat.generateViewId()
-                    it.id = generateViewId
-                    setTag(taskProgressLayoutTag, generateViewId)
-                    val set = ConstraintSet()
-                    set.connect(it.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
-                    set.connect(it.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
-                    set.connect(it.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
-                    set.connect(it.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
-                    set.applyTo(targetView)
-                    it
-                }
-            }
+            /* targetView is ConstraintLayout -> {
+                 View.inflate(context, R.layout.layout_row_progress, null).let {
+                     ViewCompat.setElevation(it, Float.MAX_VALUE)
+                     targetView.addView(it)
+                     val generateViewId = ViewCompat.generateViewId()
+                     it.id = generateViewId
+                     setTag(taskProgressLayoutTag, generateViewId)
+                     val set = ConstraintSet()
+                     set.connect(it.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
+                     set.connect(it.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
+                     set.connect(it.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
+                     set.connect(it.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
+                     set.applyTo(targetView)
+                     it
+                 }
+             }*/
             else -> {
                 View.inflate(context, R.layout.layout_row_progress, null).let {
                     ViewCompat.setElevation(it, Float.MAX_VALUE)
-                    targetView.addView(it)
-                    if (targetView is FrameLayout)
-                        it.layoutParams =
-                            FrameLayout.LayoutParams(targetView.measuredWidth, targetView.height)
-
                     val generateViewId = ViewCompat.generateViewId()
                     it.id = generateViewId
                     setTag(taskProgressLayoutTag, generateViewId)
+                    targetView.post {
+                        targetView.addView(it, targetView.measuredWidth, targetView.measuredHeight)
+                    }
                     it
                 }
 

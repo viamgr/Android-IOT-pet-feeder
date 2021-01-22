@@ -7,4 +7,6 @@ import javax.inject.Inject
 @ActivityScoped
 class EventRepository @Inject constructor(private val eventDataSource: EventDataSource) {
     suspend fun sendEvent(event: String) = eventDataSource.sendEvent(event)
+    suspend fun setStatus(key: String, value: String) = eventDataSource.setState(key, value)
+    suspend fun getStatus(key: String) = eventDataSource.getState(key)
 }
