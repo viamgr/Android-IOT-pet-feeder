@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="taskProgressLayoutTag" type="id" />
+    <item name="doneAnimationLayoutTag" type="id" />
+    <item name="disableClicksOnLoadingTag" type="id" />
+</resources>

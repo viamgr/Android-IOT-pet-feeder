@@ -49,6 +49,10 @@ fun <T> Resource<T>.onLoading(callback: () -> Unit): Resource<T> {
     return this
 }
 
+fun <T> Resource<T>.isSuccess(): Boolean {
+    return this is Resource.Success
+}
+
 fun <T> Resource<T>.isLoading(): Boolean {
     return this is Resource.Loading
 }

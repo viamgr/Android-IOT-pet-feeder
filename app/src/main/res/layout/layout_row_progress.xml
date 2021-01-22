@@ -15,12 +15,6 @@
         android:layout_height="match_parent"
         app:blurOverlayColor="#80FFFFFF" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/grey_300"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/progress"
         android:layout_width="48dp"

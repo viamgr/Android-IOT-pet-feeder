@@ -126,7 +126,7 @@ class DashboardViewModel @ViewModelInject constructor(
         }
     }
 
-    private val setFeedingDurationEventTask = setFeedingDurationVolume.toLiveTask()
+    val setFeedingDurationEventTask = setFeedingDurationVolume.toLiveTask()
     private val getFeedingDurationEventTask = getFeedingDurationVolume.toLiveTask().also {
         it.post(Unit)
     }.onSuccess { duration ->
@@ -191,12 +191,24 @@ class DashboardViewModel @ViewModelInject constructor(
             setFeedingDurationEventTask,
             getFeedingDurationEventTask
         )
+    val soundOptionsSetTasks =
+        compositeTask(
+            uploadSoundTask,
+            convertAndUploadSoundUseCaseTask,
+            setSoundVolumeEventTask
+        )
     val soundOptionsTasks =
         compositeTask(
             uploadSoundTask,
             convertAndUploadSoundUseCaseTask,
             setSoundVolumeEventTask,
             getSoundVolumeEventTask
+        )
+
+    val ledOptionSetTasks =
+        compositeTask(
+            setLedStateTask,
+            setLedTurnOffDelayTask
         )
 
     val ledOptionTasks =

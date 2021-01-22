@@ -17,7 +17,6 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            disableClicksOnLoading="@{vm.tasks.asLiveData().state()}"
             android:layout_height="wrap_content"
             tools:context=".ui.dashboard.DashboardFragment">
 
@@ -226,7 +225,7 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/feeding_options"
-                    animationResource="@{vm.feedingOptionsTasks.asLiveData().state()}"
+                    animationResource="@{vm.setFeedingDurationEventTask.asLiveData().state()}"
                     doneAnimationDelay="@{1500L}"
                     doneAnimationLayout="@{@layout/layout_done}"
                     taskProgress="@{vm.feedingOptionsTasks.asLiveData()}"
@@ -278,7 +277,7 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    animationResource="@{vm.soundOptionsTasks.asLiveData().state()}"
+                    animationResource="@{vm.soundOptionsSetTasks.asLiveData().state()}"
                     doneAnimationDelay="@{1500L}"
                     doneAnimationLayout="@{@layout/layout_done}"
                     taskProgress="@{vm.soundOptionsTasks.asLiveData()}"
@@ -352,7 +351,7 @@
 
 
                 <com.google.android.material.card.MaterialCardView
-                    animationResource="@{vm.ledOptionTasks.asLiveData().state()}"
+                    animationResource="@{vm.ledOptionSetTasks.asLiveData().state()}"
                     doneAnimationDelay="@{1500L}"
                     doneAnimationLayout="@{@layout/layout_done}"
                     taskProgress="@{vm.ledOptionTasks.asLiveData()}"

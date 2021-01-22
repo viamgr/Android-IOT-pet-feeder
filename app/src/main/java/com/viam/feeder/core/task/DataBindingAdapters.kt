@@ -1,5 +1,6 @@
 package com.viam.feeder.core.task
 
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,10 +19,13 @@ import com.viam.feeder.core.Resource
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.feeder.core.isError
 import com.viam.feeder.core.isLoading
+import com.viam.feeder.core.isSuccess
 import eightbitlab.com.blurview.BlurView
 import eightbitlab.com.blurview.RenderScriptBlur
 import java.util.concurrent.CancellationException
 
+
+const val disableClicksOnLoadingTag = R.id.disableClicksOnLoadingTag
 
 @BindingAdapter(
     value = ["disableClicksOnLoading"],
@@ -30,24 +34,32 @@ import java.util.concurrent.CancellationException
 fun View.disableClicksOnLoading(
     resource: Resource<*>?,
 ) {
+    val tag = getTag(disableClicksOnLoadingTag)
     if (resource?.isLoading() == true && tag !is Int) {
         val frameLayout = FrameLayout(context).also { frameLayout ->
             frameLayout.isClickable = true
             frameLayout.id = ViewCompat.generateViewId().also {
-                tag = it
+                setTag(disableClicksOnLoadingTag, it)
             }
-            ViewCompat.setElevation(frameLayout, Float.MAX_VALUE)
+            ViewCompat.setElevation(frameLayout, Float.MAX_VALUE / 2)
+
+            val outValue = TypedValue()
+            context.theme
+                .resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+            frameLayout.setBackgroundResource(outValue.resourceId)
         }
         (this as ViewGroup).addView(frameLayout, measuredWidth, height)
     } else {
         if (tag is Int) {
-            findViewById<View?>(tag as Int)?.let {
-                tag = null
+            findViewById<View?>(tag)?.let {
+                setTag(disableClicksOnLoadingTag, null)
                 (this as ViewGroup).removeView(it)
             }
         }
     }
 }
+
+const val doneAnimationLayoutTag = R.id.doneAnimationLayoutTag
 
 @BindingAdapter(
     value = ["animationResource", "doneAnimationLayout", "doneAnimationDelay"],
@@ -55,10 +67,12 @@ fun View.disableClicksOnLoading(
 )
 fun View.doneAnimationLayout(
     resource: Resource<*>?,
-    @LayoutRes doneAnimationLayout: Int?,
+    @LayoutRes doneAnimationLayout: Int,
     doneAnimationDelay: Long?
 ) {
-    if (resource is Resource.Success && doneAnimationLayout != null) {
+    val alreadyVisible = getTag(doneAnimationLayoutTag) == false
+    if (resource?.isSuccess() == true && !alreadyVisible) {
+        setTag(doneAnimationLayoutTag, false)
         val inflater = LayoutInflater.from(context)
         val viewGroup = if (parent !is ConstraintLayout && this is ConstraintLayout) {
             this
@@ -77,9 +91,13 @@ fun View.doneAnimationLayout(
                 viewGroup.removeView(doneView)
             }
         }
+    } else {
+        setTag(doneAnimationLayoutTag, true)
     }
 
 }
+
+const val taskProgressLayoutTag = R.id.taskProgressLayoutTag
 
 @BindingAdapter(
     value = ["taskProgress"],
@@ -109,18 +127,19 @@ fun View.taskProgress(
         targetView.id = ViewCompat.generateViewId()
     }
 
+    val viewTag = getTag(taskProgressLayoutTag)
     if (!shouldVisible) {
-        if (tag != null) {
-            targetView.removeView(targetView.findViewById(tag as Int))
-            tag = -1
+        if (viewTag != null) {
+            targetView.removeView(targetView.findViewById(viewTag as Int))
+            setTag(taskProgressLayoutTag, null)
         }
     } else {
         val viewId = id
-        val isNew = tag == null || tag == -1
+        val isNew = viewTag !is Int
 
         val workingView = when {
-            tag != null && tag != -1 -> {
-                (targetView).findViewById(tag as Int)
+            !isNew -> {
+                (targetView).findViewById(viewTag as Int)
             }
             targetView is ConstraintLayout -> {
                 View.inflate(context, R.layout.layout_row_progress, null).let {
@@ -128,7 +147,7 @@ fun View.taskProgress(
                     targetView.addView(it)
                     val generateViewId = ViewCompat.generateViewId()
                     it.id = generateViewId
-                    tag = generateViewId
+                    setTag(taskProgressLayoutTag, generateViewId)
                     val set = ConstraintSet()
                     set.connect(it.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
                     set.connect(it.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
@@ -148,7 +167,7 @@ fun View.taskProgress(
 
                     val generateViewId = ViewCompat.generateViewId()
                     it.id = generateViewId
-                    tag = generateViewId
+                    setTag(taskProgressLayoutTag, generateViewId)
                     it
                 }
 
