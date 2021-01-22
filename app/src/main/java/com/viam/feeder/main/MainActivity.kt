@@ -3,6 +3,7 @@ package com.viam.feeder.main
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.postDelayed
@@ -11,7 +12,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
-import com.google.android.material.snackbar.Snackbar
 import com.viam.feeder.R
 import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.domain.utils.isConnectionError
@@ -85,11 +85,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showMessage(message: String) {
-        Snackbar.make(
-            findViewById(android.R.id.content),
-            message,
-            Snackbar.LENGTH_SHORT
-        ).show()
+        Toast.makeText(this, message, LENGTH_SHORT).show()
     }
 
     override fun onBackPressed() {

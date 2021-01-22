@@ -15,12 +15,9 @@
         android:layout_height="match_parent"
         android:fillViewport="true">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            doneAnimationDelay="@{1500L}"
-            doneAnimationLayout="@{@layout/layout_done}"
-            animationResource="@{vm.tasks.asLiveData().state()}"
-            taskProgress="@{vm.tasks.asLiveData()}"
+        <FrameLayout
             android:layout_width="match_parent"
+            disableClicksOnLoading="@{vm.tasks.asLiveData().state()}"
             android:layout_height="wrap_content"
             tools:context=".ui.dashboard.DashboardFragment">
 
@@ -30,11 +27,13 @@
                 android:orientation="vertical">
 
                 <com.google.android.material.card.MaterialCardView
+                    taskProgress="@{vm.eventTasks.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="12dp"
                     app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <LinearLayout
@@ -61,18 +60,18 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_margin="16dp"
-                            android:background="?selectableItemBackground"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:onClick="@{()->vm.sendCompositeFeedingEvent()}"
                             android:orientation="vertical">
 
                             <androidx.cardview.widget.CardView
+                                animationResource="@{vm.compositeSendEvent.asLiveData().state()}"
+                                doneAnimationDelay="@{1500L}"
+                                doneAnimationLayout="@{@layout/layout_done}"
                                 android:layout_width="wrap_content"
-                                app:cardBackgroundColor="@color/transBack"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_marginTop="8dp"
+                                android:onClick="@{()->vm.sendCompositeFeedingEvent()}"
+                                app:cardBackgroundColor="@color/transBack"
                                 app:cardCornerRadius="400dp"
                                 app:cardElevation="8dp">
 
@@ -89,8 +88,8 @@
                                 style="?attr/borderlessButtonStyle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="?android:textColorSecondary"
-                                android:text="@string/feeding_process" />
+                                android:text="@string/feeding_process"
+                                android:textColor="?android:textColorSecondary" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -104,25 +103,25 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
-                                android:background="?selectableItemBackground"
-                                android:clickable="true"
-                                android:focusable="true"
                                 android:gravity="center"
-                                android:onClick="@{()->vm.sendCallingEvent()}"
                                 android:orientation="vertical">
 
                                 <androidx.cardview.widget.CardView
+                                    animationResource="@{vm.callingSendEvent.asLiveData().state()}"
+                                    doneAnimationDelay="@{1500L}"
+                                    doneAnimationLayout="@{@layout/layout_done}"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
-                                    app:cardBackgroundColor="@color/transBack"
                                     android:layout_marginTop="8dp"
+                                    android:onClick="@{()->vm.sendCallingEvent()}"
+                                    app:cardBackgroundColor="@color/transBack"
                                     app:cardCornerRadius="400dp"
                                     app:cardElevation="8dp">
 
                                     <androidx.appcompat.widget.AppCompatImageView
-                                        android:layout_width="76dp"
-                                        android:layout_height="66dp"
+                                        android:layout_width="70dp"
+                                        android:layout_height="70dp"
                                         android:layout_gravity="center"
                                         android:adjustViewBounds="true"
                                         android:padding="15dp"
@@ -135,8 +134,8 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="1"
-                                    android:textColor="?android:textColorSecondary"
-                                    android:text="@string/calling" />
+                                    android:text="@string/calling"
+                                    android:textColor="?android:textColorSecondary" />
 
                             </LinearLayout>
 
@@ -145,19 +144,19 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
-                                android:background="?selectableItemBackground"
-                                android:clickable="true"
-                                android:focusable="true"
                                 android:gravity="center"
-                                android:onClick="@{()->vm.sendLightEvent()}"
                                 android:orientation="vertical">
 
                                 <androidx.cardview.widget.CardView
+                                    animationResource="@{vm.ledSendEvent.asLiveData().state()}"
+                                    doneAnimationDelay="@{1500L}"
+                                    doneAnimationLayout="@{@layout/layout_done}"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
-                                    app:cardBackgroundColor="@color/transBack"
                                     android:layout_marginTop="8dp"
+                                    android:onClick="@{()->vm.sendLightEvent()}"
+                                    app:cardBackgroundColor="@color/transBack"
                                     app:cardCornerRadius="400dp"
                                     app:cardElevation="8dp">
 
@@ -176,8 +175,8 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="1"
-                                    android:textColor="?android:textColorSecondary"
-                                    android:text="@string/lighting" />
+                                    android:text="@string/lighting"
+                                    android:textColor="?android:textColorSecondary" />
 
                             </LinearLayout>
 
@@ -186,18 +185,18 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
-                                android:background="?selectableItemBackground"
-                                android:clickable="true"
-                                android:focusable="true"
                                 android:gravity="center"
-                                android:onClick="@{()->vm.sendFeedingEvent()}"
                                 android:orientation="vertical">
 
                                 <androidx.cardview.widget.CardView
+                                    animationResource="@{vm.feedingSendEvent.asLiveData().state()}"
+                                    doneAnimationDelay="@{1500L}"
+                                    doneAnimationLayout="@{@layout/layout_done}"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:layout_marginTop="8dp"
+                                    android:onClick="@{()->vm.sendFeedingEvent()}"
                                     app:cardBackgroundColor="@color/transBack"
                                     app:cardCornerRadius="400dp"
                                     app:cardElevation="8dp">
@@ -217,8 +216,8 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:lines="1"
-                                    android:textColor="?android:textColorSecondary"
-                                    android:text="@string/feeding" />
+                                    android:text="@string/feeding"
+                                    android:textColor="?android:textColorSecondary" />
                             </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
@@ -226,12 +225,17 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/feeding_options"
+                    animationResource="@{vm.feedingOptionsTasks.asLiveData().state()}"
+                    doneAnimationDelay="@{1500L}"
+                    doneAnimationLayout="@{@layout/layout_done}"
+                    taskProgress="@{vm.feedingOptionsTasks.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="12dp"
                     app:cardCornerRadius="8dp"
-                    app:cardElevation="0dp">
+                    app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -274,12 +278,16 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
+                    animationResource="@{vm.soundOptionsTasks.asLiveData().state()}"
+                    doneAnimationDelay="@{1500L}"
+                    doneAnimationLayout="@{@layout/layout_done}"
+                    taskProgress="@{vm.soundOptionsTasks.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="12dp"
                     app:cardCornerRadius="8dp"
-                    app:cardElevation="0dp">
+                    app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -344,12 +352,16 @@
 
 
                 <com.google.android.material.card.MaterialCardView
+                    animationResource="@{vm.ledOptionTasks.asLiveData().state()}"
+                    doneAnimationDelay="@{1500L}"
+                    doneAnimationLayout="@{@layout/layout_done}"
+                    taskProgress="@{vm.ledOptionTasks.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_margin="12dp"
                     app:cardCornerRadius="8dp"
-                    app:cardElevation="0dp">
+                    app:cardElevation="4dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -410,7 +422,6 @@
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </FrameLayout>
     </androidx.core.widget.NestedScrollView>
 </layout>

@@ -96,9 +96,7 @@ class DashboardViewModel @ViewModelInject constructor(
 
     private val uploadSoundTask = uploadSound.toLiveTask()
 
-    private val setSoundVolumeEventTask = setSoundVolume.toLiveTask {
-        debounce(2000)
-    }
+    private val setSoundVolumeEventTask = setSoundVolume.toLiveTask()
 
     private val _feedingVolumeValue = MutableLiveData(R.string.choose)
     val feedingVolumeValue: LiveData<Int> = _feedingVolumeValue
@@ -113,7 +111,10 @@ class DashboardViewModel @ViewModelInject constructor(
     private val _ledStateValue = MutableLiveData(R.string.choose)
     val ledStateValue: LiveData<Int> = _ledStateValue
 
-    private val sendRequestEvent = sendEvent.toLiveTask()
+    val compositeSendEvent = sendEvent.toLiveTask()
+    val ledSendEvent = sendEvent.toLiveTask()
+    val callingSendEvent = sendEvent.toLiveTask()
+    val feedingSendEvent = sendEvent.toLiveTask()
 
     private val getSoundVolumeEventTask = getSoundVolume.toLiveTask().also { liveTask ->
         liveTask.post(Unit)
@@ -125,8 +126,8 @@ class DashboardViewModel @ViewModelInject constructor(
         }
     }
 
-    private val setFeedingDurationVolumeTask = setFeedingDurationVolume.toLiveTask()
-    private val getFeedingVolumeEventTask = getFeedingDurationVolume.toLiveTask().also {
+    private val setFeedingDurationEventTask = setFeedingDurationVolume.toLiveTask()
+    private val getFeedingDurationEventTask = getFeedingDurationVolume.toLiveTask().also {
         it.post(Unit)
     }.onSuccess { duration ->
         duration?.let { value: Int ->
@@ -159,15 +160,25 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     val tasks = compositeTask(
-        setLedStateTask, getLedStateTask,
-        getLedTurnOffDelayTask, setLedTurnOffDelayTask,
-        getFeedingVolumeEventTask,
-        setFeedingDurationVolumeTask,
-        setSoundVolumeEventTask,
+        getLedTurnOffDelayTask,
+        getFeedingDurationEventTask,
         getSoundVolumeEventTask,
-        uploadSoundTask,
-        convertAndUploadSoundUseCaseTask,
-        sendRequestEvent
+        getLedStateTask,
+        compositeSendEvent,
+        ledSendEvent,
+        callingSendEvent,
+        feedingSendEvent,
+        setFeedingDurationEventTask,
+        setLedStateTask,
+        setLedTurnOffDelayTask,
+        setSoundVolumeEventTask
+    )
+
+    val eventTasks = compositeTask(
+        compositeSendEvent,
+        ledSendEvent,
+        callingSendEvent,
+        feedingSendEvent
     )
 
     val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
@@ -175,9 +186,30 @@ class DashboardViewModel @ViewModelInject constructor(
     val ledStates: LiveData<List<LedState>> = _ledStates
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
 
+    val feedingOptionsTasks =
+        compositeTask(
+            setFeedingDurationEventTask,
+            getFeedingDurationEventTask
+        )
+    val soundOptionsTasks =
+        compositeTask(
+            uploadSoundTask,
+            convertAndUploadSoundUseCaseTask,
+            setSoundVolumeEventTask,
+            getSoundVolumeEventTask
+        )
+
+    val ledOptionTasks =
+        compositeTask(
+            setLedStateTask,
+            setLedTurnOffDelayTask,
+            getLedStateTask,
+            getLedTurnOffDelayTask
+        )
+
     fun onFeedingVolumeClicked(position: Int) {
         val value = _feedVolumeList.value!![position].duration
-        setFeedingDurationVolumeTask.postWithCancel(value)
+        setFeedingDurationEventTask.postWithCancel(value)
     }
 
     fun onFeedSoundItemClicked(position: Int) {
@@ -213,18 +245,18 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     fun sendCompositeFeedingEvent() {
-        sendRequestEvent.post(EVENT_COMPOSITE_FEEDING)
+        compositeSendEvent.post(EVENT_COMPOSITE_FEEDING)
     }
 
     fun sendLightEvent() {
-        sendRequestEvent.post(EVENT_LED_TIMER)
+        ledSendEvent.post(EVENT_LED_TIMER)
     }
 
     fun sendFeedingEvent() {
-        sendRequestEvent.post(EVENT_FEEDING)
+        feedingSendEvent.post(EVENT_FEEDING)
     }
 
     fun sendCallingEvent() {
-        sendRequestEvent.post(EVENT_PLAY_FEEDING_AUDIO)
+        callingSendEvent.post(EVENT_PLAY_FEEDING_AUDIO)
     }
 }

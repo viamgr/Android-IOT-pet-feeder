@@ -3,6 +3,7 @@ package com.viam.feeder.core.task
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -23,6 +24,32 @@ import java.util.concurrent.CancellationException
 
 
 @BindingAdapter(
+    value = ["disableClicksOnLoading"],
+    requireAll = true
+)
+fun View.disableClicksOnLoading(
+    resource: Resource<*>?,
+) {
+    if (resource?.isLoading() == true && tag !is Int) {
+        val frameLayout = FrameLayout(context).also { frameLayout ->
+            frameLayout.isClickable = true
+            frameLayout.id = ViewCompat.generateViewId().also {
+                tag = it
+            }
+            ViewCompat.setElevation(frameLayout, Float.MAX_VALUE)
+        }
+        (this as ViewGroup).addView(frameLayout, measuredWidth, height)
+    } else {
+        if (tag is Int) {
+            findViewById<View?>(tag as Int)?.let {
+                tag = null
+                (this as ViewGroup).removeView(it)
+            }
+        }
+    }
+}
+
+@BindingAdapter(
     value = ["animationResource", "doneAnimationLayout", "doneAnimationDelay"],
     requireAll = true
 )
@@ -35,12 +62,17 @@ fun View.doneAnimationLayout(
         val inflater = LayoutInflater.from(context)
         val viewGroup = if (parent !is ConstraintLayout && this is ConstraintLayout) {
             this
+        } else if (this is FrameLayout) {
+            this
         } else {
             parent as ViewGroup
         }
         inflater.inflate(doneAnimationLayout, viewGroup, false).let { doneView ->
             ViewCompat.setElevation(doneView, Float.MAX_VALUE)
+            doneView.layoutParams =
+                ViewGroup.LayoutParams(viewGroup.measuredWidth, viewGroup.height)
             viewGroup.addView(doneView)
+
             viewGroup.postDelayed(doneAnimationDelay ?: 2500L) {
                 viewGroup.removeView(doneView)
             }
@@ -61,57 +93,75 @@ fun View.taskProgress(
     val showError = state is Resource.Error && state.exception !is CancellationException
     val shouldVisible = isLoading || showError
 
-    val parent = if (parent !is ConstraintLayout && this is ConstraintLayout) {
-        this
-    } else {
-        parent as ViewGroup
-    }
-    if (parent.id == -1) {
-        parent.id = ViewCompat.generateViewId()
+    val targetView =
+        when {
+            parent !is ConstraintLayout && this is ConstraintLayout -> {
+                this
+            }
+            this is FrameLayout -> {
+                this
+            }
+            else -> {
+                parent as ViewGroup
+            }
+        }
+    if (targetView.id == -1) {
+        targetView.id = ViewCompat.generateViewId()
     }
 
     if (!shouldVisible) {
         if (tag != null) {
-            parent.removeView(parent.findViewById(tag as Int))
+            targetView.removeView(targetView.findViewById(tag as Int))
+            tag = -1
         }
     } else {
         val viewId = id
-        var isInflated = false
+        val isNew = tag == null || tag == -1
 
-        val view = if (parent is ConstraintLayout) {
-            val inflated = tag?.let {
-                (parent).findViewById(it as Int)
-            } ?: run {
-                isInflated = true
+        val workingView = when {
+            tag != null && tag != -1 -> {
+                (targetView).findViewById(tag as Int)
+            }
+            targetView is ConstraintLayout -> {
                 View.inflate(context, R.layout.layout_row_progress, null).let {
                     ViewCompat.setElevation(it, Float.MAX_VALUE)
-                    parent.addView(it)
+                    targetView.addView(it)
+                    val generateViewId = ViewCompat.generateViewId()
+                    it.id = generateViewId
+                    tag = generateViewId
+                    val set = ConstraintSet()
+                    set.connect(it.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
+                    set.connect(it.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
+                    set.connect(it.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
+                    set.connect(it.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
+                    set.applyTo(targetView)
                     it
                 }
             }
-            if (isInflated) {
-                val generateViewId = ViewCompat.generateViewId()
-                inflated.id = generateViewId
-                tag = generateViewId
-                val set = ConstraintSet()
-                set.connect(inflated.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
-                set.connect(inflated.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
-                set.connect(inflated.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
-                set.connect(inflated.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
-                set.applyTo(parent)
-            }
+            else -> {
+                View.inflate(context, R.layout.layout_row_progress, null).let {
+                    ViewCompat.setElevation(it, Float.MAX_VALUE)
+                    targetView.addView(it)
+                    if (targetView is FrameLayout)
+                        it.layoutParams =
+                            FrameLayout.LayoutParams(targetView.measuredWidth, targetView.height)
 
-            inflated
-        } else {
-            isInflated = true
-            View.inflate(context, R.layout.layout_row_progress, parent)
+                    val generateViewId = ViewCompat.generateViewId()
+                    it.id = generateViewId
+                    tag = generateViewId
+                    it
+                }
+
+            }
         }
 
-        val errorView = view.findViewById<TextView>(R.id.error)
-        val retryView = view.findViewById<View>(R.id.retry)
-        val closeView = view.findViewById<View>(R.id.close)
+//        view.layoutParams = parent.layoutParams
 
-        view.findViewById<View>(R.id.progress).isInvisible = !isLoading
+        val errorView = workingView.findViewById<TextView>(R.id.error)
+        val retryView = workingView.findViewById<View>(R.id.retry)
+        val closeView = workingView.findViewById<View>(R.id.close)
+
+        workingView.findViewById<View>(R.id.progress).isInvisible = !isLoading
         closeView.isVisible = liveTask?.isCancelable() == true
         retryView.isVisible = state?.isError() == true
         if (state is Resource.Error) {
@@ -120,8 +170,8 @@ fun View.taskProgress(
             errorView.text = context.getString(R.string.loading)
         }
 
-        if (isInflated) {
-            val blurView = view.findViewById<BlurView>(R.id.blurView)
+        if (isNew) {
+            val blurView = workingView.findViewById<BlurView>(R.id.blurView)
             blurView.setupWith(this as ViewGroup)
                 .setBlurAlgorithm(RenderScriptBlur(context))
                 .setBlurRadius(2F)

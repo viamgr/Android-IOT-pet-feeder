@@ -9,7 +9,7 @@ import kotlin.random.Random
 
 suspend inline fun <T> fakeRequest(
     context: Context,
-    delayTime: Int = 2500,
+    delayTime: Int = 10000,
     possibility: Int = 30,
     crossinline body: suspend () -> T
 ): T {

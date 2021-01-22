@@ -76,7 +76,7 @@
     <string name="change_network_state">change_network_state</string>
     <string name="change_wifi_state">change_wifi_state</string>
     <string name="task_done">Task Done</string>
-    <string name="actions">ACTIONS</string>
+    <string name="actions">Actions</string>
     <string name="feeding_process">Feeding Process</string>
     <string name="feeding">Feeding</string>
     <string name="calling">Calling</string>

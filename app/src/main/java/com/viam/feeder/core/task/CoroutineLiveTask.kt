@@ -22,7 +22,6 @@ class CoroutineLiveTask<P, R>(
     private val autoRetryHandler: LiveData<Boolean> = AutoRetryHandler,
 ) : MediatorLiveData<LiveTask<P, R>>(), LiveTask<P, R>,
     LiveTaskScope<P, R> {
-    private var debounceTime: Long = 250
     private var successBlock: ((resource: R?) -> Unit)? = null
     private var runningJob: Job? = null
     private var _state: Resource<R>? = null
@@ -55,7 +54,6 @@ class CoroutineLiveTask<P, R>(
             } else {
                 _state = null
                 launch {
-                    delay(debounceTime)
                     if (isActive) {
                         _state = Resource.Loading
                         notifyValue()
@@ -143,10 +141,6 @@ class CoroutineLiveTask<P, R>(
     override fun onSuccess(block: (resource: R?) -> Unit): LiveTask<P, R> {
         successBlock = block
         return this
-    }
-
-    override fun debounce(timeInMillis: Long) {
-        debounceTime = timeInMillis
     }
 
     override fun initialParams(params: P) {
