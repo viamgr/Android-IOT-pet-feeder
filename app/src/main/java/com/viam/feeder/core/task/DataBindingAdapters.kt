@@ -112,8 +112,8 @@ fun View.taskProgress(
     val shouldVisible = isLoading || showError
 
     val targetView =
-        when {
-            this is LinearLayout || this !is ViewGroup -> {
+        when (this) {
+            is LinearLayout, !is ViewGroup -> {
                 parent as ViewGroup
             }
             else -> {
@@ -131,29 +131,12 @@ fun View.taskProgress(
             setTag(taskProgressLayoutTag, null)
         }
     } else {
-        val viewId = id
         val isNew = viewTag !is Int
 
         val workingView = when {
             !isNew -> {
                 (targetView).findViewById(viewTag as Int)
             }
-            /* targetView is ConstraintLayout -> {
-                 View.inflate(context, R.layout.layout_row_progress, null).let {
-                     ViewCompat.setElevation(it, Float.MAX_VALUE)
-                     targetView.addView(it)
-                     val generateViewId = ViewCompat.generateViewId()
-                     it.id = generateViewId
-                     setTag(taskProgressLayoutTag, generateViewId)
-                     val set = ConstraintSet()
-                     set.connect(it.id, ConstraintSet.TOP, viewId, ConstraintSet.TOP, 0)
-                     set.connect(it.id, ConstraintSet.START, viewId, ConstraintSet.START, 0)
-                     set.connect(it.id, ConstraintSet.END, viewId, ConstraintSet.END, 0)
-                     set.connect(it.id, ConstraintSet.BOTTOM, viewId, ConstraintSet.BOTTOM, 0)
-                     set.applyTo(targetView)
-                     it
-                 }
-             }*/
             else -> {
                 View.inflate(context, R.layout.layout_row_progress, null).let {
                     ViewCompat.setElevation(it, Float.MAX_VALUE)
@@ -169,34 +152,34 @@ fun View.taskProgress(
             }
         }
 
-//        view.layoutParams = parent.layoutParams
+        targetView.post {
+            val errorView = workingView.findViewById<TextView>(R.id.error)
+            val retryView = workingView.findViewById<View>(R.id.retry)
+            val closeView = workingView.findViewById<View>(R.id.close)
 
-        val errorView = workingView.findViewById<TextView>(R.id.error)
-        val retryView = workingView.findViewById<View>(R.id.retry)
-        val closeView = workingView.findViewById<View>(R.id.close)
-
-        workingView.findViewById<View>(R.id.progress).isInvisible = !isLoading
-        closeView.isVisible = liveTask?.isCancelable() == true
-        retryView.isVisible = state?.isError() == true
-        if (state is Resource.Error) {
-            errorView.text = state.exception.toMessage(context)
-        } else if (state is Resource.Loading) {
-            errorView.text = context.getString(R.string.loading)
-        }
-
-        if (isNew) {
-            val blurView = workingView.findViewById<BlurView>(R.id.blurView)
-            blurView.setupWith(this as ViewGroup)
-                .setBlurAlgorithm(RenderScriptBlur(context))
-                .setBlurRadius(2F)
-                .setBlurAutoUpdate(true)
-                .setHasFixedTransformationMatrix(true)
-
-            retryView.setOnClickListener {
-                liveTask?.retry()
+            workingView.findViewById<View>(R.id.progress).isInvisible = !isLoading
+            closeView.isVisible = liveTask?.isCancelable() == true
+            retryView.isVisible = state?.isError() == true
+            if (state is Resource.Error) {
+                errorView.text = state.exception.toMessage(context)
+            } else if (state is Resource.Loading) {
+                errorView.text = context.getString(R.string.loading)
             }
-            closeView.setOnClickListener {
-                liveTask?.cancel()
+
+            if (isNew) {
+                val blurView = workingView.findViewById<BlurView>(R.id.blurView)
+                blurView.setupWith(this as ViewGroup)
+                    .setBlurAlgorithm(RenderScriptBlur(context))
+                    .setBlurRadius(2F)
+                    .setBlurAutoUpdate(true)
+                    .setHasFixedTransformationMatrix(true)
+
+                retryView.setOnClickListener {
+                    liveTask?.retry()
+                }
+                closeView.setOnClickListener {
+                    liveTask?.cancel()
+                }
             }
         }
 

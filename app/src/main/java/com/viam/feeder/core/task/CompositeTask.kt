@@ -11,14 +11,10 @@ class CompositeTask(
     requestBlock: CompositeBlock,
     private vararg val requests: LiveTask<*, *>
 ) : LiveTask<Any, Any>, CompositeTaskBuilder, MediatorLiveData<LiveTask<*, *>>() {
+
+    private var cancelable: Boolean = true
     private var onSuccessBlock: ((resource: Any?) -> Unit)? = null
     private var state: Resource<Any>? = null
-    private var cancelable: Boolean = true
-
-    init {
-        requestBlock?.invoke(this)
-    }
-
     override fun onActive() {
         super.onActive()
         requests.map { request ->
@@ -28,8 +24,12 @@ class CompositeTask(
                         .filterNot { it.state() == null || it.state() is Resource.Success }
                         .map { it.state() }
                     if (notSuccessList.isEmpty()) {
-                        state = Resource.Success(Unit)
-                        onSuccessBlock?.invoke(state)
+                        state =
+                            if (requests.all { it.state() == null }) null else Resource.Success(
+                                Unit
+                            )
+                        if (state != null)
+                            onSuccessBlock?.invoke(state)
                         value = this
                     } else {
                         if (!notSuccessList.any { it is Resource.Error }) {
@@ -74,9 +74,6 @@ class CompositeTask(
         return this
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun asLiveData() = this as MediatorLiveData<LiveTask<Any, Any>>
-
     override fun postWithCancel(params: Any?) {
         cancel()
         retry()
@@ -87,6 +84,13 @@ class CompositeTask(
     }
 
     override fun isCancelable() = cancelable
+
+    @Suppress("UNCHECKED_CAST")
+    override fun asLiveData() = this as MediatorLiveData<LiveTask<Any, Any>>
+
+    init {
+        requestBlock?.invoke(this)
+    }
 }
 
 fun compositeTask(

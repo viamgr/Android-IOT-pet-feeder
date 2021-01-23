@@ -34,7 +34,15 @@ class NetWorkModule {
             .addInterceptor(interceptor)
             .callTimeout(100, TimeUnit.SECONDS)
             .protocols(listOf(Protocol.HTTP_1_1))
-
+            .addInterceptor {
+                val newBuilder = it.request().newBuilder()
+                    .header("Accept", "*/*")
+                    .header("Accept-Encoding", "gzip, deflate")
+                    .header("Connection", "close")
+                    .header("User-Agent", "test")
+                val request = newBuilder.build()
+                it.proceed(request)
+            }
             .connectTimeout(100, TimeUnit.SECONDS)
             .readTimeout(100, TimeUnit.SECONDS)
             .writeTimeout(100, TimeUnit.SECONDS)

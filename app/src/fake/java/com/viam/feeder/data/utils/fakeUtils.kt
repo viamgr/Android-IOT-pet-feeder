@@ -9,8 +9,8 @@ import kotlin.random.Random
 
 suspend inline fun <T> fakeRequest(
     context: Context,
-    delayTime: Int = 1500,
-    possibility: Int = 40,
+    delayTime: Int = 2500,
+    possibility: Int = 30,
     crossinline body: suspend () -> T
 ): T {
     if (context.getWifiName() != ACCESS_POINT_SSID) {
