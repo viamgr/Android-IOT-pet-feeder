@@ -85,6 +85,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="false"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/timer_settings"
             app:tabMode="fixed">
 
@@ -129,10 +130,12 @@
             android:onClick="@{()->vm.onClickAddClock()}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/ic_baseline_add_24" />
 
         <FrameLayout
+            animationResource="@{vm.addTimerTask.asLiveData().state()}"
+            doneAnimationDelay="@{1500L}"
+            doneAnimationLayout="@{@layout/layout_done}"
             taskProgress="@{vm.compositeTask.asLiveData()}"
             android:layout_width="0dp"
             android:layout_height="0dp"

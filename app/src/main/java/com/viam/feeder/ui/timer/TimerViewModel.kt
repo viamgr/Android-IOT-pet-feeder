@@ -66,12 +66,11 @@ class TimerViewModel @ViewModelInject constructor(
         }
     }.execute(Unit)
 
-    private val addTimerTask = setAlarms.toLiveTask {
+    val addTimerTask = setAlarms.toLiveTask {
         onSuccess {
             getTimerListTask.execute(Unit)
         }
     }
-
 
     val compositeTask = compositeTask(
         addTimerTask,
