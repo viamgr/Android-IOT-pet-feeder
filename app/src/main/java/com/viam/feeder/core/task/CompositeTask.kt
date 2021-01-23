@@ -67,18 +67,15 @@ class CompositeTask(
     }
 
     override fun state() = state
-    override fun post(params: Any?) {
+    override fun execute(params: Any?): LiveTask<Any, Any> {
         requests.map {
             it.retry()
         }
+        return this
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun asLiveData() = this as MediatorLiveData<LiveTask<Any, Any>>
-    override fun onSuccess(block: (resource: Any?) -> Unit): CompositeTask {
-        onSuccessBlock = block
-        return this
-    }
 
     override fun postWithCancel(params: Any?) {
         cancel()

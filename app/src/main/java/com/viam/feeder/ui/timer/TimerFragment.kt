@@ -39,11 +39,10 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
             clockList.setController(controller)
         }
 
-        viewModel.getTimerListTask.asLiveData().observe(viewLifecycleOwner, {
-            it.onSuccess { list ->
-                controller.setData(list)
-            }
+        viewModel.timerList.observe(viewLifecycleOwner, {
+            controller.setData(it)
         })
+
         viewModel.showTimeSettingMenu.observe(viewLifecycleOwner, EventObserver {
             showTimeSettingDialog()
         })

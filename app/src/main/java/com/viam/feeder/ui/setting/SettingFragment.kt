@@ -12,6 +12,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
+import com.viam.feeder.core.onSuccess
 import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.databinding.FragmentSettingBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,7 +39,7 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         }
 
         viewModel.getWifiListTask.asLiveData().observe(viewLifecycleOwner, {
-            it.onSuccess { list ->
+            it.state()?.onSuccess { list ->
                 controller.setData(list)
             }
         })

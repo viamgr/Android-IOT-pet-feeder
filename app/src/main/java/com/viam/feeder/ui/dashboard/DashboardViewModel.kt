@@ -116,48 +116,51 @@ class DashboardViewModel @ViewModelInject constructor(
     val callingSendEvent = sendEvent.toLiveTask()
     val feedingSendEvent = sendEvent.toLiveTask()
 
-    private val getSoundVolumeEventTask = getSoundVolume.toLiveTask().also { liveTask ->
-        liveTask.post(Unit)
-    }.onSuccess { volume ->
-        volume?.let { value: Float ->
-            _soundVolumeList.value?.firstOrNull { volume -> volume.value == value }?.let {
-                _soundVolumeValue.value = it.label
+    private val getSoundVolumeEventTask = getSoundVolume.toLiveTask {
+        onSuccess { volume ->
+            volume?.let { value: Float ->
+                _soundVolumeList.value?.firstOrNull { volume -> volume.value == value }?.let {
+                    _soundVolumeValue.value = it.label
+                }
             }
         }
-    }
+
+    }.execute(Unit)
 
     val setFeedingDurationEventTask = setFeedingDurationVolume.toLiveTask()
-    private val getFeedingDurationEventTask = getFeedingDurationVolume.toLiveTask().also {
-        it.post(Unit)
-    }.onSuccess { duration ->
-        duration?.let { value: Int ->
-            _feedVolumeList.value?.firstOrNull { volume -> volume.duration == value }?.let {
-                _feedingVolumeValue.value = it.label
-            }
-        }
-    }
-
-    private val setLedStateTask = setLedState.toLiveTask()
-    private val getLedStateTask = getLedState.toLiveTask().also {
-        it.post(Unit)
-    }.onSuccess { ledState ->
-        ledState?.let { value: Int ->
-            _ledStates.value?.firstOrNull { state -> state.value == value }?.let {
-                _ledStateValue.value = it.label
-            }
-        }
-    }
-
-    private val setLedTurnOffDelayTask = setLedTurnOffDelay.toLiveTask()
-    private val getLedTurnOffDelayTask = getLedTurnOffDelay.toLiveTask().onSuccess { duration ->
-        duration?.let { value: Int ->
-            _ledTimerList.value?.firstOrNull { ledTimer -> ledTimer.value == value }?.let {
-                _ledTimerValue.value = it
+    private val getFeedingDurationEventTask = getFeedingDurationVolume.toLiveTask {
+        onSuccess { duration ->
+            duration?.let { value: Int ->
+                _feedVolumeList.value?.firstOrNull { volume -> volume.duration == value }?.let {
+                    _feedingVolumeValue.value = it.label
+                }
             }
         }
     }.also {
-        it.post(Unit)
+        it.execute(Unit)
     }
+
+    private val setLedStateTask = setLedState.toLiveTask()
+    private val getLedStateTask = getLedState.toLiveTask {
+        onSuccess { ledState ->
+            ledState?.let { value: Int ->
+                _ledStates.value?.firstOrNull { state -> state.value == value }?.let {
+                    _ledStateValue.value = it.label
+                }
+            }
+        }
+    }.execute(Unit)
+
+    private val setLedTurnOffDelayTask = setLedTurnOffDelay.toLiveTask()
+    private val getLedTurnOffDelayTask = getLedTurnOffDelay.toLiveTask {
+        onSuccess { duration ->
+            duration?.let { value: Int ->
+                _ledTimerList.value?.firstOrNull { ledTimer -> ledTimer.value == value }?.let {
+                    _ledTimerValue.value = it
+                }
+            }
+        }
+    }.execute(Unit)
 
     val tasks = compositeTask(
         getLedTurnOffDelayTask,
@@ -228,7 +231,7 @@ class DashboardViewModel @ViewModelInject constructor(
         when (position) {
             0 -> _chooseIntentSound.value = Event(Unit)
             1 -> _openRecordDialog.value = Event(Unit)
-            else -> uploadSoundTask.post(getAudioFileByPosition(position))
+            else -> uploadSoundTask.execute(getAudioFileByPosition(position))
         }
     }
 
@@ -249,7 +252,7 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     fun onSoundFilePicked(input: String, output: String) {
-        convertAndUploadSoundUseCaseTask.post(Pair(input, output))
+        convertAndUploadSoundUseCaseTask.execute(Pair(input, output))
     }
 
     fun onLedTimerItemClickListener(position: Int) {
@@ -257,18 +260,18 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     fun sendCompositeFeedingEvent() {
-        compositeSendEvent.post(EVENT_COMPOSITE_FEEDING)
+        compositeSendEvent.execute(EVENT_COMPOSITE_FEEDING)
     }
 
     fun sendLightEvent() {
-        ledSendEvent.post(EVENT_LED_TIMER)
+        ledSendEvent.execute(EVENT_LED_TIMER)
     }
 
     fun sendFeedingEvent() {
-        feedingSendEvent.post(EVENT_FEEDING)
+        feedingSendEvent.execute(EVENT_FEEDING)
     }
 
     fun sendCallingEvent() {
-        callingSendEvent.post(EVENT_PLAY_FEEDING_AUDIO)
+        callingSendEvent.execute(EVENT_PLAY_FEEDING_AUDIO)
     }
 }

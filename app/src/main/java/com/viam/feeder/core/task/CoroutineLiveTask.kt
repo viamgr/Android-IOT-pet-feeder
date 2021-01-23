@@ -121,9 +121,10 @@ class CoroutineLiveTask<P, R>(
             maybeRun()
     }
 
-    override fun post(params: P?) {
+    override fun execute(params: P?): LiveTask<P, R> {
         this.params = params
         maybeRun()
+        return this
     }
 
     override fun state() = _state
@@ -149,7 +150,7 @@ class CoroutineLiveTask<P, R>(
 
     override fun postWithCancel(params: P?) {
         cancel()
-        post(params ?: this.params)
+        execute(params ?: this.params)
     }
 
     override fun cancelable(cancelable: Boolean) {

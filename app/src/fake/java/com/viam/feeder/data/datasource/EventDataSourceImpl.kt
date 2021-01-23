@@ -15,7 +15,7 @@ class EventDataSourceImpl @Inject constructor(@ApplicationContext private val co
 
     }
 
-    override suspend fun setState(key: String, value: Any) = fakeRequest(context) {
+    override suspend fun setState(key: String, value: String) = fakeRequest(context) {
 
     }
 

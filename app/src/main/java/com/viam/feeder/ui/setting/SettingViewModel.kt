@@ -22,9 +22,7 @@ class SettingViewModel @ViewModelInject constructor(
             emit(getWifiList(Unit))
             delay(15000)
         }
-    }.also {
-        it.post(Unit)
-    }
+    }.execute(Unit)
 
     private val connectWifiTask = setWifiCredentials.toLiveTask()
 
@@ -34,6 +32,6 @@ class SettingViewModel @ViewModelInject constructor(
     )
 
     fun onPasswordConfirmed(wifiDevice: WifiDevice, password: String) {
-        connectWifiTask.post(WifiAuthentication(wifiDevice.ssid, password))
+        connectWifiTask.execute(WifiAuthentication(wifiDevice.ssid, password))
     }
 }
