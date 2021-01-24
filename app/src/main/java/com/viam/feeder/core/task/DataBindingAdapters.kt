@@ -143,16 +143,15 @@ fun View.taskProgress(
                     val generateViewId = ViewCompat.generateViewId()
                     it.id = generateViewId
                     setTag(taskProgressLayoutTag, generateViewId)
-                    targetView.post {
+
                         targetView.addView(it, targetView.measuredWidth, targetView.measuredHeight)
-                    }
+
                     it
                 }
 
             }
         }
 
-        targetView.post {
             val errorView = workingView.findViewById<TextView>(R.id.error)
             val retryView = workingView.findViewById<View>(R.id.retry)
             val closeView = workingView.findViewById<View>(R.id.close)
@@ -181,7 +180,7 @@ fun View.taskProgress(
                     liveTask?.cancel()
                 }
             }
-        }
+
 
     }
 }

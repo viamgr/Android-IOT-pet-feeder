@@ -39,7 +39,7 @@ class TimerViewModel @ViewModelInject constructor(
     private val getStatusTask = getStatus.toLiveTask {
         onSuccess {
             it?.let {
-                val timeInMillis = it.toLong()
+                val timeInMillis = it.toLong() * 1000
                 val inDate = Date(timeInMillis)
                 _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
                 _time.value = DateFormat.format("h:mm", inDate).toString()
@@ -47,7 +47,11 @@ class TimerViewModel @ViewModelInject constructor(
             }
         }
     }.execute(STATUS_TIME)
-    val setStatusTask = setStatus.toLiveTask()
+    val setStatusTask = setStatus.toLiveTask {
+        onSuccess {
+            getStatusTask.execute(STATUS_TIME)
+        }
+    }
 
     val timeCompositeTask = compositeTask(
         setStatusTask, getStatusTask
@@ -94,7 +98,7 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     fun onTimeSet(timeInMillis: Long) {
-        setStatusTask.execute(Status(STATUS_TIME, timeInMillis.toString()))
+        setStatusTask.execute(Status(STATUS_TIME, (timeInMillis / 1000).toInt().toString()))
     }
 
     fun onAddTime(newHour: Int, newMinute: Int) {

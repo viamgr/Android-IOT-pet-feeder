@@ -117,8 +117,10 @@ class CoroutineLiveTask<P, R>(
     }
 
     override fun retry() {
-        if (_state is Resource.Error && (_state as Resource.Error).exception !is CancellationException)
+        if (_state is Resource.Error && (_state as Resource.Error).exception !is CancellationException) {
+            cancel()
             maybeRun()
+        }
     }
 
     override fun execute(params: P?): LiveTask<P, R> {
