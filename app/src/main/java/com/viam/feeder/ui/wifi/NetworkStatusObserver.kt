@@ -10,7 +10,6 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -33,24 +32,28 @@ class NetworkStatusObserver @Inject constructor() {
     private val connectivityManager: ConnectivityManager by lazy {
         activity.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     }
-    private val networkCallback = @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    object : ConnectivityManager.NetworkCallback() {
-        override fun onLost(network: Network?) {
-            setStatus(false)
-        }
+    private val networkCallback =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onLost(network: Network?) {
+                    setStatus(false)
+                }
 
-        override fun onUnavailable() {
-            setStatus(false)
-        }
+                override fun onUnavailable() {
+                    setStatus(false)
+                }
 
-        override fun onLosing(network: Network?, maxMsToLive: Int) {
-            setStatus(false)
-        }
+                override fun onLosing(network: Network?, maxMsToLive: Int) {
+                    setStatus(false)
+                }
 
-        override fun onAvailable(network: Network?) {
-            setStatus(true)
+                override fun onAvailable(network: Network?) {
+                    setStatus(true)
+                }
+            }
+        } else {
+            null
         }
-    }
 
     private var startedNetworkListening = false
     private val wifiBroadcastReceiver: BroadcastReceiver by lazy {

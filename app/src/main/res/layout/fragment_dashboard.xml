@@ -388,6 +388,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="@string/led_state"
+                            android:visibility="gone"
                             app:startIconDrawable="@drawable/ic_baseline_wb_sunny_24">
 
                             <AutoCompleteTextView

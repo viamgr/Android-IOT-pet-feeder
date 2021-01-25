@@ -24,7 +24,8 @@
             android:onClick="@{()->vm.onStopClicked()}"
             android:text="@{vm.recordText??@string/start_record}"
             android:textColor="@color/white"
-            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
             app:backgroundTint="@color/red_500"
             app:icon="@drawable/ic_baseline_stop_24"
             app:iconTint="@color/white"
@@ -39,6 +40,8 @@
             style="@style/TextAppearance.MaterialComponents.Headline6"
             goneUnless="@{vm.recordWillStarting!=null}"
             android:layout_width="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
             android:layout_height="wrap_content"
             android:text="@{String.format(@string/time_to_start,vm.recordWillStarting)}"
             android:textColor="@color/green_500"
@@ -57,6 +60,8 @@
             android:layout_height="wrap_content"
             android:onClick="@{()->vm.onPlayClicked()}"
             android:text="@string/play_sound"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
             android:textColor="@color/green_500"
             app:icon="@drawable/ic_baseline_play_arrow_24"
             app:iconTint="@color/green_500"
@@ -89,7 +94,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="bottom"
-            app:constraint_referenced_ids="play,starting" />
+            app:constraint_referenced_ids="play,starting,recording" />
 
         <View
             android:id="@+id/divider"

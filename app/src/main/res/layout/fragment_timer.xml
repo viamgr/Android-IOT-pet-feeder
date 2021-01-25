@@ -20,15 +20,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            animationResource="@{vm.setStatusTask.asLiveData().state()}"
+            doneAnimationDelay="@{1500L}"
+            doneAnimationLayout="@{@layout/layout_done}"
+            taskProgress="@{vm.timeCompositeTask.asLiveData()}"
             android:layout_margin="12dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                animationResource="@{vm.setStatusTask.asLiveData().state()}"
-                doneAnimationDelay="@{1500L}"
-                doneAnimationLayout="@{@layout/layout_done}"
-                taskProgress="@{vm.timeCompositeTask.asLiveData()}"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="8dp"

@@ -59,9 +59,11 @@ class DashboardViewModel @ViewModelInject constructor(
             300000,
             600000,
             1800000,
-            3600000,
-            4800000,
-            86400000
+            1 * 3600000,
+            2 * 3600000,
+            3 * 3600000,
+            4 * 3600000,
+            24 * 3600000
         ).map {
             LedTimer(it, R.string.seconds)
         }

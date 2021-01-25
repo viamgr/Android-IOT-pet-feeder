@@ -101,4 +101,7 @@
     <string name="set_time_in_date">%s</string>
     <string name="confirm_date_set">Set This Time</string>
     <string name="lamp_options">Lighting Options</string>
+    <string name="hour_format">%d Hours</string>
+    <string name="minute_format">%d Minutes</string>
+    <string name="second_format">%d Seconds</string>
 </resources>

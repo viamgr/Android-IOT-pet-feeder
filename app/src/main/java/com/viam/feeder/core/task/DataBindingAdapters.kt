@@ -83,9 +83,11 @@ fun View.doneAnimationLayout(
         }
         inflater.inflate(doneAnimationLayout, viewGroup, false).let { doneView ->
             ViewCompat.setElevation(doneView, Float.MAX_VALUE)
-            doneView.layoutParams =
-                ViewGroup.LayoutParams(viewGroup.measuredWidth, viewGroup.height)
-            viewGroup.addView(doneView)
+            viewGroup.post {
+                doneView.layoutParams =
+                    ViewGroup.LayoutParams(viewGroup.measuredWidth, viewGroup.measuredHeight)
+                viewGroup.addView(doneView)
+            }
 
             viewGroup.postDelayed(doneAnimationDelay ?: 2500L) {
                 viewGroup.removeView(doneView)

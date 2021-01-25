@@ -13,6 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
+import com.viam.feeder.core.utility.convertSeconds
 import com.viam.feeder.core.utility.dexter.permissionContract
 import com.viam.feeder.databinding.FragmentDashboardBinding
 import com.viam.feeder.ui.record.RecordFragment
@@ -33,9 +34,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 }
             }
         }
-    val output = lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
-    val permissionResult = permissionContract()
-
+    private val output =
+        lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
+    private val permissionResult = permissionContract()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
@@ -112,7 +113,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
-                list.map { getString(it.label, it.value / 1000) }
+                list.map {
+                    (it.value / 1000).toLong().convertSeconds(requireContext())
+                }
             ).also { adapter ->
                 binding.ledTimerDropDown.setAdapter(adapter)
                 binding.ledTimerDropDown.setOnItemClickListener { _, _, position, _ ->
@@ -121,7 +124,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         })
         viewModel.ledTimerValue.observe(viewLifecycleOwner) {
-            binding.ledTimerDropDown.setText(getString(it.label, it.value / 1000), false)
+            binding.ledTimerDropDown.setText(
+                (it.value / 1000).toLong().convertSeconds(requireContext()), false
+            )
         }
 
         setFragmentResultListener(RecordFragment.REQUEST_KEY) { requestKey, bundle ->
