@@ -32,6 +32,31 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Allow web apps to launch Barcode Scanner by linking to http://feed.viam.com/home. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="feed.viam.com"
+                    android:path="/home"
+                    android:scheme="http" />
+            </intent-filter>
+
+            <!-- Support feeder://home/?... like iPhone app -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="home"
+                    android:path="/"
+                    android:scheme="feeder" />
+            </intent-filter>
         </activity>
     </application>
 
