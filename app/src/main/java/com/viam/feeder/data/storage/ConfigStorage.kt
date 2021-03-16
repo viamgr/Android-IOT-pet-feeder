@@ -39,8 +39,13 @@ class ConfigObject @Inject constructor(
     }
 
     private suspend fun downloadConfigs() {
-        json =
-            JSONObject(configsRepository.downloadConfigs().bufferedReader().use { it.readText() })
+        try {
+            json = JSONObject(
+                configsRepository.downloadConfigs().bufferedReader().use { it.readText() })
+        } catch (e: Exception) {
+            json =
+                JSONObject("{\"feedingDuration\":2000,\"ledTurnOffDelay\":300000,\"ledState\":2,\"soundVolume\":3.99,\"wifiSsid\":\"V. M\",\"wifiPassword\":\"6037991302\",\"alarms\":[\"0 30 08 * * *\",\"0 30 10 * * *\"],\"accessPointName\":\"Feeder-Access-Point\",\"isAccessPointOn\":true,\"isStationOn\":true}")
+        }
     }
 }
 

@@ -71,7 +71,7 @@
                                 android:layout_marginTop="8dp"
                                 android:onClick="@{()->vm.sendCompositeFeedingEvent()}"
                                 app:cardBackgroundColor="@color/transBack"
-                                app:cardCornerRadius="400dp"
+                                app:cardCornerRadius="12dp"
                                 app:cardElevation="8dp">
 
                                 <androidx.appcompat.widget.AppCompatImageView
@@ -115,7 +115,7 @@
                                     android:layout_marginTop="8dp"
                                     android:onClick="@{()->vm.sendCallingEvent()}"
                                     app:cardBackgroundColor="@color/transBack"
-                                    app:cardCornerRadius="400dp"
+                                    app:cardCornerRadius="12dp"
                                     app:cardElevation="8dp">
 
                                     <androidx.appcompat.widget.AppCompatImageView
@@ -156,7 +156,7 @@
                                     android:layout_marginTop="8dp"
                                     android:onClick="@{()->vm.sendLightEvent()}"
                                     app:cardBackgroundColor="@color/transBack"
-                                    app:cardCornerRadius="400dp"
+                                    app:cardCornerRadius="12dp"
                                     app:cardElevation="8dp">
 
                                     <androidx.appcompat.widget.AppCompatImageView
@@ -197,7 +197,7 @@
                                     android:layout_marginTop="8dp"
                                     android:onClick="@{()->vm.sendFeedingEvent()}"
                                     app:cardBackgroundColor="@color/transBack"
-                                    app:cardCornerRadius="400dp"
+                                    app:cardCornerRadius="12dp"
                                     app:cardElevation="8dp">
 
                                     <androidx.appcompat.widget.AppCompatImageView
