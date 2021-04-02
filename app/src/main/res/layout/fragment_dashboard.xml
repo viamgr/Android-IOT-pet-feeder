@@ -26,7 +26,6 @@
                 android:orientation="vertical">
 
                 <com.google.android.material.card.MaterialCardView
-                    taskProgress="@{vm.eventTasks.asLiveData()}"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -62,9 +61,6 @@
                             android:orientation="vertical">
 
                             <androidx.cardview.widget.CardView
-                                animationResource="@{vm.compositeSendEvent.asLiveData().state()}"
-                                doneAnimationDelay="@{1500L}"
-                                doneAnimationLayout="@{@layout/layout_done}"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
@@ -106,9 +102,8 @@
                                 android:orientation="vertical">
 
                                 <androidx.cardview.widget.CardView
-                                    animationResource="@{vm.callingSendEvent.asLiveData().state()}"
-                                    doneAnimationDelay="@{1500L}"
-                                    doneAnimationLayout="@{@layout/layout_done}"
+
+
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
@@ -147,9 +142,6 @@
                                 android:orientation="vertical">
 
                                 <androidx.cardview.widget.CardView
-                                    animationResource="@{vm.ledSendEvent.asLiveData().state()}"
-                                    doneAnimationDelay="@{1500L}"
-                                    doneAnimationLayout="@{@layout/layout_done}"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
@@ -188,9 +180,8 @@
                                 android:orientation="vertical">
 
                                 <androidx.cardview.widget.CardView
-                                    animationResource="@{vm.feedingSendEvent.asLiveData().state()}"
-                                    doneAnimationDelay="@{1500L}"
-                                    doneAnimationLayout="@{@layout/layout_done}"
+
+
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
@@ -225,10 +216,8 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/feeding_options"
-                    animationResource="@{vm.setFeedingDurationEventTask.asLiveData().state()}"
-                    doneAnimationDelay="@{1500L}"
-                    doneAnimationLayout="@{@layout/layout_done}"
-                    taskProgress="@{vm.feedingOptionsTasks.asLiveData()}"
+
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -277,10 +266,8 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    animationResource="@{vm.soundOptionsSetTasks.asLiveData().state()}"
-                    doneAnimationDelay="@{1500L}"
-                    doneAnimationLayout="@{@layout/layout_done}"
-                    taskProgress="@{vm.soundOptionsTasks.asLiveData()}"
+
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
@@ -349,12 +336,9 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-
                 <com.google.android.material.card.MaterialCardView
-                    animationResource="@{vm.ledOptionSetTasks.asLiveData().state()}"
-                    doneAnimationDelay="@{1500L}"
-                    doneAnimationLayout="@{@layout/layout_done}"
-                    taskProgress="@{vm.ledOptionTasks.asLiveData()}"
+
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

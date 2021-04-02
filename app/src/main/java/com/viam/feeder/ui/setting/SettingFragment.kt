@@ -62,7 +62,7 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         }
         dialog.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
         dialog.window!!.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
-        dialog.show();
+        dialog.show()
         inputLayout.editText?.requestFocus()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {

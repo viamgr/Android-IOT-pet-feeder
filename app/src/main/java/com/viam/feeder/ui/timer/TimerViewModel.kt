@@ -9,6 +9,7 @@ import com.viam.feeder.constants.STATUS_TIME
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.domain.config.GetAlarms
 import com.viam.feeder.data.domain.config.SetAlarms
 import com.viam.feeder.data.domain.event.GetStatus
@@ -18,7 +19,7 @@ import com.viam.feeder.data.models.ClockTimer
 import java.util.*
 
 class TimerViewModel @ViewModelInject constructor(
-    setAlarms: SetAlarms,
+    private val setAlarms: SetAlarms,
     getAlarms: GetAlarms,
     getStatus: GetStatus,
     setStatus: SetStatus,
@@ -59,37 +60,26 @@ class TimerViewModel @ViewModelInject constructor(
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 
-    private val _timerList = MutableLiveData<List<ClockTimer>>()
-    val timerList: LiveData<List<ClockTimer>> = _timerList
+    val timerList: LiveData<List<ClockTimer>> = getAlarms()
 
-    private val getTimerListTask = getAlarms.toLiveTask {
+/*    private val getTimerListTask = getAlarms.toLiveTask {
         onSuccess {
             it?.let {
                 _timerList.postValue(it.toMutableList())
             }
         }
-    }.execute(Unit)
+    }.execute(Unit)*/
 
-    val addTimerTask = setAlarms.toLiveTask {
-        onSuccess {
-            getTimerListTask.execute(Unit)
-        }
-    }
-
-    val compositeTask = compositeTask(
-        addTimerTask,
-        getTimerListTask,
-    )
 
     private val _timerMode = MutableLiveData<Int>()
     val timerMode: LiveData<Int> = _timerMode
 
 
-    fun removeTimer(timer: ClockTimer) {
+    fun removeTimer(timer: ClockTimer) = launchInScope {
         timerList.value?.let { list ->
             val newList = list.toMutableList()
             newList.removeAll { timer.id == it.id }
-            addTimerTask.execute(newList)
+            setAlarms(newList)
         }
     }
 
@@ -101,11 +91,11 @@ class TimerViewModel @ViewModelInject constructor(
         setStatusTask.execute(Status(STATUS_TIME, (timeInMillis / 1000).toInt().toString()))
     }
 
-    fun onAddTime(newHour: Int, newMinute: Int) {
+    fun onAddTime(newHour: Int, newMinute: Int) = launchInScope {
         timerList.value?.let { it ->
             val newList = it.toMutableList()
             newList.add(ClockTimer(hour = newHour, minute = newMinute))
-            addTimerTask.execute(newList)
+            setAlarms(newList)
         }
 
     }

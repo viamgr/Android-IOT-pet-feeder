@@ -20,10 +20,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            animationResource="@{vm.setStatusTask.asLiveData().state()}"
-            doneAnimationDelay="@{1500L}"
-            doneAnimationLayout="@{@layout/layout_done}"
-            taskProgress="@{vm.timeCompositeTask.asLiveData()}"
             android:layout_margin="12dp"
             app:cardElevation="4dp"
             app:layout_constraintTop_toTopOf="parent">
@@ -133,10 +129,6 @@
             app:srcCompat="@drawable/ic_baseline_add_24" />
 
         <FrameLayout
-            animationResource="@{vm.addTimerTask.asLiveData().state()}"
-            doneAnimationDelay="@{1500L}"
-            doneAnimationLayout="@{@layout/layout_done}"
-            taskProgress="@{vm.compositeTask.asLiveData()}"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="@+id/clock_list"

@@ -124,9 +124,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         })
         viewModel.ledTimerValue.observe(viewLifecycleOwner) {
-            binding.ledTimerDropDown.setText(
-                (it.value / 1000).toLong().convertSeconds(requireContext()), false
-            )
+            it?.let {
+                binding.ledTimerDropDown.setText(
+                    (it.value / 1000).toLong().convertSeconds(requireContext()), false
+                )
+            }
         }
 
         setFragmentResultListener(RecordFragment.REQUEST_KEY) { requestKey, bundle ->

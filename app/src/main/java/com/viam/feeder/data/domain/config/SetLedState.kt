@@ -1,18 +1,20 @@
 package com.viam.feeder.data.domain.config
 
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
-import com.viam.feeder.data.repository.UploadRepository
-import com.viam.feeder.data.storage.ConfigStorage
+import com.viam.feeder.data.storage.ConfigFields
+import com.viam.feeder.data.storage.JsonPreferences
+import com.viam.feeder.socket.WebSocketApi
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
 @ActivityScoped
 class SetLedState @Inject constructor(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
-    private val configStorage: ConfigStorage,
-    uploadRepository: UploadRepository,
-) : BaseSetConfig<Int>(coroutinesDispatcherProvider.io, configStorage, uploadRepository) {
+    private val configFields: ConfigFields,
+    webSocketApi: WebSocketApi,
+    jsonPreferences: JsonPreferences,
+) : BaseSetConfig<Int>(coroutinesDispatcherProvider.io, webSocketApi, jsonPreferences) {
     override suspend fun setConfigField(value: Int) {
-        configStorage.ledState = value
+        configFields.ledState.store(value)
     }
 }

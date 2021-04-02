@@ -4,6 +4,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import com.viam.feeder.R
 import com.viam.feeder.constants.EVENT_COMPOSITE_FEEDING
 import com.viam.feeder.constants.EVENT_FEEDING
@@ -11,7 +12,7 @@ import com.viam.feeder.constants.EVENT_LED_TIMER
 import com.viam.feeder.constants.EVENT_PLAY_FEEDING_AUDIO
 import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.domain.config.*
 import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.specification.ConvertUploadSound
@@ -26,12 +27,12 @@ class DashboardViewModel @ViewModelInject constructor(
     convertUploadSound: ConvertUploadSound,
     uploadSound: UploadSound,
     getFeedingDurationVolume: GetFeedingDuration,
-    setFeedingDurationVolume: SetFeedingDuration,
+    private val setFeedingDurationVolume: SetFeedingDuration,
     getLedState: GetLedState,
-    setLedState: SetLedState,
+    private val setLedState: SetLedState,
     getSoundVolume: GetSoundVolume,
-    setSoundVolume: SetSoundVolume,
-    setLedTurnOffDelay: SetLedTurnOffDelay,
+    private val setSoundVolume: SetSoundVolume,
+    private val setLedTurnOffDelay: SetLedTurnOffDelay,
     getLedTurnOffDelay: GetLedTurnOffDelay
 ) : ViewModel() {
     private val _feedSounds = MutableLiveData(
@@ -98,135 +99,37 @@ class DashboardViewModel @ViewModelInject constructor(
 
     private val uploadSoundTask = uploadSound.toLiveTask()
 
-    private val setSoundVolumeEventTask = setSoundVolume.toLiveTask()
-
-    private val _feedingVolumeValue = MutableLiveData(R.string.choose)
-    val feedingVolumeValue: LiveData<Int> = _feedingVolumeValue
-
-    private val _soundVolumeValue = MutableLiveData(R.string.choose)
-    val soundVolumeValue: LiveData<Int> = _soundVolumeValue
-
-    private val _ledTimerValue = MutableLiveData<LedTimer>()
-    val ledTimerValue: LiveData<LedTimer>
-        get() = _ledTimerValue
-
-    private val _ledStateValue = MutableLiveData(R.string.choose)
-    val ledStateValue: LiveData<Int> = _ledStateValue
-
     val compositeSendEvent = sendEvent.toLiveTask()
     val ledSendEvent = sendEvent.toLiveTask()
     val callingSendEvent = sendEvent.toLiveTask()
     val feedingSendEvent = sendEvent.toLiveTask()
 
-    private val getSoundVolumeEventTask = getSoundVolume.toLiveTask {
-        onSuccess { volume ->
-            volume?.let { value: Float ->
-                _soundVolumeList.value?.firstOrNull { volume -> volume.value == value }?.let {
-                    _soundVolumeValue.value = it.label
-                }
-            }
-        }
-
-    }.execute(Unit)
-
-    val setFeedingDurationEventTask = setFeedingDurationVolume.toLiveTask()
-    private val getFeedingDurationEventTask = getFeedingDurationVolume.toLiveTask {
-        onSuccess { duration ->
-            duration?.let { value: Int ->
-                _feedVolumeList.value?.firstOrNull { volume -> volume.duration == value }?.let {
-                    _feedingVolumeValue.value = it.label
-                }
-            }
-        }
-    }.also {
-        it.execute(Unit)
+    val soundVolumeValue: LiveData<Int> = getSoundVolume().map {
+        _soundVolumeList.value?.firstOrNull { volume -> volume.value == it }?.label
+            ?: R.string.choose
     }
 
-    private val setLedStateTask = setLedState.toLiveTask()
-    private val getLedStateTask = getLedState.toLiveTask {
-        onSuccess { ledState ->
-            ledState?.let { value: Int ->
-                _ledStates.value?.firstOrNull { state -> state.value == value }?.let {
-                    _ledStateValue.value = it.label
-                }
-            }
-        }
-    }.execute(Unit)
+    val feedingVolumeValue: LiveData<Int> = getFeedingDurationVolume().map {
+        _feedVolumeList.value?.firstOrNull { item -> item.duration == it }?.label
+            ?: R.string.choose
+    }
 
-    private val setLedTurnOffDelayTask = setLedTurnOffDelay.toLiveTask()
-    private val getLedTurnOffDelayTask = getLedTurnOffDelay.toLiveTask {
-        onSuccess { duration ->
-            duration?.let { value: Int ->
-                _ledTimerList.value?.firstOrNull { ledTimer -> ledTimer.value == value }?.let {
-                    _ledTimerValue.value = it
-                }
-            }
-        }
-    }.execute(Unit)
+    val ledStateValue: LiveData<Int> = getLedState().map {
+        _ledStates.value?.firstOrNull { item -> item.value == it }?.label
+            ?: R.string.choose
+    }
 
-    val tasks = compositeTask(
-        getLedTurnOffDelayTask,
-        getFeedingDurationEventTask,
-        getSoundVolumeEventTask,
-        getLedStateTask,
-        compositeSendEvent,
-        ledSendEvent,
-        callingSendEvent,
-        feedingSendEvent,
-        setFeedingDurationEventTask,
-        setLedStateTask,
-        setLedTurnOffDelayTask,
-        setSoundVolumeEventTask
-    )
-
-    val eventTasks = compositeTask(
-        compositeSendEvent,
-        ledSendEvent,
-        callingSendEvent,
-        feedingSendEvent
-    )
+    val ledTimerValue: LiveData<LedTimer?> = getLedState().map {
+        _ledTimerList.value?.firstOrNull { item -> item.value == it }
+    }
 
     val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
     val soundVolumeList: LiveData<List<SoundVolume>> = _soundVolumeList
     val ledStates: LiveData<List<LedState>> = _ledStates
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
 
-    val feedingOptionsTasks =
-        compositeTask(
-            setFeedingDurationEventTask,
-            getFeedingDurationEventTask
-        )
-    val soundOptionsSetTasks =
-        compositeTask(
-            uploadSoundTask,
-            convertAndUploadSoundUseCaseTask,
-            setSoundVolumeEventTask
-        )
-    val soundOptionsTasks =
-        compositeTask(
-            uploadSoundTask,
-            convertAndUploadSoundUseCaseTask,
-            setSoundVolumeEventTask,
-            getSoundVolumeEventTask
-        )
-
-    val ledOptionSetTasks =
-        compositeTask(
-            setLedStateTask,
-            setLedTurnOffDelayTask
-        )
-
-    val ledOptionTasks =
-        compositeTask(
-            setLedStateTask,
-            setLedTurnOffDelayTask,
-            getLedStateTask,
-            getLedTurnOffDelayTask
-        )
-
-    fun onFeedingVolumeClicked(position: Int) {
-        val value = _feedVolumeList.value!![position].duration
-        setFeedingDurationEventTask.postWithCancel(value)
+    fun onFeedingVolumeClicked(position: Int) = launchInScope {
+        setFeedingDurationVolume(_feedVolumeList.value!![position].duration)
     }
 
     fun onFeedSoundItemClicked(position: Int) {
@@ -245,20 +148,21 @@ class DashboardViewModel @ViewModelInject constructor(
         }
     }
 
-    fun onLedItemClickListener(position: Int) {
-        setLedStateTask.postWithCancel(position)
+    fun onLedItemClickListener(position: Int) = launchInScope {
+        setLedState(position)
     }
 
-    fun onSoundVolumeChanged(value: Int) {
-        setSoundVolumeEventTask.postWithCancel(_soundVolumeList.value!![value].value)
+
+    fun onSoundVolumeChanged(value: Int) = launchInScope {
+        setSoundVolume.invoke(_soundVolumeList.value!![value].value)
     }
 
     fun onSoundFilePicked(input: String, output: String) {
         convertAndUploadSoundUseCaseTask.execute(Pair(input, output))
     }
 
-    fun onLedTimerItemClickListener(position: Int) {
-        setLedTurnOffDelayTask.postWithCancel(_ledTimerList.value!![position].value)
+    fun onLedTimerItemClickListener(position: Int) = launchInScope {
+        setLedTurnOffDelay(_ledTimerList.value!![position].value)
     }
 
     fun sendCompositeFeedingEvent() {

@@ -76,7 +76,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-
+        viewModel.downloadConfigProgress.observe(this) {
+            print("downloadConfig")
+            println(it)
+        }
+        viewModel.uploadFileProgress.observe(this) {
+            print("uploadConfig")
+            println(it)
+        }
     }
 
     override fun onDestroy() {

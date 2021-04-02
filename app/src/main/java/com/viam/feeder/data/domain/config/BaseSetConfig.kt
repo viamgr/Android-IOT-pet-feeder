@@ -1,39 +1,38 @@
 package com.viam.feeder.data.domain.config
 
-import androidx.annotation.CallSuper
-import com.viam.feeder.core.domain.UseCase
-import com.viam.feeder.data.repository.UploadRepository
-import com.viam.feeder.data.storage.ConfigStorage
+import com.viam.feeder.data.storage.JsonPreferences
+import com.viam.feeder.di.AppModule.Companion.configFilePath
+import com.viam.feeder.socket.WebSocketApi
+import com.viam.feeder.socket.model.SocketTransfer
 import kotlinx.coroutines.CoroutineDispatcher
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.coroutines.flow.*
 
 abstract class BaseSetConfig<T>(
-    coroutineDispatcher: CoroutineDispatcher,
-    private val configStorage: ConfigStorage,
-    private val uploadRepository: UploadRepository,
-) : UseCase<T, Unit>(coroutineDispatcher) {
-
-    @CallSuper
-    override suspend fun execute(parameters: T) {
+    private val coroutineDispatcher: CoroutineDispatcher,
+    private val webSocketApi: WebSocketApi,
+    private val jsonPreferences: JsonPreferences,
+) {
+    suspend operator fun invoke(parameters: T): Flow<SocketTransfer> {
         setConfigField(parameters)
-        if (configStorage.isConfigured()) {
-            uploadConfigs()
-        } else {
-            throw Exception("Configs should be set.")
-        }
+        val inputStream = jsonPreferences.json.toString().byteInputStream()
+        return webSocketApi.sendBinary(inputStream, configFilePath)
+            .flowOn(coroutineDispatcher)
+            .map {
+                it.also {
+                    if (it is SocketTransfer.Success) {
+                        jsonPreferences.resetFromTemp()
+                    }
+                }
+            }.catch { e ->
+                emit(SocketTransfer.Error(e))
+            }.also {
+                it.collect {
+                    println(it)
+                }
+            }
     }
 
     @Throws(RuntimeException::class)
     protected abstract suspend fun setConfigField(value: T)
 
-    private suspend fun uploadConfigs() {
-        val requestFile: RequestBody =
-            configStorage.getJsonString()
-                .toRequestBody("application/octet-stream".toMediaTypeOrNull())
-        val body = MultipartBody.Part.createFormData("data", "config.json", requestFile)
-        uploadRepository.uploadFile(body)
-    }
 }
