@@ -80,8 +80,8 @@ class MainActivity : AppCompatActivity() {
             print("downloadConfig")
             println(it)
         }
-        viewModel.uploadFileProgress.observe(this) {
-            print("uploadConfig")
+        viewModel.transferFileProgress.observe(this) {
+            print("transfer")
             println(it)
         }
     }

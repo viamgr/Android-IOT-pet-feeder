@@ -18,5 +18,5 @@ class MainViewModel @ViewModelInject constructor(
     var askedWifiPermissions = AtomicBoolean(false)
     var isWifiDialogShowing: Boolean = false
     val downloadConfigProgress = getConfig().asLiveData()
-    val uploadFileProgress = webSocketApi.progress.asLiveData()
+    val transferFileProgress = webSocketApi.progress.asLiveData()
 }

@@ -171,7 +171,7 @@ class WebSocketApi @Inject constructor(
                     .onMessageReceived(FILE_DETAIL_CALLBACK, FileDetailCallback::class.java)
                     .collect { detailCallback: FileDetailCallback ->
                         size = detailCallback.size
-                        send(SocketTransfer.Start(size))
+                        send(SocketTransfer.Start(size, TransferType.Download))
                         sendJson(FileRequestSlice(wrote))
                     }
             }
@@ -219,7 +219,7 @@ class WebSocketApi @Inject constructor(
         return channelFlow {
             cancelOldBinaryTransfer()
             val size = inputStream.available()
-            send(SocketTransfer.Start(size))
+            send(SocketTransfer.Start(size, TransferType.Upload))
 
             suspend fun onError(e: Throwable) {
                 e.printStackTrace()
