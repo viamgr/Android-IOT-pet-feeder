@@ -10,30 +10,27 @@ import com.viam.feeder.constants.EVENT_COMPOSITE_FEEDING
 import com.viam.feeder.constants.EVENT_FEEDING
 import com.viam.feeder.constants.EVENT_LED_TIMER
 import com.viam.feeder.constants.EVENT_PLAY_FEEDING_AUDIO
-import com.viam.feeder.core.domain.utils.toLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.domain.config.*
 import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.specification.ConvertUploadSound
-import com.viam.feeder.data.domain.specification.UploadSound
 import com.viam.feeder.models.FeedVolume
-import com.viam.feeder.models.LedState
 import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
+import kotlinx.coroutines.flow.collect
+import java.io.InputStream
 
 class DashboardViewModel @ViewModelInject constructor(
-    sendEvent: SendEvent,
-    convertUploadSound: ConvertUploadSound,
-    uploadSound: UploadSound,
     getFeedingDurationVolume: GetFeedingDuration,
-    private val setFeedingDurationVolume: SetFeedingDuration,
-    getLedState: GetLedState,
-    private val setLedState: SetLedState,
     getSoundVolume: GetSoundVolume,
+    getLedTurnOffDelay: GetLedTurnOffDelay,
+    private val convertUploadSound: ConvertUploadSound,
+    private val uploadBinary: UploadBinary,
+    private val sendEvent: SendEvent,
+    private val setFeedingDurationVolume: SetFeedingDuration,
     private val setSoundVolume: SetSoundVolume,
-    private val setLedTurnOffDelay: SetLedTurnOffDelay,
-    getLedTurnOffDelay: GetLedTurnOffDelay
+    private val setLedTurnOffDelay: SetLedTurnOffDelay
 ) : ViewModel() {
     private val _feedSounds = MutableLiveData(
         listOf(
@@ -79,30 +76,16 @@ class DashboardViewModel @ViewModelInject constructor(
         )
     )
 
-    private val _ledStates = MutableLiveData(
-        listOf(
-            LedState(0, R.string.turn_on_feeding),
-            LedState(1, R.string.always_on),
-            LedState(2, R.string.always_off)
-        )
-    )
-
     val feedSounds: LiveData<List<String>> = _feedSounds
 
     private val _openRecordDialog = MutableLiveData<Event<Unit>>()
     val openRecordDialog: LiveData<Event<Unit>> = _openRecordDialog
 
+    private val _requestSoundInputStream = MutableLiveData<Event<Int>>()
+    val requestInputStreamOfRaw: LiveData<Event<Int>> = _requestSoundInputStream
+
     private val _chooseIntentSound = MutableLiveData<Event<Unit>>()
     val chooseIntentSound: LiveData<Event<Unit>> = _chooseIntentSound
-
-    private val convertAndUploadSoundUseCaseTask = convertUploadSound.toLiveTask()
-
-    private val uploadSoundTask = uploadSound.toLiveTask()
-
-    val compositeSendEvent = sendEvent.toLiveTask()
-    val ledSendEvent = sendEvent.toLiveTask()
-    val callingSendEvent = sendEvent.toLiveTask()
-    val feedingSendEvent = sendEvent.toLiveTask()
 
     val soundVolumeValue: LiveData<Int> = getSoundVolume().map {
         _soundVolumeList.value?.firstOrNull { volume -> volume.value == it }?.label
@@ -114,18 +97,12 @@ class DashboardViewModel @ViewModelInject constructor(
             ?: R.string.choose
     }
 
-    val ledStateValue: LiveData<Int> = getLedState().map {
-        _ledStates.value?.firstOrNull { item -> item.value == it }?.label
-            ?: R.string.choose
-    }
-
-    val ledTimerValue: LiveData<LedTimer?> = getLedState().map {
+    val ledTimerValue: LiveData<LedTimer?> = getLedTurnOffDelay().map {
         _ledTimerList.value?.firstOrNull { item -> item.value == it }
     }
 
     val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
     val soundVolumeList: LiveData<List<SoundVolume>> = _soundVolumeList
-    val ledStates: LiveData<List<LedState>> = _ledStates
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
 
     fun onFeedingVolumeClicked(position: Int) = launchInScope {
@@ -136,8 +113,12 @@ class DashboardViewModel @ViewModelInject constructor(
         when (position) {
             0 -> _chooseIntentSound.value = Event(Unit)
             1 -> _openRecordDialog.value = Event(Unit)
-            else -> uploadSoundTask.execute(getAudioFileByPosition(position))
+            else -> _requestSoundInputStream.value = Event(getAudioFileByPosition(position))
         }
+    }
+
+    fun onGetInputStream(inputStream: InputStream) = launchInScope {
+        uploadBinary(UploadBinary.UploadBinaryParams(FEEDING_SOUND, inputStream)).collect()
     }
 
     private fun getAudioFileByPosition(position: Int): Int {
@@ -148,36 +129,40 @@ class DashboardViewModel @ViewModelInject constructor(
         }
     }
 
-    fun onLedItemClickListener(position: Int) = launchInScope {
-        setLedState(position)
-    }
-
-
     fun onSoundVolumeChanged(value: Int) = launchInScope {
-        setSoundVolume.invoke(_soundVolumeList.value!![value].value)
+        setSoundVolume(_soundVolumeList.value!![value].value)
     }
 
-    fun onSoundFilePicked(input: String, output: String) {
-        convertAndUploadSoundUseCaseTask.execute(Pair(input, output))
+    fun onSoundFilePicked(filePath: String) = launchInScope {
+        convertUploadSound(
+            ConvertUploadSound.ConvertUploadSoundParams(
+                FEEDING_SOUND,
+                filePath
+            )
+        ).collect()
     }
 
     fun onLedTimerItemClickListener(position: Int) = launchInScope {
         setLedTurnOffDelay(_ledTimerList.value!![position].value)
     }
 
-    fun sendCompositeFeedingEvent() {
-        compositeSendEvent.execute(EVENT_COMPOSITE_FEEDING)
+    fun sendCompositeFeedingEvent() = launchInScope {
+        sendEvent(EVENT_COMPOSITE_FEEDING)
     }
 
-    fun sendLightEvent() {
-        ledSendEvent.execute(EVENT_LED_TIMER)
+    fun sendLightEvent() = launchInScope {
+        sendEvent(EVENT_LED_TIMER)
     }
 
-    fun sendFeedingEvent() {
-        feedingSendEvent.execute(EVENT_FEEDING)
+    fun sendFeedingEvent() = launchInScope {
+        sendEvent(EVENT_FEEDING)
     }
 
-    fun sendCallingEvent() {
-        callingSendEvent.execute(EVENT_PLAY_FEEDING_AUDIO)
+    fun sendCallingEvent() = launchInScope {
+        sendEvent(EVENT_PLAY_FEEDING_AUDIO)
+    }
+
+    companion object {
+        const val FEEDING_SOUND = "feeding.mp3"
     }
 }

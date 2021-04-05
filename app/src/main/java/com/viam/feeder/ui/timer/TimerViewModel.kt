@@ -5,24 +5,28 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.viam.feeder.constants.STATUS_TIME
-import com.viam.feeder.core.domain.utils.toLiveTask
+import com.viam.feeder.constants.TIME_GET
+import com.viam.feeder.constants.TIME_IS
+import com.viam.feeder.constants.TIME_SET
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.task.compositeTask
+import com.viam.feeder.core.onSuccess
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.domain.config.GetAlarms
 import com.viam.feeder.data.domain.config.SetAlarms
-import com.viam.feeder.data.domain.event.GetStatus
-import com.viam.feeder.data.domain.event.SetStatus
-import com.viam.feeder.data.domain.event.Status
+import com.viam.feeder.data.domain.event.GetLongValue
+import com.viam.feeder.data.domain.event.SendEvent
+import com.viam.feeder.data.domain.event.SendLongValue
 import com.viam.feeder.data.models.ClockTimer
+import com.viam.feeder.data.models.KeyValueMessage
+import kotlinx.coroutines.flow.collect
 import java.util.*
 
 class TimerViewModel @ViewModelInject constructor(
-    private val setAlarms: SetAlarms,
     getAlarms: GetAlarms,
-    getStatus: GetStatus,
-    setStatus: SetStatus,
+    private val getTime: GetLongValue,
+    private val requestGetTime: SendEvent,
+    private val setAlarms: SetAlarms,
+    private val setTime: SendLongValue
 ) : ViewModel() {
 
     private val _time = MutableLiveData("0:00")
@@ -37,43 +41,33 @@ class TimerViewModel @ViewModelInject constructor(
     private val _showTimeSettingMenu = MutableLiveData<Event<Unit>>()
     val showTimeSettingMenu: LiveData<Event<Unit>> = _showTimeSettingMenu
 
-    private val getStatusTask = getStatus.toLiveTask {
-        onSuccess {
-            it?.let {
-                val timeInMillis = it.toLong() * 1000
-                val inDate = Date(timeInMillis)
-                _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
-                _time.value = DateFormat.format("h:mm", inDate).toString()
-                _ampm.value = DateFormat.format("aa", inDate).toString()
-            }
-        }
-    }.execute(STATUS_TIME)
-    val setStatusTask = setStatus.toLiveTask {
-        onSuccess {
-            getStatusTask.execute(STATUS_TIME)
-        }
-    }
-
-    val timeCompositeTask = compositeTask(
-        setStatusTask, getStatusTask
-    )
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 
     val timerList: LiveData<List<ClockTimer>> = getAlarms()
 
-/*    private val getTimerListTask = getAlarms.toLiveTask {
-        onSuccess {
-            it?.let {
-                _timerList.postValue(it.toMutableList())
-            }
-        }
-    }.execute(Unit)*/
-
-
     private val _timerMode = MutableLiveData<Int>()
     val timerMode: LiveData<Int> = _timerMode
 
+    init {
+        requestTime()
+    }
+
+    private fun requestTime() {
+        launchInScope {
+            getTime(TIME_IS).also {
+                requestGetTime(TIME_GET)
+            }.collect { resource ->
+                resource.onSuccess {
+                    val timeInMillis = (it ?: 0) * 1000
+                    val inDate = Date(timeInMillis)
+                    _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
+                    _time.value = DateFormat.format("h:mm", inDate).toString()
+                    _ampm.value = DateFormat.format("aa", inDate).toString()
+                }
+            }
+        }
+    }
 
     fun removeTimer(timer: ClockTimer) = launchInScope {
         timerList.value?.let { list ->
@@ -87,8 +81,11 @@ class TimerViewModel @ViewModelInject constructor(
         _openTimerDialog.postValue(Event(Unit))
     }
 
-    fun onTimeSet(timeInMillis: Long) {
-        setStatusTask.execute(Status(STATUS_TIME, (timeInMillis / 1000).toInt().toString()))
+    fun onTimeSet(timeInMillis: Long) = launchInScope {
+        setTime(KeyValueMessage(TIME_SET, (timeInMillis / 1000)))
+        launchInScope {
+            requestGetTime(TIME_GET)
+        }
     }
 
     fun onAddTime(newHour: Int, newMinute: Int) = launchInScope {

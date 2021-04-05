@@ -1,6 +1,7 @@
 package com.viam.feeder.socket
 
 import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import com.viam.feeder.socket.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -11,6 +12,7 @@ import okio.ByteString.Companion.toByteString
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.reflect.ParameterizedType
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -28,6 +30,9 @@ class WebSocketApi @Inject constructor(
     private val _progress =
         MutableSharedFlow<SocketTransfer>() // private mutable shared flow
     private lateinit var binaryCoroutineContext: CoroutineContext
+
+    private val socketParameterizedType =
+        Types.newParameterizedType(SocketMessage::class.java, Nothing::class.java)
 
     private val errorListeners = mutableListOf<(e: Exception) -> Unit>()
     val events = _events.asSharedFlow() // publicly exposed as read-only shared flow
@@ -72,9 +77,27 @@ class WebSocketApi @Inject constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    suspend fun <T : SocketMessage> onMessageReceived(
+    fun <T : SocketMessage> onMessageReceived(
         key: String,
-        clazz: (Class<in T>)? = SocketMessage::class.java
+        clazz: ParameterizedType
+    ): Flow<T> = channelFlow {
+        events
+            .filterIsInstance<SocketEvent.Text>()
+            .map {
+                val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)
+                return@map if (socketMessage?.key == key) {
+                    return@map moshi.adapter<T>(clazz).fromJson(it.data) as T
+                } else null
+            }
+            .filterNotNull().collect {
+                send(it)
+            }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T : SocketMessage> onMessageReceived(
+        key: String,
+        clazz: Class<T>
     ): Flow<T> = channelFlow {
         events
             .filterIsInstance<SocketEvent.Text>()
@@ -167,12 +190,18 @@ class WebSocketApi @Inject constructor(
             var size = 0
 
             CoroutineScope(currentCoroutineContext()).launch {
-                sendJson(FileDetailRequest(remoteFilePath))
-                    .onMessageReceived(FILE_DETAIL_CALLBACK, FileDetailCallback::class.java)
+                sendJson(FileDetailRequest(remoteFilePath), FileDetailRequest::class.java)
+                    .onMessageReceived(
+                        FILE_DETAIL_CALLBACK,
+                        FileDetailCallback::class.java
+                    )
                     .collect { detailCallback: FileDetailCallback ->
                         size = detailCallback.size
                         send(SocketTransfer.Start(size, TransferType.Download))
-                        sendJson(FileRequestSlice(wrote))
+                        sendJson(
+                            FileRequestSlice(wrote),
+                            FileRequestSlice::class.java
+                        )
                     }
             }
             CoroutineScope(currentCoroutineContext()).launch {
@@ -182,10 +211,16 @@ class WebSocketApi @Inject constructor(
                         outputStream.write(toByteArray)
                         wrote += toByteArray.size
                         if (wrote < size) {
-                            sendJson(FileRequestSlice(wrote))
+                            sendJson(
+                                FileRequestSlice(wrote),
+                                FileRequestSlice::class.java
+                            )
                             send(SocketTransfer.Progress(wrote.toFloat() / size))
                         } else {
-                            sendJson(SocketMessage(FILE_REQUEST_FINISHED))
+                            sendJson(
+                                SocketMessage(FILE_REQUEST_FINISHED),
+                                SocketMessage::class.java
+                            )
                             send(SocketTransfer.Progress(1F))
                             send(SocketTransfer.Success)
                         }
@@ -193,7 +228,7 @@ class WebSocketApi @Inject constructor(
             }
 
             CoroutineScope(currentCoroutineContext()).launch {
-                onMessageReceived<SocketMessage>(FILE_SEND_ERROR)
+                onMessageReceived<SocketMessage>(FILE_SEND_ERROR, SocketMessage::class.java)
                     .collect {
                         println("FILE_REQUEST_ERROR")
                         onError(Exception(FILE_REQUEST_ERROR))
@@ -209,8 +244,8 @@ class WebSocketApi @Inject constructor(
 
     @Suppress("BlockingMethodInNonBlockingContext")
     fun sendBinary(
-        inputStream: InputStream,
-        filePath: String
+        remoteFilePath: String,
+        inputStream: InputStream
     ): Flow<SocketTransfer> {
         var buffered: BufferedInputStream? = null
         fun clear() {
@@ -230,7 +265,10 @@ class WebSocketApi @Inject constructor(
             }
 
             CoroutineScope(currentCoroutineContext()).launch {
-                onMessageReceived(FILE_SEND_SLICE, ReceiveSliceMessage::class.java)
+                onMessageReceived(
+                    FILE_SEND_SLICE,
+                    ReceiveSliceMessage::class.java
+                )
                     .collect { sliceMessage: ReceiveSliceMessage ->
                         val start = sliceMessage.start
                         val end = sliceMessage.end
@@ -245,7 +283,7 @@ class WebSocketApi @Inject constructor(
                     }
             }
             CoroutineScope(currentCoroutineContext()).launch {
-                onMessageReceived<SocketMessage>(FILE_SEND_ERROR)
+                onMessageReceived(FILE_SEND_ERROR, SocketMessage::class.java)
                     .collect {
                         println(FILE_SEND_ERROR)
                         onError(Exception(FILE_SEND_ERROR))
@@ -253,7 +291,7 @@ class WebSocketApi @Inject constructor(
                     }
             }
             CoroutineScope(currentCoroutineContext()).launch {
-                onMessageReceived<SocketMessage>(FILE_SEND_FINISHED)
+                onMessageReceived(FILE_SEND_FINISHED, SocketMessage::class.java)
                     .collect {
                         println(FILE_SEND_FINISHED)
                         send(SocketTransfer.Progress(1F))
@@ -262,7 +300,10 @@ class WebSocketApi @Inject constructor(
                     }
             }
             CoroutineScope(currentCoroutineContext()).launch {
-                sendJson(SendFileMessage(filePath, size))
+                sendJson(
+                    SendFileMessage(remoteFilePath, size),
+                    SendFileMessage::class.java
+                )
             }
 
         }.catch { e ->
@@ -276,8 +317,15 @@ class WebSocketApi @Inject constructor(
         webSocket.send(message)
     }
 
-    inline fun <reified T : SocketMessage> sendJson(message: T): WebSocketApi {
-        val toJson = moshi.adapter(T::class.java).toJson(message)
+    fun <T> sendJson(message: T, clazz: ParameterizedType): WebSocketApi {
+        val toJson = moshi.adapter<T>(clazz).toJson(message)
+        println("send text $toJson")
+        webSocket.send(toJson)
+        return this
+    }
+
+    fun <T> sendJson(message: T, clazz: Class<T>): WebSocketApi {
+        val toJson = moshi.adapter(clazz).toJson(message)
         println("send text $toJson")
         webSocket.send(toJson)
         return this

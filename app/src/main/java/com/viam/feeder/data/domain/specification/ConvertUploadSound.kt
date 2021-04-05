@@ -1,26 +1,31 @@
 package com.viam.feeder.data.domain.specification
 
-import com.viam.feeder.core.domain.UseCase
+import android.content.Context
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
-import com.viam.feeder.data.repository.ConvertRepository
-import com.viam.feeder.data.repository.UploadRepository
-import dagger.hilt.android.scopes.ActivityScoped
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
+import com.viam.feeder.core.utility.convertToMp3
+import com.viam.feeder.socket.WebSocketApi
+import com.viam.feeder.socket.model.SocketTransfer
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
-@ActivityScoped
-class ConvertUploadSound @Inject constructor(
-    coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
-    private val convertRepository: ConvertRepository,
-    private val uploadRepository: UploadRepository
-) :
-    UseCase<Pair<String, String>, Unit>(coroutinesDispatcherProvider.io) {
-    override suspend fun execute(parameters: Pair<String, String>) {
-        val file = convertRepository.convertToMp3(parameters.first, parameters.second)
-        val requestFile = file.asRequestBody()
-        val body = MultipartBody.Part.createFormData("data", "feeding.mp3", requestFile)
-        uploadRepository.uploadFile(body)
+open class ConvertUploadSound @Inject constructor(
+    private val webSocketApi: WebSocketApi,
+    private val coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
+    @ApplicationContext private val appContext: Context,
+) {
+    suspend operator fun invoke(parameters: ConvertUploadSoundParams): Flow<SocketTransfer> {
+        val output = appContext.cacheDir.absolutePath + "/converted_" + parameters.filePath
+        return flowOf(convertToMp3(parameters.filePath, output).inputStream())
+            .flatMapLatest {
+                webSocketApi.sendBinary(parameters.remotePath, it)
+            }
+            .flowOn(coroutinesDispatcherProvider.io)
+            .catch { e ->
+                emit(SocketTransfer.Error(e))
+            }
     }
+
+    data class ConvertUploadSoundParams(val remotePath: String, val filePath: String)
 
 }

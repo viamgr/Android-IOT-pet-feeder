@@ -8,10 +8,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.asLiveData
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
+import com.viam.feeder.core.onError
 import com.viam.feeder.core.onSuccess
 import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.databinding.FragmentSettingBinding
@@ -39,8 +41,10 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         }
 
         viewModel.getWifiListTask.asLiveData().observe(viewLifecycleOwner, {
-            it.state()?.onSuccess { list ->
+            it.onSuccess { list ->
                 controller.setData(list)
+            }.onError {
+                controller.setData(emptyList())
             }
         })
     }

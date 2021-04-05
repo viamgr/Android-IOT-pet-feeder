@@ -1,21 +1,22 @@
 package com.viam.feeder.data.domain.event
 
+import com.squareup.moshi.Types
 import com.viam.feeder.core.domain.UseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
+import com.viam.feeder.data.models.KeyValueMessage
 import com.viam.feeder.socket.WebSocketApi
-import com.viam.feeder.socket.model.SocketMessage
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
 @ActivityScoped
-class SendEvent @Inject constructor(
+class SendLongValue @Inject constructor(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     private val socketApi: WebSocketApi
-) : UseCase<String, Unit>(coroutinesDispatcherProvider.io) {
-    override suspend fun execute(parameters: String) {
+) : UseCase<KeyValueMessage<Long>, Unit>(coroutinesDispatcherProvider.io) {
+    override suspend fun execute(parameters: KeyValueMessage<Long>) {
         socketApi.sendJson(
-            SocketMessage(parameters),
-            SocketMessage::class.java
+            parameters,
+            Types.newParameterizedType(KeyValueMessage::class.java, Long::class.javaObjectType)
         )
     }
 }

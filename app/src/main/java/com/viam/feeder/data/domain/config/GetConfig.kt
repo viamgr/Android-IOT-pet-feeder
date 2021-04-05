@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import org.json.JSONObject
 import java.io.File
+import java.io.OutputStream
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -24,7 +25,7 @@ class GetConfig @Inject constructor(
 ) {
     operator fun invoke(): Flow<SocketTransfer> {
         val configParams =
-            DownloadBinary.ConfigParams(configFilePath, configFile.outputStream())
+            ConfigBinaryParams(configFilePath, configFile.outputStream())
         return webSocketApi.receiveBinary("/" + configParams.remotePath, configParams.outputStream)
             .flowOn(coroutinesDispatcherProvider.io)
             .map { socketTransfer ->
@@ -39,4 +40,7 @@ class GetConfig @Inject constructor(
                 emit(SocketTransfer.Error(e))
             }
     }
+
+    data class ConfigBinaryParams(val remotePath: String, val outputStream: OutputStream)
+
 }

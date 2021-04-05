@@ -367,25 +367,6 @@
                             android:background="@color/grey_300" />
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/ledEnabled"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/led_state"
-                            android:visibility="gone"
-                            app:startIconDrawable="@drawable/ic_baseline_wb_sunny_24">
-
-                            <AutoCompleteTextView
-                                android:id="@+id/led_dropdown"
-                                noFilterText="@{vm.ledStateValue}"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:focusable="false"
-                                android:focusableInTouchMode="false"
-                                android:inputType="none" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

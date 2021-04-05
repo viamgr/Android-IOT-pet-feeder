@@ -34,8 +34,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 }
             }
         }
-    private val output =
-        lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
     private val permissionResult = permissionContract()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,6 +47,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             permissionResult.request(Manifest.permission.RECORD_AUDIO) {
                 findNavController().navigate(R.id.record_fragment)
             }
+        })
+        viewModel.requestInputStreamOfRaw.observe(viewLifecycleOwner, EventObserver {
+            viewModel.onGetInputStream(resources.openRawResource(it))
         })
         viewModel.chooseIntentSound.observe(viewLifecycleOwner, EventObserver {
             openChooseIntent()
@@ -96,19 +97,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             }
         })
 
-        viewModel.ledStates.observe(viewLifecycleOwner, { list ->
-            ArrayAdapter(
-                requireContext(),
-                android.R.layout.simple_list_item_1,
-                list.map { getString(it.label) }
-            ).also { adapter ->
-                binding.ledDropdown.setAdapter(adapter)
-                binding.ledDropdown.setOnItemClickListener { _, _, position, _ ->
-                    viewModel.onLedItemClickListener(position)
-                }
-            }
-        })
-
         viewModel.ledTimerList.observe(viewLifecycleOwner, { list ->
             ArrayAdapter(
                 requireContext(),
@@ -135,7 +123,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             if (requestKey == RecordFragment.REQUEST_KEY) {
                 val result = bundle.getString(RecordFragment.PATH)
                 result?.let {
-                    viewModel.onSoundFilePicked(result, output.value)
+                    viewModel.onSoundFilePicked(result)
                 }
 
             }
@@ -145,13 +133,13 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
 
     private fun copyFileToAppData(uri: Uri) {
         try {
-            val filePath =
-                "${requireActivity().externalCacheDir?.absolutePath}/recording.mp3"
             val contentResolver = requireContext().contentResolver
             contentResolver.openInputStream(uri)?.use {
-                val file = File(filePath)
+                val output =
+                    lazy { "${requireActivity().externalCacheDir?.absolutePath}/converted.mp3" }
+                val file = File(output.value)
                 it.copyTo(file.outputStream())
-                viewModel.onSoundFilePicked(file.absolutePath, output.value)
+                viewModel.onSoundFilePicked(output.value)
             }
         } catch (exception: Exception) {
             // TODO: 11/11/2020 Post non fatal firebase Exception

@@ -15,7 +15,7 @@ abstract class BaseSetConfig<T>(
     suspend operator fun invoke(parameters: T): Flow<SocketTransfer> {
         setConfigField(parameters)
         val inputStream = jsonPreferences.json.toString().byteInputStream()
-        return webSocketApi.sendBinary(inputStream, configFilePath)
+        return webSocketApi.sendBinary(configFilePath, inputStream)
             .flowOn(coroutineDispatcher)
             .map {
                 it.also {
@@ -25,10 +25,8 @@ abstract class BaseSetConfig<T>(
                 }
             }.catch { e ->
                 emit(SocketTransfer.Error(e))
-            }.also {
-                it.collect {
-                    println(it)
-                }
+            }.also { flow ->
+                flow.collect()
             }
     }
 

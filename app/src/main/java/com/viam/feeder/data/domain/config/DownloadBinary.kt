@@ -12,7 +12,7 @@ open class DownloadBinary(
     private val coroutineDispatcher: CoroutineDispatcher,
     private val webSocketApi: WebSocketApi,
 ) {
-    suspend operator fun invoke(parameters: ConfigParams): Flow<SocketTransfer> {
+    suspend operator fun invoke(parameters: DownloadBinaryParams): Flow<SocketTransfer> {
         return webSocketApi.receiveBinary(parameters.remotePath, parameters.outputStream)
             .flowOn(coroutineDispatcher)
             .catch { e ->
@@ -20,5 +20,5 @@ open class DownloadBinary(
             }
     }
 
-    data class ConfigParams(val remotePath: String, val outputStream: OutputStream)
+    data class DownloadBinaryParams(val remotePath: String, val outputStream: OutputStream)
 }
