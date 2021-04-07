@@ -8,12 +8,12 @@ import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.domain.config.SetWifiCredentials
 import com.viam.feeder.data.domain.config.WifiAuthentication
 import com.viam.feeder.data.domain.event.SendEvent
-import com.viam.feeder.data.domain.wifi.WifiList
+import com.viam.feeder.data.domain.wifi.GetWifiList
 import com.viam.feeder.data.models.WifiDevice
 import kotlinx.coroutines.delay
 
 class SettingViewModel @ViewModelInject constructor(
-    wifiList: WifiList,
+    wifiList: GetWifiList,
     sendEvent: SendEvent,
     private val setWifiCredentials: SetWifiCredentials
 ) : ViewModel() {

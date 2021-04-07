@@ -15,11 +15,11 @@ import androidx.core.view.isVisible
 import androidx.core.view.postDelayed
 import androidx.databinding.BindingAdapter
 import com.viam.feeder.R
-import com.viam.feeder.core.Resource
 import com.viam.feeder.core.domain.utils.toMessage
-import com.viam.feeder.core.isError
-import com.viam.feeder.core.isLoading
-import com.viam.feeder.core.isSuccess
+import com.viam.resource.Resource
+import com.viam.resource.isError
+import com.viam.resource.isLoading
+import com.viam.resource.isSuccess
 import eightbitlab.com.blurview.BlurView
 import eightbitlab.com.blurview.RenderScriptBlur
 import java.util.concurrent.CancellationException

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cv_result_state_linear"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/custom_ripple"
+    android:clickable="true"
+    android:focusable="true"
+    android:layoutDirection="rtl">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_container_linear"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="@+id/cv_result_state_linear"
+        app:layout_constraintTop_toTopOf="@+id/cv_result_state_linear">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/progressBar_linear_sandy_clock"
+            style="@style/loading"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="2dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/sandy_clock" />
+
+        <TextView
+            android:id="@+id/tv_loading_linear"
+            style="@style/tv_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:translationZ="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/progressBar_linear_sandy_clock"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_error_linear"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_retry_linear"
+                style="@style/btn_retry"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:contentDescription="@string/tv_retry"
+                android:scaleType="fitXY"
+                android:src="@drawable/ic_retry"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_error_linear"
+                style="@style/tv_retry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:translationZ="2dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/iv_retry_linear"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/ivBtn_close_linear"
+        style="@style/close"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/tv_close"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_close"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progressBar_linear"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:indeterminate="true"
+        android:layoutDirection="ltr"
+        android:max="100"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!--    <com.airbnb.lottie.LottieAnimationView-->
+    <!--        android:id="@+id/progressBar_linear"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="36dp"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:scaleType="fitXY"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:lottie_autoPlay="true"-->
+    <!--        app:lottie_colorFilter="#000000"-->
+    <!--        app:lottie_loop="true"-->
+    <!--        app:lottie_rawRes="@raw/linear" />-->
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

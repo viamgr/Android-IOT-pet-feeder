@@ -1,6 +1,6 @@
 package com.viam.feeder.core.network
 
-import com.viam.feeder.core.Resource
+import com.viam.resource.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -1,6 +1,6 @@
 package com.viam.feeder.core.task
 
-import com.viam.feeder.core.Resource
+import com.viam.resource.Resource
 
 interface LiveTaskScope<P, R> {
     suspend fun emit(resource: Resource<R>?)

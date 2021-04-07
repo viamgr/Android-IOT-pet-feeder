@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Template</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="close_state_layout">close state layout</string>
+    <string name="refresh">refresh</string>
+    <string name="submit">submit</string>
+    <string name="please_wait">please wait</string>
+    <string name="navigate">Navigate</string>
+    <string name="n_a">N/A</string>
+    <string name="notification_ui_sample">notification ui sample</string>
+    <string name="text_watcher_ui_sample">text watcher ui sample</string>
+    <string name="spinner_ui_sample">spinner ui sample</string>
+    <string name="loading">Loading</string>
+    <string name="click_to_retry">Click to retry</string>
+    <string name="todo">todo</string>
+    <string name="type_province_name">type province name</string>
+    <string name="tv_loading">Loading</string>
+    <string name="tv_retry">Click to retry</string>
+    <string name="tv_close">Close</string>
+</resources>

@@ -1,33 +1,43 @@
 package com.viam.feeder.data.domain.config
 
+import com.part.livetaskcore.usecases.FlowUseCase
+import com.viam.feeder.core.network.CoroutinesDispatcherProvider
+import com.viam.feeder.core.utility.toResource
 import com.viam.feeder.data.storage.JsonPreferences
 import com.viam.feeder.di.AppModule.Companion.configFilePath
-import com.viam.feeder.socket.WebSocketApi
-import com.viam.feeder.socket.model.SocketTransfer
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.*
+import com.viam.resource.Resource
+import com.viam.websocket.WebSocketApi
+import com.viam.websocket.model.SocketTransfer
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 abstract class BaseSetConfig<T>(
-    private val coroutineDispatcher: CoroutineDispatcher,
+    private val coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     private val webSocketApi: WebSocketApi,
     private val jsonPreferences: JsonPreferences,
-) {
-    suspend operator fun invoke(parameters: T): Flow<SocketTransfer> {
-        setConfigField(parameters)
-        val inputStream = jsonPreferences.json.toString().byteInputStream()
-        return webSocketApi.sendBinary(configFilePath, inputStream)
-            .flowOn(coroutineDispatcher)
-            .map {
-                it.also {
-                    if (it is SocketTransfer.Success) {
-                        jsonPreferences.resetFromTemp()
+) : FlowUseCase<T, SocketTransfer>(coroutinesDispatcherProvider.io) {
+    override suspend fun execute(params: T): Flow<Resource<SocketTransfer>> {
+        return flow {
+            emit(Resource.Loading())
+            setConfigField(params)
+            val inputStream = jsonPreferences.json.toString().byteInputStream()
+            webSocketApi
+                .sendBinary(configFilePath, inputStream)
+                .map {
+                    it.also {
+                        if (it is SocketTransfer.Success) {
+                            withContext(coroutinesDispatcherProvider.main) {
+                                jsonPreferences.resetFromTemp()
+                            }
+                        }
                     }
+                }.collect {
+                    emit(it.toResource())
                 }
-            }.catch { e ->
-                emit(SocketTransfer.Error(e))
-            }.also { flow ->
-                flow.collect()
-            }
+        }
     }
 
     @Throws(RuntimeException::class)

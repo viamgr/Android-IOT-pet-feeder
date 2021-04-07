@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cv_result_state_indicator"
+    style="@style/backgroundLayer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:elevation="10dp"
+    android:focusable="true"
+    android:layoutDirection="rtl">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_error_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_retry_indicator"
+            style="@style/btn_retry_white"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:contentDescription="@string/tv_retry"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_retry"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_error_indicator"
+            style="@style/tv_retry_white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:translationZ="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iv_retry_indicator"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <!--    <app.frantic.loadingdots.LoadingDots-->
+    <!--        android:id="@+id/progressBar_indicator"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:visibility="visible"-->
+    <!--        app:LoadingDots_auto_play="true"-->
+    <!--        app:LoadingDots_dots_color="@android:color/black"-->
+    <!--        app:LoadingDots_dots_count="3"-->
+    <!--        app:LoadingDots_dots_size="12dp"-->
+    <!--        app:LoadingDots_jump_height="12dp"-->
+    <!--        app:LoadingDots_dots_space="12dp"-->
+    <!--        android:layout_marginBottom="12dp"-->
+    <!--        app:LoadingDots_jump_duration="200"-->
+    <!--        app:LoadingDots_loop_duration="800"-->
+    <!--        app:LoadingDots_loop_start_delay="100"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:flow_horizontalAlign="center"-->
+    <!--        app:flow_verticalAlign="center"/>-->
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/progressBar_indicator"
+        style="@style/loading_white"
+        android:layout_width="280dp"
+        android:layout_height="160dp"
+        android:layout_marginBottom="10dp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/indicator"
+        app:lottie_speed="0.9" />
+
+    <ImageView
+        android:id="@+id/ivBtn_close_indicator"
+        style="@style/close_white"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:contentDescription="@string/tv_close"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_close"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

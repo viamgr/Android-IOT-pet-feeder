@@ -13,10 +13,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
-import com.viam.feeder.core.onError
-import com.viam.feeder.core.onSuccess
 import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.databinding.FragmentSettingBinding
+import com.viam.resource.onError
+import com.viam.resource.onSuccess
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

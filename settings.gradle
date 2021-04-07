@@ -1,2 +1,5 @@
+include ':websocket'
+include ':resource'
 include ':app'
+include ':livetask'
 rootProject.name = "Feeder"

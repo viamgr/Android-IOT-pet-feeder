@@ -72,6 +72,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation project(":livetask")
+    implementation project(":resource")
+    implementation project(":websocket")
     implementation 'com.android.support:multidex:1.0.3'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -133,9 +136,13 @@ dependencies {
     // Kotlin + coroutines
     implementation "androidx.work:work-runtime-ktx:$work_version"
 
+    /*Coroutines*/
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
+
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'com.arthenica:mobile-ffmpeg-full:4.4.LTS'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.2.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
     implementation 'com.eightbitlab:blurview:1.6.5'
 
     implementation("io.coil-kt:coil:1.1.1")

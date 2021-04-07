@@ -1,5 +1,7 @@
 package com.viam.feeder.di
 
+import com.squareup.moshi.Moshi
+import com.viam.websocket.WebSocketApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,6 +34,16 @@ class SocketModule {
     fun getSocketRequest(
     ): Request {
         return Request.Builder().url("ws://$SOCKET_URL:$SOCKET_PORT").build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideWebSocketApi(
+        @Named("socket") okHttpClient: OkHttpClient,
+        moshi: Moshi,
+        request: Request
+    ): WebSocketApi {
+        return WebSocketApi(okHttpClient, moshi, request)
     }
 
     companion object {

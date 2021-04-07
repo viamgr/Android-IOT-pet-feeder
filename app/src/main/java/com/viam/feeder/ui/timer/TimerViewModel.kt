@@ -9,7 +9,6 @@ import com.viam.feeder.constants.TIME_GET
 import com.viam.feeder.constants.TIME_IS
 import com.viam.feeder.constants.TIME_SET
 import com.viam.feeder.core.livedata.Event
-import com.viam.feeder.core.onSuccess
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.domain.config.GetAlarms
 import com.viam.feeder.data.domain.config.SetAlarms
@@ -18,6 +17,7 @@ import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.event.SendLongValue
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValueMessage
+import com.viam.resource.onSuccess
 import kotlinx.coroutines.flow.collect
 import java.util.*
 

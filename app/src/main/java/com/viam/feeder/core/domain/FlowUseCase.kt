@@ -1,6 +1,6 @@
 package com.viam.feeder.core.domain
 
-import com.viam.feeder.core.Resource
+import com.viam.resource.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch

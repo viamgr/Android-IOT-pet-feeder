@@ -10,8 +10,8 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import coil.load
 import com.google.android.material.button.MaterialButton
-import com.viam.feeder.core.Resource
-import com.viam.feeder.core.isLoading
+import com.viam.resource.Resource
+import com.viam.resource.isLoading
 
 
 @BindingAdapter("goneUnless")

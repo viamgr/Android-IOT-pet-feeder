@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.R
 import com.viam.feeder.constants.EVENT_COMPOSITE_FEEDING
 import com.viam.feeder.constants.EVENT_FEEDING
@@ -104,9 +105,22 @@ class DashboardViewModel @ViewModelInject constructor(
     val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
     val soundVolumeList: LiveData<List<SoundVolume>> = _soundVolumeList
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
+    val a = setFeedingDurationVolume.asLiveTask {
+        onLoading {
+            println(it)
+        }
+        onSuccess {
+            println(it)
+        }
+        onError {
+            it.printStackTrace()
+            println(it)
+        }
+    }
 
     fun onFeedingVolumeClicked(position: Int) = launchInScope {
-        setFeedingDurationVolume(_feedVolumeList.value!![position].duration)
+        a.run(_feedVolumeList.value!![position].duration)
+//        setFeedingDurationVolume(_feedVolumeList.value!![position].duration).collect()
     }
 
     fun onFeedSoundItemClicked(position: Int) {

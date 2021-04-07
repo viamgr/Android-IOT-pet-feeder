@@ -17,7 +17,6 @@ import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.domain.utils.isConnectionError
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.onError
 import com.viam.feeder.core.task.AutoRetryHandler
 import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.core.utility.bindingAdapter.contentView
@@ -25,6 +24,8 @@ import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import com.viam.feeder.ui.wifi.WifiFragmentDirections
+import com.viam.resource.onError
+import com.viam.resource.onLoading
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -76,9 +77,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-        viewModel.downloadConfigProgress.observe(this) {
-            print("downloadConfig")
-            println(it)
+        viewModel.downloadConfigProgress.asLiveData().observe(this) { liveTask ->
+            liveTask.result()?.onLoading { it: String? ->
+                print("downloadConfig")
+            }
         }
         viewModel.transferFileProgress.observe(this) {
             print("transfer")

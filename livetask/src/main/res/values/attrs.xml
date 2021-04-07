@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="btn_retry" format="reference" />
+    <attr name="close" format="reference" />
+    <attr name="tv_retry" format="reference" />
+    <attr name="progressbar" format="reference" />
+
+</resources>

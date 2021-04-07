@@ -2,8 +2,8 @@ package com.viam.feeder.core.task
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.viam.feeder.core.Resource
 import com.viam.feeder.core.livedata.Event
+import com.viam.resource.Resource
 import javax.inject.Singleton
 
 @Singleton
