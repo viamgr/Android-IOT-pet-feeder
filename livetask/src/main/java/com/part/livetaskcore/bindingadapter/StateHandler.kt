@@ -243,48 +243,44 @@ class LinearLoading : State {
 
 class CircularLoading : State {
     override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.let {
-            it.apply {
-                cl_error_circular.visibility = View.GONE
-                progressBar_circular.visibility = View.VISIBLE
-                tv_loading_circular.visibility = View.VISIBLE
-                if ((result as BaseLiveTask<*>).cancelable) {
-                    ivBtn_close_circular.visibility = View.VISIBLE
-                    ivBtn_close_circular.setOnClickListener {
-                        result.cancel()
-                    }
-                } else ivBtn_close_circular.visibility = View.INVISIBLE
-            }
+        stateLayout?.apply {
+            cl_error_circular.visibility = View.GONE
+            progressBar_circular.visibility = View.VISIBLE
+            tv_loading_circular.visibility = View.VISIBLE
+            if ((result as BaseLiveTask<*>).cancelable) {
+                ivBtn_close_circular.visibility = View.VISIBLE
+                ivBtn_close_circular.setOnClickListener {
+                    result.cancel()
+                }
+            } else ivBtn_close_circular.visibility = View.INVISIBLE
         }
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun error(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.let {
-            it.apply {
-                if ((result.result() as Resource.Error).exception is CancellationException) {
+        stateLayout?.apply {
+            if ((result.result() as Resource.Error).exception is CancellationException) {
+                startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
+                view.tag = null
+                parent.removeView(this)
+            } else {
+                ivBtn_close_circular.visibility = View.VISIBLE
+                cl_error_circular.visibility = View.VISIBLE
+                ivBtn_close_circular.setOnClickListener { _ ->
                     startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
                     view.tag = null
-                    parent.removeView(it)
-                } else {
-                    ivBtn_close_circular.visibility = View.VISIBLE
-                    cl_error_circular.visibility = View.VISIBLE
-                    ivBtn_close_circular.setOnClickListener { _ ->
-                        startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
-                        view.tag = null
-                        parent.removeView(it)
-                    }
-                    if ((result as BaseLiveTask<*>).retryable) {
-                        cl_container_circular.visibility = View.VISIBLE
-                        cl_error_circular.setOnClickListener {
-                            result.retry()
-                        }
-                    } else cl_container_circular.visibility = View.INVISIBLE
-                    progressBar_circular.visibility = View.GONE
-                    tv_loading_circular.visibility = View.GONE
+                    parent.removeView(this)
                 }
-
+                if ((result as BaseLiveTask<*>).retryable) {
+                    cl_container_circular.visibility = View.VISIBLE
+                    cl_error_circular.setOnClickListener {
+                        result.retry()
+                    }
+                } else cl_container_circular.visibility = View.INVISIBLE
+                progressBar_circular.visibility = View.GONE
+                tv_loading_circular.visibility = View.GONE
             }
+
         }
     }
 }

@@ -5,7 +5,7 @@
     android:id="@+id/cv_result_state_circular"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/custom_ripple"
+    android:background="@color/purple_200"
     android:clickable="true"
     android:focusable="true"
     android:layoutDirection="rtl">
@@ -83,8 +83,9 @@
     <ImageView
         android:id="@+id/ivBtn_close_circular"
         style="@style/close"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="12dp"
         android:contentDescription="@string/tv_close"
         android:scaleType="fitXY"
         android:src="@drawable/ic_close"

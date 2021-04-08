@@ -2,6 +2,7 @@ package com.viam.feeder.data.domain.event
 
 import com.viam.feeder.core.domain.UseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
+import com.viam.websocket.model.SocketMessage
 import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
@@ -11,9 +12,6 @@ class SendEvent @Inject constructor(
     private val socketApi: com.viam.websocket.WebSocketApi
 ) : UseCase<String, Unit>(coroutinesDispatcherProvider.io) {
     override suspend fun execute(parameters: String) {
-        socketApi.sendJson(
-            com.viam.websocket.model.SocketMessage(parameters),
-            com.viam.websocket.model.SocketMessage::class.java
-        )
+        socketApi.sendJson(SocketMessage(parameters), SocketMessage::class.java)
     }
 }

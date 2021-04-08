@@ -27,6 +27,7 @@ open class CoroutineLiveTask<T>(
     private var onErrorAction: (Exception) -> Unit = {}
     private var onLoadingAction: (Any?) -> Unit = {}
     var autoRetry = false
+    var context: CoroutineContext? = null
 
     override fun runOn(coroutineContext: CoroutineContext?): LiveTask<T> {
         return run(coroutineContext ?: EmptyCoroutineContext)
@@ -35,16 +36,15 @@ open class CoroutineLiveTask<T>(
     override suspend fun run(): CoroutineLiveTask<T> {
         return run(currentCoroutineContext())
     }
-
     private fun run(coroutineContext: CoroutineContext): CoroutineLiveTask<T> {
         applyResult(Resource.Loading())
         val supervisorJob = SupervisorJob(coroutineContext[Job])
-        val scope = CoroutineScope(Dispatchers.IO + coroutineContext + supervisorJob)
+        context = Dispatchers.IO + coroutineContext + supervisorJob
         blockRunner = TaskRunner(
             liveData = this,
             block = block,
             timeoutInMs = DEFAULT_TIMEOUT,
-            scope = scope
+            scope = CoroutineScope(context!!)
         ) {
             blockRunner = null
         }
@@ -80,8 +80,7 @@ open class CoroutineLiveTask<T>(
         connectionManager?.let {
             this.removeSource(it)
         }
-        applyResult(Resource.Loading())
-        blockRunner?.maybeRun()
+        run(context!!)
     }
 
     override fun cancel() {
@@ -125,16 +124,19 @@ open class CoroutineLiveTask<T>(
     }
 
     fun applyResult(result: Resource<T>?) {
+        print("applyResult:")
+        println(result)
         this.latestState = result
         result?.onSuccess {
             onSuccessAction(it)
         }?.onError {
+            it.printStackTrace()
             onErrorAction(it)
+            applyError()
         }?.onLoading<T, Any?> {
             onLoadingAction(it)
         }
         this.postValue(this)
-        if (result is Resource.Error) applyError()
     }
 
     private fun applyError() {

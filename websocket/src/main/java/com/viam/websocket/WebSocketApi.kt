@@ -24,7 +24,7 @@ class WebSocketApi(
     private val _events = MutableSharedFlow<SocketEvent>() // private mutable shared flow
     private val _progress =
         MutableSharedFlow<SocketTransfer>() // private mutable shared flow
-    private lateinit var binaryCoroutineContext: CoroutineContext
+    private var binaryCoroutineContext: CoroutineContext? = null
 
     private val errorListeners = mutableListOf<(e: Exception) -> Unit>()
     val events = _events.asSharedFlow() // publicly exposed as read-only shared flow
@@ -38,10 +38,8 @@ class WebSocketApi(
                 println("new Launch")
                 block.invoke()
             } catch (e: Exception) {
-                if (e !is CancellationException) {
-                    e.printStackTrace()
-                    onErrorHappened(e)
-                }
+                e.printStackTrace()
+                onErrorHappened(e)
             }
         }
     }
@@ -166,15 +164,16 @@ class WebSocketApi(
         outputStream: OutputStream
     ): Flow<SocketTransfer> {
         fun clear() {
+            binaryCoroutineContext = null
             outputStream.close()
         }
         return channelFlow {
-            val job = this
             cancelOldBinaryTransfer()
+
             fun onError(e: Throwable) {
                 e.printStackTrace()
                 clear()
-                job.cancel()
+                cancel()
                 throw e
             }
 
@@ -215,6 +214,8 @@ class WebSocketApi(
                             )
                             send(SocketTransfer.Progress(1F))
                             send(SocketTransfer.Success)
+
+                            clear()
                         }
                     }
             }
@@ -241,6 +242,8 @@ class WebSocketApi(
     ): Flow<SocketTransfer> {
         var buffered: BufferedInputStream? = null
         fun clear() {
+            binaryCoroutineContext?.cancel()
+            binaryCoroutineContext = null
             buffered?.close()
         }
         return channelFlow {
@@ -251,8 +254,6 @@ class WebSocketApi(
             suspend fun onError(e: Throwable) {
                 e.printStackTrace()
                 send(Result.failure<SocketTransfer>(e))
-                clear()
-                cancel()
                 throw e
             }
 
@@ -319,13 +320,16 @@ class WebSocketApi(
     fun <T> sendJson(message: T, clazz: Class<T>): WebSocketApi {
         val toJson = moshi.adapter(clazz).toJson(message)
         println("send text $toJson")
-        webSocket.send(toJson)
-        return this
+        return if (webSocket.send(toJson)) {
+            this
+        } else {
+            throw Exception("Failed to send")
+        }
     }
 
     private suspend fun cancelOldBinaryTransfer() {
-        if (::binaryCoroutineContext.isInitialized) {
-            binaryCoroutineContext.cancel()
+        if (binaryCoroutineContext != null) {
+            binaryCoroutineContext?.cancel()
         }
 
         binaryCoroutineContext = currentCoroutineContext()
@@ -337,10 +341,8 @@ class WebSocketApi(
                 emit(value)
             }
         } catch (e: Exception) {
-            if (e !is CancellationException) {
-                e.printStackTrace()
-                emit(SocketTransfer.Error(e))
-            }
+            e.printStackTrace()
+            emit(SocketTransfer.Error(e))
         }
     }
 

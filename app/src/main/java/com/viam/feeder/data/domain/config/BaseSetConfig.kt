@@ -21,7 +21,6 @@ abstract class BaseSetConfig<T>(
 ) : FlowUseCase<T, SocketTransfer>(coroutinesDispatcherProvider.io) {
     override suspend fun execute(params: T): Flow<Resource<SocketTransfer>> {
         return flow {
-            emit(Resource.Loading())
             setConfigField(params)
             val inputStream = jsonPreferences.json.toString().byteInputStream()
             webSocketApi

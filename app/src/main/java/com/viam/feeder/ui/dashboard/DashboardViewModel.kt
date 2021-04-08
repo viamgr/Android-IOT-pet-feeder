@@ -29,7 +29,7 @@ class DashboardViewModel @ViewModelInject constructor(
     private val convertUploadSound: ConvertUploadSound,
     private val uploadBinary: UploadBinary,
     private val sendEvent: SendEvent,
-    private val setFeedingDurationVolume: SetFeedingDuration,
+    private val setFeedingDuration: SetFeedingDuration,
     private val setSoundVolume: SetSoundVolume,
     private val setLedTurnOffDelay: SetLedTurnOffDelay
 ) : ViewModel() {
@@ -105,7 +105,7 @@ class DashboardViewModel @ViewModelInject constructor(
     val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
     val soundVolumeList: LiveData<List<SoundVolume>> = _soundVolumeList
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
-    val a = setFeedingDurationVolume.asLiveTask {
+    val feedingDurationTask = setFeedingDuration.asLiveTask {
         onLoading {
             println(it)
         }
@@ -119,7 +119,7 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     fun onFeedingVolumeClicked(position: Int) = launchInScope {
-        a.run(_feedVolumeList.value!![position].duration)
+        feedingDurationTask.run(_feedVolumeList.value!![position].duration)
 //        setFeedingDurationVolume(_feedVolumeList.value!![position].duration).collect()
     }
 
@@ -143,8 +143,9 @@ class DashboardViewModel @ViewModelInject constructor(
         }
     }
 
+    val soundLiveTask = setSoundVolume.asLiveTask()
     fun onSoundVolumeChanged(value: Int) = launchInScope {
-        setSoundVolume(_soundVolumeList.value!![value].value)
+        soundLiveTask.run(_soundVolumeList.value!![value].value)
     }
 
     fun onSoundFilePicked(filePath: String) = launchInScope {

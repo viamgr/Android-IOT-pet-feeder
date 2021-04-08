@@ -14,20 +14,13 @@ import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.viam.feeder.R
 import com.viam.feeder.constants.ACCESS_POINT_SSID
-import com.viam.feeder.core.domain.utils.isConnectionError
-import com.viam.feeder.core.domain.utils.toMessage
-import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.task.AutoRetryHandler
-import com.viam.feeder.core.task.TaskEventLogger
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import com.viam.feeder.ui.wifi.WifiFragmentDirections
-import com.viam.resource.onError
 import com.viam.resource.onLoading
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -56,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.askedWifiPermissions.set(true)
             }
             .observe(this) {
-                AutoRetryHandler.value = it.isAvailable
+//                AutoRetryHandler.value = it.isAvailable
                 val isUnknownOrKnownWifiConnection =
                     isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
                 if (!viewModel.isWifiDialogShowing && !isUnknownOrKnownWifiConnection) {
@@ -66,17 +59,17 @@ class MainActivity : AppCompatActivity() {
             }
             .start()
 
-        TaskEventLogger.events.observe(this, EventObserver { resource ->
-            resource?.onError {
-                Timber.e(it)
-                if (it.isConnectionError() && !viewModel.isWifiDialogShowing && viewModel.askedWifiPermissions.get()) {
-                    setIsWifiDialogShowing(true)
-                    navController.navigate(WifiFragmentDirections.toWifiFragment(false))
-                } else {
-                    showMessage(it.toMessage(this))
-                }
-            }
-        })
+        /*  TaskEventLogger.events.observe(this, EventObserver { resource ->
+              resource?.onError {
+                  Timber.e(it)
+                  if (it.isConnectionError() && !viewModel.isWifiDialogShowing && viewModel.askedWifiPermissions.get()) {
+                      setIsWifiDialogShowing(true)
+                      navController.navigate(WifiFragmentDirections.toWifiFragment(false))
+                  } else {
+                      showMessage(it.toMessage(this))
+                  }
+              }
+          })*/
         viewModel.downloadConfigProgress.asLiveData().observe(this) { liveTask ->
             liveTask.result()?.onLoading { it: String? ->
                 print("downloadConfig")
