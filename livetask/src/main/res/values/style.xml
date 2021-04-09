@@ -38,7 +38,6 @@
 
     <style name="btn_retry">
         <item name="android:layout_marginTop">2dp</item>
-        <item name="android:layout_marginStart">120dp</item>
         <item name="tint">@color/black</item>
     </style>
 

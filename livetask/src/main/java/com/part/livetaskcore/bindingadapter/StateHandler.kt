@@ -6,6 +6,7 @@ import android.view.animation.AnimationUtils
 import com.part.livetask.R
 import com.part.livetaskcore.livatask.BaseLiveTask
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.ViewException
 import com.viam.resource.Resource
 import kotlinx.android.synthetic.main.loading_blur_circular.view.*
 import kotlinx.android.synthetic.main.loading_bouncing.view.*
@@ -266,6 +267,13 @@ class CircularLoading : State {
             } else {
                 ivBtn_close_circular.visibility = View.VISIBLE
                 cl_error_circular.visibility = View.VISIBLE
+                val errorText =
+                    if ((result.result() as Resource.Error).exception is ViewException) {
+                        ((result.result() as Resource.Error).exception as ViewException).viewMessage
+                    } else {
+                        context.getString(R.string.tv_retry)
+                    }
+                tv_error_circular.text = errorText
                 ivBtn_close_circular.setOnClickListener { _ ->
                     startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
                     view.tag = null

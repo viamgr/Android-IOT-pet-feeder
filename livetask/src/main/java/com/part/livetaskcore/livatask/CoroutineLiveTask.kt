@@ -36,8 +36,9 @@ open class CoroutineLiveTask<T>(
     override suspend fun run(): CoroutineLiveTask<T> {
         return run(currentCoroutineContext())
     }
+
     private fun run(coroutineContext: CoroutineContext): CoroutineLiveTask<T> {
-        applyResult(Resource.Loading())
+        handleResult(Resource.Loading())
         val supervisorJob = SupervisorJob(coroutineContext[Job])
         context = Dispatchers.IO + coroutineContext + supervisorJob
         blockRunner = TaskRunner(
@@ -123,26 +124,37 @@ open class CoroutineLiveTask<T>(
         onErrorAction = action
     }
 
-    fun applyResult(result: Resource<T>?) {
+    fun handleResult(result: Resource<T>?) {
         print("applyResult:")
         println(result)
-        this.latestState = result
         result?.onSuccess {
             onSuccessAction(it)
+            this.latestState = result
         }?.onError {
             it.printStackTrace()
             onErrorAction(it)
             applyError()
+            if (it !is CancellationException)
+                setResult(Resource.Error(errorMapper.mapError((result as Resource.Error).exception)))
+            else {
+                setResult(result)
+            }
+
         }?.onLoading<T, Any?> {
             onLoadingAction(it)
+            setResult(result)
         }
+
         this.postValue(this)
+    }
+
+    private fun setResult(result: Resource<T>) {
+        this.latestState = result
     }
 
     private fun applyError() {
         result()?.onError { exception ->
             errorObserver.notifyError(ErrorEvent((exception)))
-
             when (exception) {
                 is NoConnectionException -> {
                     if (autoRetry) retryOnNetworkBack()

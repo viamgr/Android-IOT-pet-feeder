@@ -1,5 +1,5 @@
 package com.part.livetaskcore
 
-interface ErrorMapper {
+fun interface ErrorMapper {
     fun mapError(exception: Exception): Exception
 }

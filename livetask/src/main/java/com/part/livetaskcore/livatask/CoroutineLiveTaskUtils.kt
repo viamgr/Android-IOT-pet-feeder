@@ -42,7 +42,7 @@ internal class TaskRunner<T>(
             delay(timeoutInMs)
             runningJob?.cancel()
             runningJob = null
-            liveData.applyResult(Resource.Error(CancellationException()))
+            liveData.handleResult(Resource.Error(CancellationException()))
         }
     }
 }
@@ -60,7 +60,7 @@ internal class LiveTaskBuilderImpl<T>(
     override suspend fun emit(result: Resource<T>) {
         target.clearSource()
         withContext(coroutineContext) {
-            target.applyResult(result)
+            target.handleResult(result)
         }
     }
 

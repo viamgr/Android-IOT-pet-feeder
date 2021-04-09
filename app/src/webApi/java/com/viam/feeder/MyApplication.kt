@@ -6,6 +6,9 @@ import com.facebook.flipper.android.utils.FlipperUtils
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.facebook.soloader.SoLoader
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.part.livetaskcore.LiveTaskManager
+import com.part.livetaskcore.livatask.ViewException
+import com.viam.feeder.core.domain.utils.toMessage
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,6 +26,14 @@ class MyApplication : MultiDexApplication() {
         super.onCreate()
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         setupDebuggingTools()
+        setupLiveTask()
+    }
+
+    private fun setupLiveTask() {
+        LiveTaskManager.Builder()
+            .setUpConnectionManager(this)
+            .setErrorMapper { exception -> ViewException(exception.toMessage(this@MyApplication)) }
+            .apply()
     }
 
     private fun setupDebuggingTools() {
