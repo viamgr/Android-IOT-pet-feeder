@@ -1,4 +1,4 @@
-package com.viam.feeder.core.utility.dexter
+package com.viam.feeder.core.utility
 
 import android.Manifest
 import android.app.Activity

@@ -1,7 +1,6 @@
 package com.part.livetaskcore.bindingadapter
 
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,15 +40,6 @@ class ConstraintLayoutViewWrapper(
             setConstraint(layout)
             layout.bringToFront()
             view.tag = layout.id
-            Log.d(
-                "viewParent in",
-                "place: heeeeey ${view.tag} ,.., ${parent.getViewById(view.tag as Int)}"
-            )
-        } else {
-            Log.d(
-                "viewParent out",
-                "place: heeeeey ${view.tag} ,.., ${parent.getViewById(view.tag as Int)}"
-            )
         }
         return ViewParent(parent.getViewById(view.tag as Int), parent)
     }
@@ -89,10 +79,10 @@ class ConstraintLayoutViewWrapper(
     }
 }
 
-class ViewGroupViewWrapper(val view: View, val layout: Int) : ViewWrapper() {
+class ViewGroupViewWrapper(val view: View, val layout: Int, private val parent: ViewGroup) :
+    ViewWrapper() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun place(): ViewParent {
-        val parent = view.parent as ViewGroup
         if (view.tag == null) {
             val layout = inflateLayout(parent, layout)
             layout.startAnimation(AnimationUtils.loadAnimation(layout.context, R.anim.fade_in))
@@ -114,18 +104,23 @@ private fun typeHandler(view: View, layout: Int): ViewWrapper = when (view) {
     else -> {
         if (view.parent is ConstraintLayout)
             ConstraintLayoutViewWrapper(view.parent as ConstraintLayout, view, layout)
-        else
-            ViewGroupViewWrapper(view, layout)
+        else {
+            val parent = if (view is ViewGroup)
+                view
+            else {
+                view.parent as ViewGroup
+            }
+            ViewGroupViewWrapper(view, layout, parent)
+        }
     }
 }
 
 fun getViewParent(
     view: View,
     progressType: ProgressType?,
-    layout: Int?,
     loadingViewType: ProgressType?,
 ): ViewParent {
-    val loadingLayout: Int = layout ?: when (progressType ?: loadingViewType) {
+    val loadingLayout = when (progressType ?: loadingViewType) {
         ProgressType.INDICATOR -> R.layout.loading_indicator
         ProgressType.SANDY_CLOCK -> R.layout.loading_sandy_clock
         ProgressType.LINEAR -> R.layout.loading_linear
@@ -134,7 +129,6 @@ fun getViewParent(
         ProgressType.BLUR_CIRCULAR -> R.layout.loading_blur_circular
         else -> R.layout.loading_circular
     }
-    Log.d("viewParent", "getViewParent: tedad")
     val placement = typeHandler(view, loadingLayout).place()
 //    var newView = placement.view
 //    if (newView == null) {

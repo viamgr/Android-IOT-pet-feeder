@@ -15,8 +15,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.viam.feeder.core.utility.dexter.PermissionContract
-import com.viam.feeder.core.utility.dexter.permissionContract
+import com.viam.feeder.core.utility.PermissionContract
+import com.viam.feeder.core.utility.permissionContract
 import com.viam.feeder.ui.wifi.Connectivity.isWifiConnected
 import javax.inject.Inject
 import javax.inject.Singleton

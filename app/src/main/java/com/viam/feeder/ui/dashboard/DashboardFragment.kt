@@ -14,7 +14,8 @@ import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.utility.convertSeconds
-import com.viam.feeder.core.utility.dexter.permissionContract
+import com.viam.feeder.core.utility.permissionContract
+import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.FragmentDashboardBinding
 import com.viam.feeder.ui.record.RecordFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,6 +43,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             vm = viewModel
         }
 
+        reactToTask(viewModel.feedingDurationTask)
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
             permissionResult.request(Manifest.permission.RECORD_AUDIO) {
