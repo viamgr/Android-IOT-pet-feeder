@@ -13,10 +13,14 @@ class ParameterCoroutineLiveTask<P, T>(
         return this
     }
 
-    override suspend fun run(parameter: P): LiveTask<T> {
+    private suspend fun run(parameter: P): LiveTask<T> {
         setParameter(parameter)
         run()
         return this
+    }
+
+    override suspend fun invoke(parameter: P): LiveTask<T> {
+        return run(parameter)
     }
 
 }

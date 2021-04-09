@@ -3,7 +3,6 @@ package com.part.livetaskcore.livatask
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.*
 import com.part.livetaskcore.connection.ConnectionManager
-import com.part.livetaskcore.utils.NoConnectionException
 import com.viam.resource.Resource
 import com.viam.resource.onError
 import com.viam.resource.onLoading
@@ -21,12 +20,14 @@ open class CoroutineLiveTask<T>(
     private var blockRunner: TaskRunner<T>? = null
     private var emittedSource: Emitted? = null
     private var connectionManager: ConnectionManager? = LiveTaskManager.getConnectionManager()
+    private var noConnectionInformer: NoConnectionInformer? =
+        LiveTaskManager.getNoConnectionInformer()
+    var autoRetry = true
     private var errorObserver: ErrorObserverCallback = LiveTaskManager.getErrorObserver()
     private var errorMapper: ErrorMapper = LiveTaskManager.getErrorMapper()
     private var onSuccessAction: (T?) -> Unit = {}
     private var onErrorAction: (Exception) -> Unit = {}
     private var onLoadingAction: (Any?) -> Unit = {}
-    var autoRetry = false
     var context: CoroutineContext? = null
 
     override fun runOn(coroutineContext: CoroutineContext?): LiveTask<T> {
@@ -85,7 +86,11 @@ open class CoroutineLiveTask<T>(
     }
 
     override fun cancel() {
-        blockRunner?.cancel()
+        if (blockRunner == null) {
+            handleResult(Resource.Error(CancellationException()))
+        } else {
+            blockRunner?.cancel()
+        }
     }
 
     internal suspend fun emitSource(source: LiveData<Resource<T>>): DisposableHandle {
@@ -133,7 +138,7 @@ open class CoroutineLiveTask<T>(
         }?.onError {
             it.printStackTrace()
             onErrorAction(it)
-            applyError()
+            applyError(it)
             if (it !is CancellationException)
                 setResult(Resource.Error(errorMapper.mapError((result as Resource.Error).exception)))
             else {
@@ -152,18 +157,16 @@ open class CoroutineLiveTask<T>(
         this.latestState = result
     }
 
-    private fun applyError() {
-        result()?.onError { exception ->
-            errorObserver.notifyError(ErrorEvent((exception)))
-            when (exception) {
-                is NoConnectionException -> {
-                    if (autoRetry) retryOnNetworkBack()
-                }
-                else -> {
-                    if (retryCounts <= retryAttempts && exception !is CancellationException) {
-                        retryCounts++
-                        this.retry()
-                    }
+    private fun applyError(exception: Exception) {
+        errorObserver.notifyError(ErrorEvent((exception)))
+        when {
+            noConnectionInformer?.invoke(exception) == true -> {
+                if (autoRetry) retryOnNetworkBack()
+            }
+            else -> {
+                if (retryCounts <= retryAttempts && exception !is CancellationException) {
+                    retryCounts++
+                    this.retry()
                 }
             }
         }

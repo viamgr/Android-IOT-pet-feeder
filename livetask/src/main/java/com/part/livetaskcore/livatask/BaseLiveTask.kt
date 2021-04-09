@@ -16,7 +16,6 @@ abstract class BaseLiveTask<T> : MediatorLiveData<LiveTask<T>>(), LiveTask<T> {
     var retryCounts = 1
     var retryAttempts = DEFAULT_RETRY_ATTEMPTS
     var latestState: Resource<T>? = null
-
     var cancelable = true
     var retryable = true
     override var loadingViewType = ProgressType.CIRCULAR
@@ -37,7 +36,7 @@ abstract class BaseLiveTask<T> : MediatorLiveData<LiveTask<T>>(), LiveTask<T> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun asLiveData(): LiveData<LiveTask<T>> = this as LiveData<LiveTask<T>>
+    override fun asLiveData(): LiveData<LiveTask<T>> = this
 
     override fun result() = latestState
 

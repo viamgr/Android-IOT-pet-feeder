@@ -287,7 +287,7 @@ class WebSocketApi(
                 onMessageReceived(FILE_SEND_FINISHED, SocketMessage::class.java)
                     .collect {
                         println(FILE_SEND_FINISHED)
-                        send(SocketTransfer.Progress(1F))
+//                        send(SocketTransfer.Progress(1F))
                         send(SocketTransfer.Success)
                         clear()
                     }
@@ -323,7 +323,7 @@ class WebSocketApi(
         return if (webSocket.send(toJson)) {
             this
         } else {
-            throw Exception("Failed to send")
+            throw FailedToSendException()
         }
     }
 
@@ -355,6 +355,8 @@ class WebSocketApi(
 
     private fun Flow<SocketTransfer>.wrap(): Flow<SocketTransfer> =
         handleErrors().map {
+            print("Transfer progress:")
+            println(it)
             _progress.emit(it)
             it
         }

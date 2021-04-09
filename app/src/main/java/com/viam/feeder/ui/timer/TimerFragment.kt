@@ -12,6 +12,7 @@ import com.google.android.material.tabs.TabLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
+import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.FragmentTimerBinding
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -24,7 +25,7 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
 
     private val viewModel: TimerViewModel by viewModels()
 
-    val controller = TimerController()
+    private val controller = TimerController()
         .also { timerController ->
             timerController.clickListener = { clockTimer ->
                 viewModel.removeTimer(clockTimer)
@@ -38,6 +39,7 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
             vm = viewModel
             clockList.setController(controller)
         }
+        reactToTask(viewModel.combined)
 
         viewModel.timerList.observe(viewLifecycleOwner, {
             controller.setData(it)

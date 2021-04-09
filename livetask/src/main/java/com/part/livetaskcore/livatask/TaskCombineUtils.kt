@@ -66,7 +66,7 @@ internal class CombinerBuilderImpl(
     }
 
     override fun autoRetry(bool: Boolean) {
-        target.setAutoRetry(bool)
+        target.setAutoRetryForAll(bool)
     }
 
     override fun errorMapper(errorMapper: ErrorMapper) {

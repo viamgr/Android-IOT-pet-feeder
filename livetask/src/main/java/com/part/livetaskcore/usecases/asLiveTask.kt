@@ -31,3 +31,19 @@ inline fun <P, R> ParameterFlow<P, R>.asLiveTask(
     }
     return liveTask
 }
+
+inline fun <P, R> ParameterResource<P, R>.asLiveTask(
+    crossinline builder: (LiveTaskBuilder<R>.() -> Unit) = {}
+): ParameterLiveTask<P, R> {
+    var liveTask: ParameterLiveTask<P, R>? = null
+    liveTask = parameterLiveTask {
+        builder.invoke(this)
+        val result: Resource<R> = try {
+            invoke(liveTask!!.getParameter())
+        } catch (e: Exception) {
+            Resource.Error(e)
+        }
+        emit(result)
+    }
+    return liveTask
+}

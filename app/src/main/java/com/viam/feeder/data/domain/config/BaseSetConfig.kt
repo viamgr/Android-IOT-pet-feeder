@@ -1,6 +1,6 @@
 package com.viam.feeder.data.domain.config
 
-import com.part.livetaskcore.usecases.FlowUseCase
+import com.viam.feeder.core.domain.FlowUseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.utility.toResource
 import com.viam.feeder.data.storage.JsonPreferences
@@ -19,9 +19,9 @@ abstract class BaseSetConfig<T>(
     private val webSocketApi: WebSocketApi,
     private val jsonPreferences: JsonPreferences,
 ) : FlowUseCase<T, SocketTransfer>(coroutinesDispatcherProvider.io) {
-    override suspend fun execute(params: T): Flow<Resource<SocketTransfer>> {
+    override fun execute(parameter: T): Flow<Resource<SocketTransfer>> {
         return flow {
-            setConfigField(params)
+            setConfigField(parameter)
             val inputStream = jsonPreferences.json.toString().byteInputStream()
             webSocketApi
                 .sendBinary(configFilePath, inputStream)

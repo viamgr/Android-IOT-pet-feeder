@@ -3,13 +3,17 @@ package com.part.livetaskcore
 import android.content.Context
 import com.part.livetaskcore.connection.ConnectionManager
 
+typealias NoConnectionInformer = (throwable: Throwable) -> Boolean
+
 object LiveTaskManager {
 
     private var connectionManager: ConnectionManager? = null
+    private var noConnectionInformer: NoConnectionInformer? = null
     private var errorMapper: ErrorMapper = ErrorMapperImpl()
     private var errorObserver: ErrorObserverCallback = ErrorObserver
 
     fun getConnectionManager() = connectionManager
+    fun getNoConnectionInformer(): NoConnectionInformer? = noConnectionInformer
     fun getErrorMapper() = errorMapper
     fun getErrorObserver() = errorObserver
 
@@ -31,22 +35,23 @@ object LiveTaskManager {
 
     class Builder {
 
-        private var connectionManager: ConnectionManager? = null
-        private var errorMapper: ErrorMapper? = null
-        private var errorObserver: ErrorObserverCallback? = null
-
         fun setUpConnectionManager(context: Context): Builder {
-            this.connectionManager = ConnectionManager(context)
+            connectionManager = ConnectionManager(context)
             return this
         }
 
         fun setErrorMapper(errorMapper: ErrorMapper): Builder {
-            this.errorMapper = errorMapper
+            LiveTaskManager.errorMapper = errorMapper
             return this
         }
 
         fun setErrorObserver(callback: ErrorObserverCallback): Builder {
-            this.errorObserver = callback
+            errorObserver = callback
+            return this
+        }
+
+        fun setNoConnectionInformer(checker: NoConnectionInformer): Builder {
+            noConnectionInformer = checker
             return this
         }
 

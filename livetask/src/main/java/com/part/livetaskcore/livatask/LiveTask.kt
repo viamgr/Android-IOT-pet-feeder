@@ -17,7 +17,7 @@ interface LiveTask<T> {
 }
 
 interface ParameterLiveTask<P, T> : LiveTask<T> {
+    suspend operator fun invoke(parameter: P): LiveTask<T>
     fun getParameter(): P
     fun setParameter(parameter: P): LiveTask<T>
-    suspend fun run(parameter: P): LiveTask<T>
 }

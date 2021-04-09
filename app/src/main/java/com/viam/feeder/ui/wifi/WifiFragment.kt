@@ -14,8 +14,12 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
+import com.thanosfisherman.wifiutils.WifiUtils
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener
 import com.viam.feeder.BR
 import com.viam.feeder.R
+import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
 import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
@@ -33,15 +37,9 @@ class WifiFragment : DialogFragment() {
     @Inject
     lateinit var connectionUtil: NetworkStatusObserver
 
-//    @Inject
-//    lateinit var wifiAutoConnect: WifiAutoConnect
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
-//        wifiAutoConnect.withContext(requireContext()).connect(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD) { connected ->
-//            if (connected) dismiss()
-//        }
     }
 
     override fun onCreateView(
@@ -57,6 +55,21 @@ class WifiFragment : DialogFragment() {
             }?.also {
                 binding = it
             }
+
+        WifiUtils.withContext(requireContext())
+            .connectWith(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
+            .setTimeout(40000)
+            .onConnectionResult(object : ConnectionSuccessListener {
+                override fun success() {
+                    dismiss()
+                }
+
+                override fun failed(errorCode: ConnectionErrorCode) {
+                    showWrongWifiDialog()
+                }
+            })
+            .start()
+
     }
 
     override fun onDismiss(dialog: DialogInterface) {

@@ -1,5 +1,6 @@
 package com.viam.feeder.core.domain
 
+import com.part.livetaskcore.usecases.ParameterResource
 import com.viam.resource.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -8,7 +9,8 @@ import timber.log.Timber
 /**
  * Executes business logic synchronously or asynchronously using Coroutines.
  */
-abstract class UseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) {
+abstract class UseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) :
+    ParameterResource<P, R> {
 
     /** Executes the use case asynchronously and returns a [Result].
      *
@@ -16,7 +18,7 @@ abstract class UseCase<in P, R>(private val coroutineDispatcher: CoroutineDispat
      *
      * @param parameters the input parameters to run the use case with
      */
-    suspend operator fun invoke(parameters: P): Resource<R> {
+    override suspend operator fun invoke(parameters: P): Resource<R> {
         return try {
             // Moving all use case's executions to the injected dispatcher
             // In production code, this is usually the Default dispatcher (background thread)

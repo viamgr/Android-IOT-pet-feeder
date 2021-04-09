@@ -2,7 +2,6 @@ package com.part.livetaskcore.livatask
 
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.ErrorObserverCallback
-import com.part.livetaskcore.utils.NoConnectionException
 import com.viam.resource.Resource
 import com.viam.resource.withResult
 import kotlinx.coroutines.*
@@ -39,7 +38,7 @@ class TaskCombiner(
                     if (this.value?.result() !is Resource.Error && result.exception !is CancellationException) {
 
                         when (result.exception) {
-                            is NoConnectionException, is CancellationException -> {
+                            is CancellationException -> {
                                 applyResult(task)
                             }
                             else -> {
@@ -140,7 +139,7 @@ class TaskCombiner(
         }
     }
 
-    fun setAutoRetry(bool: Boolean) {
+    fun setAutoRetryForAll(bool: Boolean) {
         taskList.forEach {
             it as CoroutineLiveTask
             it.autoRetry = bool
@@ -197,26 +196,6 @@ class TaskCombiner(
         @Suppress("UNCHECKED_CAST")
         this.latestState = task.result() as Resource<Any>?
         postValue(this)
-    }
-
-    fun printStats() {
-        var successes = 0
-        var failed = 0
-        var loading = 0
-        taskList.forEach { coroutineLiveTask ->
-            when (coroutineLiveTask.result()) {
-                is Resource.Success -> {
-                    successes++
-                }
-                is Resource.Error -> {
-                    failed++
-                }
-                is Resource.Loading -> {
-                    loading++
-                }
-            }
-        }
-        println("mmb successful: $successes failed :$failed loading :$loading all requests: ${taskList.size}")
     }
 
     override fun runOn(coroutineContext: CoroutineContext?): LiveTask<Any> {

@@ -9,6 +9,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.core.domain.utils.toMessage
+import com.viam.websocket.FailedToSendException
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,6 +32,10 @@ class MyApplication : MultiDexApplication() {
 
     private fun setupLiveTask() {
         LiveTaskManager.Builder()
+            .setNoConnectionInformer {
+                it is FailedToSendException || it.message.toString()
+                    .startsWith("Unable to resolve host")
+            }
             .setUpConnectionManager(this)
             .setErrorMapper { exception -> ViewException(exception.toMessage(this@MyApplication)) }
             .apply()

@@ -12,16 +12,22 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.thanosfisherman.wifiutils.WifiUtils
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode
+import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener
 import com.viam.feeder.R
+import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
 import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.utility.bindingAdapter.contentView
+import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.ActivityMainBinding
 import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import com.viam.feeder.ui.wifi.NetworkStatusObserver
+import com.viam.feeder.ui.wifi.WifiAutoConnect
 import com.viam.feeder.ui.wifi.WifiFragmentDirections
-import com.viam.resource.onLoading
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 
@@ -35,12 +41,35 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var networkStatusObserver: NetworkStatusObserver
 
+
+    @Inject
+    lateinit var wifiAutoConnect: WifiAutoConnect
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding.apply {
             lifecycleOwner = this@MainActivity
             setSupportActionBar(toolbar)
         }
+
+        WifiUtils.withContext(applicationContext)
+            .connectWith(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
+            .setTimeout(40000)
+            .onConnectionResult(object : ConnectionSuccessListener {
+                override fun success() {
+                    Toast.makeText(this@MainActivity, "SUCCESS!", LENGTH_SHORT).show()
+                }
+
+                override fun failed(errorCode: ConnectionErrorCode) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "EPIC FAIL!$errorCode",
+                        LENGTH_SHORT
+                    ).show()
+                }
+            })
+            .start()
 
         setupViews()
         networkStatusObserver
@@ -70,11 +99,7 @@ class MainActivity : AppCompatActivity() {
                   }
               }
           })*/
-        viewModel.downloadConfigProgress.asLiveData().observe(this) { liveTask ->
-            liveTask.result()?.onLoading { it: String? ->
-                print("downloadConfig")
-            }
-        }
+        reactToTask(viewModel.getConfigTask)
         viewModel.transferFileProgress.observe(this) {
             print("transfer")
             println(it)
@@ -84,10 +109,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         networkStatusObserver.stop()
-    }
-
-    private fun showMessage(message: String) {
-        Toast.makeText(this, message, LENGTH_SHORT).show()
     }
 
     override fun onBackPressed() {

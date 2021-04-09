@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import javax.inject.Inject
 
+
 class WifiAutoConnect @Inject constructor() {
     private lateinit var context: Context
 
@@ -25,7 +26,7 @@ class WifiAutoConnect @Inject constructor() {
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network?) {
-                connectivityManager.unregisterNetworkCallback(this)
+//                connectivityManager.unregisterNetworkCallback(this)
                 resultListener?.invoke(true)
             }
 
@@ -36,9 +37,14 @@ class WifiAutoConnect @Inject constructor() {
         }
     }
 
-    fun connect(ssid: String, password: String?, resultListener: ((Boolean) -> Unit)? = null) {
+    fun startConnecting(
+        ssid: String,
+        password: String?,
+        resultListener: ((Boolean) -> Unit)? = null
+    ) {
         this.preferredWifiNetWorkSsid = ssid
         this.preferredWifiNetWorkPassword = password
+        this.resultListener = resultListener
         startListen()
     }
 
@@ -60,11 +66,13 @@ class WifiAutoConnect @Inject constructor() {
 
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .setNetworkSpecifier(specifier)
             .build()
 
-        connectivityManager.requestNetwork(request, networkCallback)
+        connectivityManager.requestNetwork(
+            request,
+            networkCallback
+        )
     }
 
     @Suppress("DEPRECATION")

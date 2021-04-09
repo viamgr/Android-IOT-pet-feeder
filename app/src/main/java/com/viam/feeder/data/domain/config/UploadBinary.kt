@@ -1,6 +1,6 @@
 package com.viam.feeder.data.domain.config
 
-import com.part.livetaskcore.usecases.FlowUseCase
+import com.viam.feeder.core.domain.FlowUseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.utility.toResource
 import com.viam.websocket.WebSocketApi
@@ -15,8 +15,8 @@ class UploadBinary @Inject constructor(
 ) : FlowUseCase<UploadBinary.UploadBinaryParams, SocketTransfer>(coroutinesDispatcherProvider.io) {
     data class UploadBinaryParams(val remotePath: String, val inputStream: InputStream)
 
-    override suspend fun execute(params: UploadBinaryParams) =
-        webSocketApi.sendBinary(params.remotePath, params.inputStream).map {
+    override fun execute(parameter: UploadBinaryParams) =
+        webSocketApi.sendBinary(parameter.remotePath, parameter.inputStream).map {
             it.toResource()
         }
 }

@@ -5,6 +5,8 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.part.livetaskcore.livatask.combine
+import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.constants.TIME_GET
 import com.viam.feeder.constants.TIME_IS
 import com.viam.feeder.constants.TIME_SET
@@ -17,18 +19,36 @@ import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.event.SendLongValue
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValueMessage
-import com.viam.resource.onSuccess
-import kotlinx.coroutines.flow.collect
 import java.util.*
 
 class TimerViewModel @ViewModelInject constructor(
     getAlarms: GetAlarms,
-    private val getTime: GetLongValue,
-    private val requestGetTime: SendEvent,
-    private val setAlarms: SetAlarms,
-    private val setTime: SendLongValue
+    onLongValue: GetLongValue,
+    requestGetTime: SendEvent,
+    setAlarms: SetAlarms,
+    setTime: SendLongValue
 ) : ViewModel() {
 
+    val setTimeTask = setTime.asLiveTask {
+        onSuccess { requestGetTime() }
+    }
+    private val setAlarmsTask = setAlarms.asLiveTask()
+    private val requestGetTimeTask = requestGetTime.asLiveTask()
+    private val onLongValueTask = onLongValue.asLiveTask {
+        onSuccess {
+            val timeInMillis = (it ?: 0) * 1000
+            val inDate = Date(timeInMillis)
+            _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
+            _time.value = DateFormat.format("h:mm", inDate).toString()
+            _ampm.value = DateFormat.format("aa", inDate).toString()
+        }
+    }
+    val combined = combine(
+        setTimeTask,
+        setAlarmsTask,
+        requestGetTimeTask,
+        onLongValueTask,
+    )
     private val _time = MutableLiveData("0:00")
     val time: LiveData<String> = _time
 
@@ -50,30 +70,24 @@ class TimerViewModel @ViewModelInject constructor(
     val timerMode: LiveData<Int> = _timerMode
 
     init {
-        requestTime()
+        setTimeListener().also {
+            requestGetTime()
+        }
     }
 
-    private fun requestTime() {
-        launchInScope {
-            getTime(TIME_IS).also {
-                requestGetTime(TIME_GET)
-            }.collect { resource ->
-                resource.onSuccess {
-                    val timeInMillis = (it ?: 0) * 1000
-                    val inDate = Date(timeInMillis)
-                    _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
-                    _time.value = DateFormat.format("h:mm", inDate).toString()
-                    _ampm.value = DateFormat.format("aa", inDate).toString()
-                }
-            }
-        }
+    private fun requestGetTime() = launchInScope {
+        requestGetTimeTask(TIME_GET)
+    }
+
+    private fun setTimeListener() = launchInScope {
+        onLongValueTask(TIME_IS)
     }
 
     fun removeTimer(timer: ClockTimer) = launchInScope {
         timerList.value?.let { list ->
             val newList = list.toMutableList()
             newList.removeAll { timer.id == it.id }
-            setAlarms(newList)
+            setAlarmsTask(newList)
         }
     }
 
@@ -82,35 +96,23 @@ class TimerViewModel @ViewModelInject constructor(
     }
 
     fun onTimeSet(timeInMillis: Long) = launchInScope {
-        setTime(KeyValueMessage(TIME_SET, (timeInMillis / 1000)))
-        launchInScope {
-            requestGetTime(TIME_GET)
-        }
+        setTimeTask(KeyValueMessage(TIME_SET, (timeInMillis / 1000)))
     }
 
     fun onAddTime(newHour: Int, newMinute: Int) = launchInScope {
-        timerList.value?.let { it ->
+        (timerList.value ?: emptyList()).let {
             val newList = it.toMutableList()
             newList.add(ClockTimer(hour = newHour, minute = newMinute))
-            setAlarms(newList)
+            setAlarmsTask(newList)
         }
-
     }
 
     fun onTimeSettingClicked() {
         _showTimeSettingMenu.value = Event(Unit)
     }
 
-/*
-    fun onTabChanged(position: Int?) {
-        _timerMode.value = if (position == 0) TIMER_MODE_SCHEDULING else TIMER_MODE_PERIODIC
-    }
-*/
-
-
     companion object {
         const val TIMER_MODE_SCHEDULING = 0
-//        const val TIMER_MODE_PERIODIC = 1
     }
 
 }

@@ -43,7 +43,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
             vm = viewModel
         }
 
-        reactToTask(viewModel.feedingDurationTask)
+        reactToTask(viewModel.combinedTasks)
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
             permissionResult.request(Manifest.permission.RECORD_AUDIO) {

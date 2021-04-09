@@ -1,6 +1,6 @@
 package com.viam.feeder.data.domain.config
 
-import com.part.livetaskcore.usecases.FlowUseCase
+import com.viam.feeder.core.domain.FlowUseCase
 import com.viam.feeder.core.network.CoroutinesDispatcherProvider
 import com.viam.feeder.core.utility.toResource
 import com.viam.resource.Resource
@@ -14,8 +14,8 @@ open class DownloadBinary(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     private val webSocketApi: WebSocketApi,
 ) : FlowUseCase<DownloadBinary.DownloadBinaryParams, SocketTransfer>(coroutinesDispatcherProvider.io) {
-    override suspend fun execute(params: DownloadBinaryParams): Flow<Resource<SocketTransfer>> {
-        return webSocketApi.receiveBinary(params.remotePath, params.outputStream).map {
+    override fun execute(parameter: DownloadBinaryParams): Flow<Resource<SocketTransfer>> {
+        return webSocketApi.receiveBinary(parameter.remotePath, parameter.outputStream).map {
             it.toResource()
         }
     }

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.R
 import com.viam.feeder.constants.EVENT_COMPOSITE_FEEDING
@@ -19,20 +20,36 @@ import com.viam.feeder.data.domain.specification.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
-import kotlinx.coroutines.flow.collect
 import java.io.InputStream
 
 class DashboardViewModel @ViewModelInject constructor(
     getFeedingDurationVolume: GetFeedingDuration,
     getSoundVolume: GetSoundVolume,
     getLedTurnOffDelay: GetLedTurnOffDelay,
-    private val convertUploadSound: ConvertUploadSound,
-    private val uploadBinary: UploadBinary,
-    private val sendEvent: SendEvent,
-    private val setFeedingDuration: SetFeedingDuration,
-    private val setSoundVolume: SetSoundVolume,
-    private val setLedTurnOffDelay: SetLedTurnOffDelay
+    convertUploadSound: ConvertUploadSound,
+    uploadBinary: UploadBinary,
+    setFeedingDuration: SetFeedingDuration,
+    setSoundVolume: SetSoundVolume,
+    sendEvent: SendEvent,
+    setLedTurnOffDelay: SetLedTurnOffDelay
 ) : ViewModel() {
+
+    private val uploadBinaryTask = uploadBinary.asLiveTask()
+    private val feedingDurationTask = setFeedingDuration.asLiveTask()
+    private val soundLiveTask = setSoundVolume.asLiveTask()
+    private val convertUploadSoundTask = convertUploadSound.asLiveTask()
+    private val setLedTurnOffDelayTask = setLedTurnOffDelay.asLiveTask()
+    private val sendEventTask = sendEvent.asLiveTask()
+
+    val combinedTasks = combine(
+        uploadBinaryTask,
+        feedingDurationTask,
+        soundLiveTask,
+        convertUploadSoundTask,
+        setLedTurnOffDelayTask,
+        sendEventTask,
+    )
+
     private val _feedSounds = MutableLiveData(
         listOf(
             "From Your Phone",
@@ -105,22 +122,10 @@ class DashboardViewModel @ViewModelInject constructor(
     val feedVolumeList: LiveData<List<FeedVolume>> = _feedVolumeList
     val soundVolumeList: LiveData<List<SoundVolume>> = _soundVolumeList
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
-    val feedingDurationTask = setFeedingDuration.asLiveTask {
-        onLoading {
-            println(it)
-        }
-        onSuccess {
-            println(it)
-        }
-        onError {
-            it.printStackTrace()
-            println(it)
-        }
-    }
+
 
     fun onFeedingVolumeClicked(position: Int) = launchInScope {
-        feedingDurationTask.run(_feedVolumeList.value!![position].duration)
-//        setFeedingDurationVolume(_feedVolumeList.value!![position].duration).collect()
+        feedingDurationTask(_feedVolumeList.value!![position].duration)
     }
 
     fun onFeedSoundItemClicked(position: Int) {
@@ -132,7 +137,7 @@ class DashboardViewModel @ViewModelInject constructor(
     }
 
     fun onGetInputStream(inputStream: InputStream) = launchInScope {
-        uploadBinary(UploadBinary.UploadBinaryParams(FEEDING_SOUND, inputStream)).collect()
+        uploadBinaryTask(UploadBinary.UploadBinaryParams(FEEDING_SOUND, inputStream))
     }
 
     private fun getAudioFileByPosition(position: Int): Int {
@@ -143,38 +148,35 @@ class DashboardViewModel @ViewModelInject constructor(
         }
     }
 
-    val soundLiveTask = setSoundVolume.asLiveTask()
     fun onSoundVolumeChanged(value: Int) = launchInScope {
-        soundLiveTask.run(_soundVolumeList.value!![value].value)
+        soundLiveTask(_soundVolumeList.value!![value].value)
     }
 
+
     fun onSoundFilePicked(filePath: String) = launchInScope {
-        convertUploadSound(
-            ConvertUploadSound.ConvertUploadSoundParams(
-                FEEDING_SOUND,
-                filePath
-            )
-        ).collect()
+        convertUploadSoundTask(
+            ConvertUploadSound.ConvertUploadSoundParams(FEEDING_SOUND, filePath)
+        )
     }
 
     fun onLedTimerItemClickListener(position: Int) = launchInScope {
-        setLedTurnOffDelay(_ledTimerList.value!![position].value)
+        setLedTurnOffDelayTask(_ledTimerList.value!![position].value)
     }
 
     fun sendCompositeFeedingEvent() = launchInScope {
-        sendEvent(EVENT_COMPOSITE_FEEDING)
+        sendEventTask(EVENT_COMPOSITE_FEEDING)
     }
 
     fun sendLightEvent() = launchInScope {
-        sendEvent(EVENT_LED_TIMER)
+        sendEventTask(EVENT_LED_TIMER)
     }
 
     fun sendFeedingEvent() = launchInScope {
-        sendEvent(EVENT_FEEDING)
+        sendEventTask(EVENT_FEEDING)
     }
 
     fun sendCallingEvent() = launchInScope {
-        sendEvent(EVENT_PLAY_FEEDING_AUDIO)
+        sendEventTask(EVENT_PLAY_FEEDING_AUDIO)
     }
 
     companion object {

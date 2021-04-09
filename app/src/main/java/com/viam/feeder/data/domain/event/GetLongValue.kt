@@ -16,9 +16,9 @@ class GetLongValue @Inject constructor(
     private val webSocketApi: WebSocketApi
 ) : FlowUseCase<String, Long>(coroutinesDispatcherProvider.io) {
 
-    override fun execute(parameters: String) =
+    override fun execute(parameter: String) =
         webSocketApi.onMessageReceived<KeyValueMessage<Long>>(
-            parameters,
+            parameter,
             Types.newParameterizedType(KeyValueMessage::class.java, Long::class.javaObjectType)
         ).map {
             Resource.Success(it.value)

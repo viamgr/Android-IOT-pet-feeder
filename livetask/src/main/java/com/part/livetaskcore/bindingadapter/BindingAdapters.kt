@@ -7,7 +7,6 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LifecycleOwner
 import com.part.livetaskcore.livatask.LiveTask
-import com.part.livetaskcore.livatask.ParameterLiveTask
 import com.viam.resource.Resource
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -37,7 +36,7 @@ fun View.reactToTask(
     }
 }
 
-fun View.reactToTask(liveTask: ParameterLiveTask<*, *>, viewLifecycleOwner: LifecycleOwner) {
+fun View.reactToTask(liveTask: LiveTask<*>, viewLifecycleOwner: LifecycleOwner) {
     liveTask.asLiveData().observe(viewLifecycleOwner) {
         reactToTask(it, it.loadingViewType)
     }
