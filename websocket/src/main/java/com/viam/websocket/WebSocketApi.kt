@@ -141,6 +141,7 @@ class WebSocketApi(
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosing(webSocket, code, reason)
+                isOpened = false
                 println("onClosing socket")
                 myLaunch {
                     _events.emit(SocketEvent.Closing)
@@ -158,6 +159,7 @@ class WebSocketApi(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
+                isOpened = false
                 println("onFailure socket")
                 myLaunch {
                     _events.emit(SocketEvent.Failure)
@@ -340,6 +342,7 @@ class WebSocketApi(
     }
 
     private fun sendMessage(toJson: String): Boolean {
+        println("isOpened:$isOpened")
         return when {
             !isOpened -> {
                 throw SocketCloseException()

@@ -45,7 +45,7 @@ class JsonPreferences @Inject constructor(
     }
 
     fun resetFromTemp() {
-        json = saveJson
+        json = JSONObject(saveJson.toString())
     }
 }
 

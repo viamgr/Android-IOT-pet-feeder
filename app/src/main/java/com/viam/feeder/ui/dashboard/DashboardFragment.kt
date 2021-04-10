@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.part.livetaskcore.bindingadapter.reactToTask
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
@@ -45,7 +44,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
         }
 
         reactToTask(viewModel.combinedTasks)
-        binding.dashboardRoot.reactToTask(viewModel.combinedTasks, viewLifecycleOwner)
 
         viewModel.openRecordDialog.observe(viewLifecycleOwner, EventObserver {
             permissionResult.request(Manifest.permission.RECORD_AUDIO) {
