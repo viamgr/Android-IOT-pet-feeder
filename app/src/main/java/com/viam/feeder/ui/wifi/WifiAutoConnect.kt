@@ -25,7 +25,7 @@ class WifiAutoConnect @Inject constructor() {
     private val networkCallback by lazy {
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network?) {
+            override fun onAvailable(network: Network) {
 //                connectivityManager.unregisterNetworkCallback(this)
                 resultListener?.invoke(true)
             }

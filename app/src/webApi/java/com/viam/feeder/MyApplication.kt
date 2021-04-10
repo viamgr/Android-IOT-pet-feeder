@@ -7,9 +7,10 @@ import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.facebook.soloader.SoLoader
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.part.livetaskcore.LiveTaskManager
+import com.part.livetaskcore.MultipleNoConnectionInformer
 import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.core.domain.utils.toMessage
-import com.viam.websocket.FailedToSendException
+import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
@@ -18,6 +19,15 @@ import javax.inject.Inject
 class MyApplication : MultiDexApplication() {
     @Inject
     lateinit var networkFlipperPlugin: NetworkFlipperPlugin
+
+    @Inject
+    lateinit var webSocketApi: WebSocketApi
+
+    @Inject
+    lateinit var liveTaskManager: LiveTaskManager
+
+    @Inject
+    lateinit var multipleNoConnectionInformer: MultipleNoConnectionInformer
 
     companion object {
         var mFirebaseAnalytics: FirebaseAnalytics? = null
@@ -31,12 +41,8 @@ class MyApplication : MultiDexApplication() {
     }
 
     private fun setupLiveTask() {
-        LiveTaskManager.Builder()
-            .setNoConnectionInformer {
-                it is FailedToSendException || it.message.toString()
-                    .startsWith("Unable to resolve host")
-            }
-            .setUpConnectionManager(this)
+        liveTaskManager.Builder()
+            .setNoConnectionInformer(multipleNoConnectionInformer)
             .setErrorMapper { exception -> ViewException(exception.toMessage(this@MyApplication)) }
             .apply()
     }

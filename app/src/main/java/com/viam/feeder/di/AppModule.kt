@@ -1,7 +1,12 @@
 package com.viam.feeder.di
 
 import android.content.Context
+import com.part.livetaskcore.LiveTaskManager
+import com.part.livetaskcore.MultipleNoConnectionInformer
+import com.part.livetaskcore.WebConnectionChecker
+import com.part.livetaskcore.connection.ConnectionManager
 import com.squareup.moshi.Moshi
+import com.viam.feeder.SocketConnectionChecker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +24,29 @@ class AppModule {
     @Provides
     @Singleton
     fun provideMoshi() = Moshi.Builder().build()
+
+    @Provides
+    @Singleton
+    fun provideLiveTaskManager() = LiveTaskManager()
+
+    @Provides
+    @Singleton
+    fun provideConnectionManager(@ApplicationContext context: Context) = ConnectionManager(context)
+
+    @Provides
+    @Singleton
+    fun provideWebConnectionChecker(connectionManager: ConnectionManager) =
+        WebConnectionChecker(connectionManager)
+
+    @Provides
+    @Singleton
+    fun provideMultipleNoConnectionInformer(
+        socketConnectionChecker: SocketConnectionChecker,
+        webConnectionChecker: WebConnectionChecker
+    ) = MultipleNoConnectionInformer(
+        socketConnectionChecker,
+        webConnectionChecker
+    )
 
     @Provides
     @Singleton

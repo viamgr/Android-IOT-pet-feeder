@@ -2,7 +2,6 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.*
-import com.part.livetaskcore.connection.ConnectionManager
 import com.viam.resource.Resource
 import com.viam.resource.onError
 import com.viam.resource.onLoading
@@ -14,17 +13,17 @@ import kotlin.coroutines.EmptyCoroutineContext
 internal const val DEFAULT_TIMEOUT = 100L
 
 open class CoroutineLiveTask<T>(
-    open val block: suspend LiveTaskBuilder<T>.() -> Unit = {}
+    open val block: suspend LiveTaskBuilder<T>.() -> Unit = {},
+    liveTaskManager: LiveTaskManager = LiveTaskManager.instance
 ) : BaseLiveTask<T>() {
 
     private var blockRunner: TaskRunner<T>? = null
     private var emittedSource: Emitted? = null
-    private var connectionManager: ConnectionManager? = LiveTaskManager.getConnectionManager()
     private var noConnectionInformer: NoConnectionInformer? =
-        LiveTaskManager.getNoConnectionInformer()
+        liveTaskManager.getNoConnectionInformer()
     var autoRetry = true
-    private var errorObserver: ErrorObserverCallback = LiveTaskManager.getErrorObserver()
-    private var errorMapper: ErrorMapper = LiveTaskManager.getErrorMapper()
+    private var errorObserver: ErrorObserverCallback? = liveTaskManager.getErrorObserver()
+    private var errorMapper: ErrorMapper? = liveTaskManager.getErrorMapper()
     private var onSuccessAction: (T?) -> Unit = {}
     private var onErrorAction: (Exception) -> Unit = {}
     private var onLoadingAction: (Any?) -> Unit = {}
@@ -39,6 +38,7 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun run(coroutineContext: CoroutineContext): CoroutineLiveTask<T> {
+        unRegisterConnectionInformer()
         handleResult(Resource.Loading())
         val supervisorJob = SupervisorJob(coroutineContext[Job])
         context = Dispatchers.IO + coroutineContext + supervisorJob
@@ -54,20 +54,6 @@ open class CoroutineLiveTask<T>(
         return this
     }
 
-    private fun retryOnNetworkBack() {
-        connectionManager?.let {
-            this.removeSource(it)
-            this.addSource(it) { hasConnection ->
-                if (hasConnection) {
-                    retry()
-                }
-            }
-        } ?: run {
-            throw Exception("ConnectionManager has not been initialized. You must set up this class in your Application class or set autoRetry to false")
-        }
-
-    }
-
     override fun onActive() {
         super.onActive()
         blockRunner?.maybeRun()
@@ -79,10 +65,11 @@ open class CoroutineLiveTask<T>(
     }
 
     override fun retry() {
-        connectionManager?.let {
-            this.removeSource(it)
-        }
         run(context!!)
+    }
+
+    private fun unRegisterConnectionInformer() {
+        noConnectionInformer?.unregister(this)
     }
 
     override fun cancel() {
@@ -138,13 +125,16 @@ open class CoroutineLiveTask<T>(
         }?.onError {
             it.printStackTrace()
             onErrorAction(it)
-            broadcastError(it)
             if (it !is CancellationException)
-                setResult(Resource.Error(errorMapper.mapError((result as Resource.Error).exception)))
+                setResult(
+                    Resource.Error(
+                        errorMapper?.mapError((result as Resource.Error).exception) ?: it
+                    )
+                )
             else {
                 setResult(result)
             }
-
+            broadcastError(it)
         }?.onLoading<T, Any?> {
             onLoadingAction(it)
             setResult(result)
@@ -158,18 +148,14 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun broadcastError(exception: Exception) {
-        errorObserver.notifyError(ErrorEvent((exception)))
-        when {
-            noConnectionInformer?.invoke(exception) == true -> {
-                if (autoRetry) retryOnNetworkBack()
-            }
-            else -> {
-                if (retryCounts <= retryAttempts && exception !is CancellationException) {
-                    retryCounts++
-                    this.retry()
-                }
+        errorObserver?.notifyError(ErrorEvent((exception)))
+        val canAutoRetry =
+            autoRetry && noConnectionInformer?.registerIfRetryable(exception, this) == true
+        if (!canAutoRetry) {
+            if (retryCounts <= retryAttempts && exception !is CancellationException) {
+                retryCounts++
+                this.retry()
             }
         }
     }
-
 }

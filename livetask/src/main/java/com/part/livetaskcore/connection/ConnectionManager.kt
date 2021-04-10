@@ -17,10 +17,15 @@ import androidx.lifecycle.LiveData
  * */
 class ConnectionManager(private val context: Context) : LiveData<Boolean>() {
 
+    private var onStatusChangeListener: ((isConnected: Boolean) -> Unit)? = null
     private var connectivityManager: ConnectivityManager =
         context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
     private lateinit var connectivityManagerCallback: ConnectivityManager.NetworkCallback
+
+    fun setOnStatusChangeListener(onStatusChangeListener: (isConnected: Boolean) -> Unit) {
+        this.onStatusChangeListener = onStatusChangeListener
+    }
 
     override fun onActive() {
         super.onActive()
@@ -91,6 +96,7 @@ class ConnectionManager(private val context: Context) : LiveData<Boolean>() {
     private fun updateConnection() {
         val activeNetwork = connectivityManager.activeNetworkInfo
         postValue(activeNetwork?.isConnected == true)
+        onStatusChangeListener?.invoke(activeNetwork?.isConnected == true)
     }
 
 

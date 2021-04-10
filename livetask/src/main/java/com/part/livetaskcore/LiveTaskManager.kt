@@ -1,29 +1,22 @@
 package com.part.livetaskcore
 
-import android.content.Context
-import com.part.livetaskcore.connection.ConnectionManager
+class LiveTaskManager {
 
-typealias NoConnectionInformer = (throwable: Throwable) -> Boolean
-
-object LiveTaskManager {
-
-    private var connectionManager: ConnectionManager? = null
     private var noConnectionInformer: NoConnectionInformer? = null
     private var errorMapper: ErrorMapper = ErrorMapperImpl()
     private var errorObserver: ErrorObserverCallback = ErrorObserver
 
-    fun getConnectionManager() = connectionManager
     fun getNoConnectionInformer(): NoConnectionInformer? = noConnectionInformer
     fun getErrorMapper() = errorMapper
     fun getErrorObserver() = errorObserver
 
     private fun applyItems(
-        connectionManager: ConnectionManager?,
+        noConnectionInformer: NoConnectionInformer?,
         errorMapper: ErrorMapper?,
         errorObserver: ErrorObserverCallback?
     ) {
-        connectionManager?.let {
-            this@LiveTaskManager.connectionManager = it
+        noConnectionInformer?.let {
+            this@LiveTaskManager.noConnectionInformer = it
         }
         errorMapper?.let {
             this@LiveTaskManager.errorMapper = it
@@ -31,17 +24,17 @@ object LiveTaskManager {
         errorObserver?.let {
             this@LiveTaskManager.errorObserver = it
         }
+        instance = this
     }
 
-    class Builder {
+    inner class Builder {
 
-        fun setUpConnectionManager(context: Context): Builder {
-            connectionManager = ConnectionManager(context)
-            return this
-        }
+        private var noConnectionInformer: NoConnectionInformer? = null
+        private var errorMapper: ErrorMapper? = null
+        private var errorObserver: ErrorObserverCallback? = null
 
         fun setErrorMapper(errorMapper: ErrorMapper): Builder {
-            LiveTaskManager.errorMapper = errorMapper
+            this.errorMapper = errorMapper
             return this
         }
 
@@ -56,7 +49,11 @@ object LiveTaskManager {
         }
 
         fun apply() {
-            applyItems(connectionManager, errorMapper, errorObserver)
+            applyItems(noConnectionInformer, errorMapper, errorObserver)
         }
+    }
+
+    companion object {
+        var instance = LiveTaskManager()
     }
 }

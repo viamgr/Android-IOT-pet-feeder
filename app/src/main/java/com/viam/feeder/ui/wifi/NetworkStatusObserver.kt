@@ -35,19 +35,21 @@ class NetworkStatusObserver @Inject constructor() {
     private val networkCallback =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             object : ConnectivityManager.NetworkCallback() {
-                override fun onLost(network: Network?) {
+                override fun onLost(network: Network) {
+                    super.onLost(network)
                     setStatus(false)
+
                 }
 
                 override fun onUnavailable() {
                     setStatus(false)
                 }
 
-                override fun onLosing(network: Network?, maxMsToLive: Int) {
+                override fun onLosing(network: Network, maxMsToLive: Int) {
                     setStatus(false)
                 }
 
-                override fun onAvailable(network: Network?) {
+                override fun onAvailable(network: Network) {
                     setStatus(true)
                 }
             }
@@ -94,7 +96,7 @@ class NetworkStatusObserver @Inject constructor() {
         startedNetworkListening = false
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                connectivityManager.unregisterNetworkCallback(networkCallback)
+                connectivityManager.unregisterNetworkCallback(networkCallback!!)
             } else {
                 activity.unregisterReceiver(wifiBroadcastReceiver)
             }
@@ -121,7 +123,7 @@ class NetworkStatusObserver @Inject constructor() {
 
             connectivityManager.registerNetworkCallback(
                 networkRequest,
-                networkCallback
+                networkCallback!!
             )
 
         } else {

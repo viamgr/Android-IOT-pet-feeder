@@ -14,12 +14,20 @@ import java.io.OutputStream
 import java.lang.reflect.ParameterizedType
 import kotlin.coroutines.CoroutineContext
 
+typealias ConnectionListener = (Boolean) -> Unit
+
 @Suppress("BlockingMethodInNonBlockingContext")
 class WebSocketApi(
     val okHttpClient: OkHttpClient,
     val moshi: Moshi,
     private val request: Request
 ) {
+    private var connectionListener: ConnectionListener? = null
+    var isOpened = false
+        set(value) {
+            field = value
+            connectionListener?.invoke(value)
+        }
 
     private val _events = MutableSharedFlow<SocketEvent>() // private mutable shared flow
     private val _progress =
@@ -102,11 +110,13 @@ class WebSocketApi(
             }
     }
 
+
     fun openWebSocket() {
 
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
+                isOpened = true
                 myLaunch {
                     _events.emit(SocketEvent.Open)
                 }
@@ -139,6 +149,7 @@ class WebSocketApi(
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosed(webSocket, code, reason)
+                isOpened = false
                 println("onClosed socket")
                 myLaunch {
                     _events.emit(SocketEvent.Closed)
@@ -313,17 +324,32 @@ class WebSocketApi(
     fun <T> sendJson(message: T, clazz: ParameterizedType): WebSocketApi {
         val toJson = moshi.adapter<T>(clazz).toJson(message)
         println("send text $toJson")
-        webSocket.send(toJson)
+        sendMessage(toJson)
         return this
     }
 
     fun <T> sendJson(message: T, clazz: Class<T>): WebSocketApi {
         val toJson = moshi.adapter(clazz).toJson(message)
         println("send text $toJson")
-        return if (webSocket.send(toJson)) {
-            this
-        } else {
-            throw FailedToSendException()
+        sendMessage(toJson)
+        return this
+    }
+
+    fun setOnConnectionChangedListener(listener: ConnectionListener) {
+        this.connectionListener = listener
+    }
+
+    private fun sendMessage(toJson: String): Boolean {
+        return when {
+            !isOpened -> {
+                throw SocketCloseException()
+            }
+            webSocket.send(toJson) -> {
+                true
+            }
+            else -> {
+                throw FailedToSendException()
+            }
         }
     }
 

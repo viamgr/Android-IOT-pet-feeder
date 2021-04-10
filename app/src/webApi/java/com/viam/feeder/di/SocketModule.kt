@@ -1,5 +1,7 @@
 package com.viam.feeder.di
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.squareup.moshi.Moshi
 import com.viam.websocket.WebSocketApi
 import dagger.Module
@@ -44,6 +46,18 @@ class SocketModule {
         request: Request
     ): WebSocketApi {
         return WebSocketApi(okHttpClient, moshi, request)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLiveData(
+        webSocketApi: WebSocketApi
+    ): LiveData<Boolean> {
+        val a = MutableLiveData<Boolean>(false)
+        webSocketApi.setOnConnectionChangedListener {
+            a.value = it
+        }
+        return a
     }
 
     companion object {

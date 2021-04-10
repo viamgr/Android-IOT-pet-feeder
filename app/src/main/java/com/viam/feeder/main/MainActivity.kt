@@ -3,7 +3,6 @@ package com.viam.feeder.main
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.postDelayed
@@ -12,19 +11,12 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
-import com.thanosfisherman.wifiutils.WifiUtils
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode
-import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener
 import com.viam.feeder.R
-import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
-import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.ActivityMainBinding
-import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import com.viam.feeder.ui.wifi.WifiAutoConnect
-import com.viam.feeder.ui.wifi.WifiFragmentDirections
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -53,26 +45,8 @@ class MainActivity : AppCompatActivity() {
             setSupportActionBar(toolbar)
         }
 
-        WifiUtils.withContext(applicationContext)
-            .connectWith(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
-            .setTimeout(40000)
-            .onConnectionResult(object : ConnectionSuccessListener {
-                override fun success() {
-                    Toast.makeText(this@MainActivity, "SUCCESS!", LENGTH_SHORT).show()
-                }
-
-                override fun failed(errorCode: ConnectionErrorCode) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "EPIC FAIL!$errorCode",
-                        LENGTH_SHORT
-                    ).show()
-                }
-            })
-            .start()
-
         setupViews()
-        networkStatusObserver
+       /* networkStatusObserver
             .withActivity(this)
             .onPermissionCallback {
                 viewModel.askedWifiPermissions.set(true)
@@ -86,7 +60,7 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(WifiFragmentDirections.toWifiFragment(true))
                 }
             }
-            .start()
+            .start()*/
 
         /*  TaskEventLogger.events.observe(this, EventObserver { resource ->
               resource?.onError {
