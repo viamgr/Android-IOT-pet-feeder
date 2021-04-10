@@ -138,7 +138,7 @@ open class CoroutineLiveTask<T>(
         }?.onError {
             it.printStackTrace()
             onErrorAction(it)
-            applyError(it)
+            broadcastError(it)
             if (it !is CancellationException)
                 setResult(Resource.Error(errorMapper.mapError((result as Resource.Error).exception)))
             else {
@@ -157,7 +157,7 @@ open class CoroutineLiveTask<T>(
         this.latestState = result
     }
 
-    private fun applyError(exception: Exception) {
+    private fun broadcastError(exception: Exception) {
         errorObserver.notifyError(ErrorEvent((exception)))
         when {
             noConnectionInformer?.invoke(exception) == true -> {

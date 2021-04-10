@@ -4,7 +4,6 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -73,7 +72,6 @@ class ConstraintLayoutViewWrapper(
             view.id,
             ConstraintSet.START
         )
-        layout.startAnimation(AnimationUtils.loadAnimation(layout.context, R.anim.fade_in))
         parent.addView(layout)
         constraintSet.applyTo(parent)
     }
@@ -85,7 +83,6 @@ class ViewGroupViewWrapper(val view: View, val layout: Int, private val parent: 
     override fun place(): ViewParent {
         if (view.tag == null) {
             val layout = inflateLayout(parent, layout)
-            layout.startAnimation(AnimationUtils.loadAnimation(layout.context, R.anim.fade_in))
             parent.addView(layout)
             layout.translationZ = 10F
             layout.bringToFront()

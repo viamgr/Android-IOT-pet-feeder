@@ -24,19 +24,19 @@ import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
-import com.viam.feeder.ui.wifi.Connectivity.isUnknownOrKnownWifiConnection
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class WifiFragment : DialogFragment() {
 
+
     private lateinit var binding: FragmentWifiBinding
-    private val viewModel: WifiViewModel by viewModels()
 
     @Inject
     lateinit var connectionUtil: NetworkStatusObserver
-
+    private val viewModel: WifiViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setStyle(STYLE_NORMAL, R.style.FullScreenDialogStyle)
@@ -55,21 +55,8 @@ class WifiFragment : DialogFragment() {
             }?.also {
                 binding = it
             }
-
-        WifiUtils.withContext(requireContext())
-            .connectWith(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
-            .setTimeout(40000)
-            .onConnectionResult(object : ConnectionSuccessListener {
-                override fun success() {
-                    dismiss()
-                }
-
-                override fun failed(errorCode: ConnectionErrorCode) {
-                    showWrongWifiDialog()
-                }
-            })
-            .start()
-
+        turnOnWifi()
+        autoConnect()
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -77,7 +64,6 @@ class WifiFragment : DialogFragment() {
 //        wifiAutoConnect.stop()
         (requireActivity() as MainActivity).setIsWifiDialogShowing(false)
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -89,14 +75,40 @@ class WifiFragment : DialogFragment() {
             }
         })
 
-        connectionUtil.observe(viewLifecycleOwner) {
+        /*connectionUtil.observe(viewLifecycleOwner) {
             val ignoredInitialValue = !viewModel.ignoredInitialValue.compareAndSet(false, true)
             val unknownOrKnownWifiConnection =
                 requireContext().isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
             if (ignoredInitialValue && unknownOrKnownWifiConnection) {
                 dismiss()
             }
-        }
+        }*/
+    }
+
+    fun autoConnect() {
+        WifiUtils.withContext(requireContext())
+            .connectWith(ACCESS_POINT_SSID, ACCESS_POINT_PASSWORD)
+            .setTimeout(40000)
+            .onConnectionResult(object : ConnectionSuccessListener {
+                override fun success() {
+                    dismiss()
+                }
+
+                override fun failed(errorCode: ConnectionErrorCode) {
+                    showWrongWifiDialog()
+                    autoConnect()
+                }
+            })
+            .start()
+    }
+
+    private fun checkResult(isSuccess: Boolean) {
+        if (isSuccess) Toast.makeText(requireContext(), "WIFI ENABLED", Toast.LENGTH_SHORT)
+            .show() else Toast.makeText(
+            requireContext(),
+            "COULDN'T ENABLE WIFI",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun showWrongWifiDialog() {
@@ -105,6 +117,10 @@ class WifiFragment : DialogFragment() {
             getString(R.string.wrong_connected, ACCESS_POINT_SSID),
             Toast.LENGTH_SHORT
         ).show()
-        dismiss()
+    }
+
+    private fun turnOnWifi() {
+        WifiUtils.withContext(requireContext()).enableWifi(this::checkResult);
+
     }
 }
