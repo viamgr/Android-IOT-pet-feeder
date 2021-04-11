@@ -19,7 +19,7 @@ abstract class FlowUseCase<in P, R>(private val coroutineDispatcher: CoroutineDi
     override operator fun invoke(parameter: P): Flow<Resource<R>> = execute(parameter)
         .catch { e ->
             e.printStackTrace()
-            emit(Resource.Error(Exception(e)))
+            emit(Resource.Error(e as Exception))
         }
         .flowOn(coroutineDispatcher)
 }

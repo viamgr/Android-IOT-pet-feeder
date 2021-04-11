@@ -62,6 +62,7 @@ open class CoroutineLiveTask<T>(
 
     override fun onInactive() {
         super.onInactive()
+        println("onInactive function")
         blockRunner?.cancel()
     }
 
@@ -74,6 +75,7 @@ open class CoroutineLiveTask<T>(
     }
 
     override fun cancel() {
+        println("cancel function")
         if (blockRunner == null) {
             handleResult(Resource.Error(CancellationException()))
         } else {
@@ -127,13 +129,11 @@ open class CoroutineLiveTask<T>(
         }?.onError {
             it.printStackTrace()
             onErrorAction(it)
-            if (it !is CancellationException)
-                setResult(
-                    Resource.Error(
-                        errorMapper?.mapError((result as Resource.Error).exception) ?: it
-                    )
-                )
-            else {
+            if (it !is CancellationException) {
+                println(("it !is CancellationException"))
+                setResult(Resource.Error(errorMapper?.mapError(it) ?: it))
+            } else {
+                println(("it is CancellationException"))
                 setResult(result)
             }
             broadcastError(it)
@@ -146,6 +146,7 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun setResult(result: Resource<T>) {
+        println("setResult: $result")
         this.latestState = result
     }
 

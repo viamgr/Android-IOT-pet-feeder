@@ -44,7 +44,12 @@ class MyApplication : MultiDexApplication() {
         println("multipleNoConnectionInformer:${multipleNoConnectionInformer.hashCode()}")
         liveTaskManager.Builder()
             .setNoConnectionInformer(multipleNoConnectionInformer)
-            .setErrorMapper { exception -> ViewException(exception.toMessage(this@MyApplication)) }
+            .setErrorMapper { exception ->
+                ViewException(
+                    exception.toMessage(this@MyApplication),
+                    exception
+                )
+            }
             .apply()
     }
 

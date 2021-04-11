@@ -275,8 +275,6 @@ class CircularLoading : State {
                     }
                 tv_error_circular.text = errorText
                 ivBtn_close_circular.setOnClickListener { _ ->
-//                    startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
-//                    view.tag = null
                     result.cancel()
                 }
                 if ((result as BaseLiveTask<*>).retryable) {

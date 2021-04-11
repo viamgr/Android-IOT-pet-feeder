@@ -60,6 +60,7 @@ internal class LiveTaskBuilderImpl<T>(
     override suspend fun emit(result: Resource<T>) {
         target.clearSource()
         withContext(coroutineContext) {
+            println("emit $result")
             target.handleResult(result)
         }
     }

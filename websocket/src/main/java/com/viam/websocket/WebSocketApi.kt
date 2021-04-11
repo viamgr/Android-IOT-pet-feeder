@@ -26,6 +26,9 @@ class WebSocketApi(
     private var isOpenedSocket = false
         set(value) {
             field = value
+            if (!value) {
+                cancelOldBinaryTransfer()
+            }
             connectionListener?.invoke(value)
         }
 
@@ -176,18 +179,17 @@ class WebSocketApi(
         remoteFilePath: String,
         outputStream: OutputStream
     ): Flow<SocketTransfer> {
+        cancelOldBinaryTransfer()
         println("Start Download: $remoteFilePath")
+
         fun clear() {
             binaryCoroutineContext = null
             outputStream.close()
         }
         return channelFlow {
-            cancelOldBinaryTransfer()
-
+            binaryCoroutineContext = currentCoroutineContext()
             fun onError(e: Throwable) {
                 e.printStackTrace()
-                clear()
-                cancel()
                 throw e
             }
 
@@ -243,33 +245,30 @@ class WebSocketApi(
                     }
             }
 
-        }.catch { e ->
+        }.onCompletion { e ->
             clear()
-            throw e
-        }.wrap()
+            println("onCompletion $e")
+        }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Suppress("BlockingMethodInNonBlockingContext")
     fun sendBinary(
         remoteFilePath: String,
-        inputStream: InputStream
+        inputStream: InputStream,
     ): Flow<SocketTransfer> {
+        cancelOldBinaryTransfer()
         var buffered: BufferedInputStream? = null
-        fun clear() {
-            binaryCoroutineContext?.cancel()
-            binaryCoroutineContext = null
+
+        fun close() {
             buffered?.close()
         }
+
         return channelFlow {
-            cancelOldBinaryTransfer()
+            binaryCoroutineContext = currentCoroutineContext()
+
             val size = inputStream.available()
             send(SocketTransfer.Start(size, TransferType.Upload))
-
-            suspend fun onError(e: Throwable) {
-                e.printStackTrace()
-                send(Result.failure<SocketTransfer>(e))
-                throw e
-            }
 
             CoroutineScope(currentCoroutineContext()).launch {
                 onMessageReceived(
@@ -293,8 +292,7 @@ class WebSocketApi(
                 onMessageReceived(FILE_SEND_ERROR, SocketMessage::class.java)
                     .collect {
                         println(FILE_SEND_ERROR)
-                        onError(Exception(FILE_SEND_ERROR))
-                        clear()
+                        throw(Exception(FILE_SEND_ERROR))
                     }
             }
             CoroutineScope(currentCoroutineContext()).launch {
@@ -303,7 +301,7 @@ class WebSocketApi(
                         println(FILE_SEND_FINISHED)
 //                        send(SocketTransfer.Progress(1F))
                         send(SocketTransfer.Success)
-                        clear()
+                        close()
                     }
             }
             CoroutineScope(currentCoroutineContext()).launch {
@@ -313,10 +311,10 @@ class WebSocketApi(
                 )
             }
 
-        }.catch { e ->
-            clear()
-            throw e
-        }.wrap()
+        }.onCompletion { e ->
+            close()
+            println("onCompletion $e")
+        }
     }
 
     fun sendByteString(message: ByteString) {
@@ -357,12 +355,9 @@ class WebSocketApi(
         }
     }
 
-    private suspend fun cancelOldBinaryTransfer() {
-        if (binaryCoroutineContext != null) {
+    private fun cancelOldBinaryTransfer() {
+        if (binaryCoroutineContext != null && binaryCoroutineContext?.isActive == true)
             binaryCoroutineContext?.cancel()
-        }
-
-        binaryCoroutineContext = currentCoroutineContext()
     }
 
     private fun Flow<SocketTransfer>.handleErrors(): Flow<SocketTransfer> = flow {
