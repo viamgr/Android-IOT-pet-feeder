@@ -3,7 +3,7 @@ package com.part.livetaskcore
 import com.part.livetaskcore.livatask.LiveTask
 
 class MultipleNoConnectionInformer(private vararg val informers: NoConnectionInformer) :
-    NoConnectionInformer({ }) {
+    NoConnectionInformerAAA {
     override fun isRetryable(throwable: Throwable): Boolean {
         return informers.any { it.isRetryable(throwable) }
     }
@@ -14,6 +14,10 @@ class MultipleNoConnectionInformer(private vararg val informers: NoConnectionInf
 
     override fun retryFailed(): Boolean {
         return informers.any { it.retryFailed() }
+    }
+
+    override fun unregister(liveTask: LiveTask<*>) {
+        informers.forEach { it.unregister(liveTask) }
     }
 
 }

@@ -4,7 +4,7 @@ import com.part.livetaskcore.livatask.LiveTask
 
 typealias ConnectionCallback = (callback: () -> Unit) -> Unit
 
-abstract class NoConnectionInformer(callback: ConnectionCallback) {
+abstract class NoConnectionInformer(callback: ConnectionCallback) : NoConnectionInformerAAA {
     init {
         callback.invoke {
             retryFailed()
@@ -13,19 +13,25 @@ abstract class NoConnectionInformer(callback: ConnectionCallback) {
 
     private val registers = mutableListOf<Pair<LiveTask<*>, Throwable>>()
 
-    open fun registerIfRetryable(throwable: Throwable, liveTask: LiveTask<*>): Boolean {
-        return if (isRetryable(throwable))
+    override fun registerIfRetryable(throwable: Throwable, liveTask: LiveTask<*>): Boolean {
+        val b = if (isRetryable(throwable))
             registers.add(Pair(liveTask, throwable))
         else false
+        println("registers:${registers.size} hashCode:${this@NoConnectionInformer.hashCode()} ")
+        return b
     }
 
-    abstract fun isRetryable(throwable: Throwable): Boolean
+    override fun unregister(liveTask: LiveTask<*>) {
+        registers.firstOrNull { it.first == liveTask }?.let {
+            registers.remove(it)
+        }
+        println("unregister:${registers.size} hashCode:${this@NoConnectionInformer.hashCode()}")
 
-    open fun unregister(liveTask: LiveTask<*>) {
-        registers.remove(liveTask)
     }
 
-    open fun retryFailed(): Boolean {
+    override fun retryFailed(): Boolean {
+        println("retryFailed register:${registers.size}  hashCode:${this@NoConnectionInformer.hashCode()}")
+
         return registers.firstOrNull {
             isRetryable(it.second)
         }?.let {

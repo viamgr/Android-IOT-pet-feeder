@@ -45,7 +45,7 @@ class AppModule {
         webConnectionChecker: WebConnectionChecker
     ) = MultipleNoConnectionInformer(
         socketConnectionChecker,
-        webConnectionChecker
+//        webConnectionChecker
     )
 
     @Provides

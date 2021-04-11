@@ -23,7 +23,7 @@ class WebSocketApi(
     private val request: Request
 ) {
     private var connectionListener: ConnectionListener? = null
-    var isOpened = false
+    private var isOpenedSocket = false
         set(value) {
             field = value
             connectionListener?.invoke(value)
@@ -116,11 +116,11 @@ class WebSocketApi(
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
-                isOpened = true
+                println("onOpen socket")
+                isOpenedSocket = true
                 myLaunch {
                     _events.emit(SocketEvent.Open)
                 }
-                println("onOpen socket")
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -141,7 +141,7 @@ class WebSocketApi(
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosing(webSocket, code, reason)
-                isOpened = false
+                isOpenedSocket = false
                 println("onClosing socket")
                 myLaunch {
                     _events.emit(SocketEvent.Closing)
@@ -150,7 +150,7 @@ class WebSocketApi(
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosed(webSocket, code, reason)
-                isOpened = false
+                isOpenedSocket = false
                 println("onClosed socket")
                 myLaunch {
                     _events.emit(SocketEvent.Closed)
@@ -159,7 +159,7 @@ class WebSocketApi(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
-                isOpened = false
+                isOpenedSocket = false
                 println("onFailure socket")
                 myLaunch {
                     _events.emit(SocketEvent.Failure)
@@ -176,6 +176,7 @@ class WebSocketApi(
         remoteFilePath: String,
         outputStream: OutputStream
     ): Flow<SocketTransfer> {
+        println("Start Download: $remoteFilePath")
         fun clear() {
             binaryCoroutineContext = null
             outputStream.close()
@@ -342,9 +343,9 @@ class WebSocketApi(
     }
 
     private fun sendMessage(toJson: String): Boolean {
-        println("isOpened:$isOpened")
+        println("isOpened:$isOpenedSocket")
         return when {
-            !isOpened -> {
+            !isOpenedSocket -> {
                 throw SocketCloseException()
             }
             webSocket.send(toJson) -> {

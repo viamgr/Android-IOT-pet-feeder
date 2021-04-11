@@ -29,7 +29,6 @@ class MainViewModel @ViewModelInject constructor(
             it.invoke(Unit)
 
             delay(2000)
-            webSocketApi.isOpened = true
 
         }
     }

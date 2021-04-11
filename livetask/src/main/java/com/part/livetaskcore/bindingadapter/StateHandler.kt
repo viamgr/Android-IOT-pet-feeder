@@ -41,12 +41,12 @@ enum class ProgressType {
 @OptIn(ExperimentalStdlibApi::class)
 fun ProgressType?.getState() =
     when (this) {
-        ProgressType.INDICATOR -> IndicatorLoading()
-        ProgressType.SANDY_CLOCK -> SandyClockLoading()
-        ProgressType.LINEAR -> LinearLoading()
-        ProgressType.CIRCULAR -> CircularLoading()
-        ProgressType.BOUNCING -> BouncingLoading()
-        ProgressType.BLUR_CIRCULAR -> BlurCircularLoading()
+//        ProgressType.INDICATOR -> IndicatorLoading()
+//        ProgressType.SANDY_CLOCK -> SandyClockLoading()
+//        ProgressType.LINEAR -> LinearLoading()
+//        ProgressType.CIRCULAR -> CircularLoading()
+//        ProgressType.BOUNCING -> BouncingLoading()
+//        ProgressType.BLUR_CIRCULAR -> BlurCircularLoading()
         else -> CircularLoading()
     }
 
@@ -275,9 +275,9 @@ class CircularLoading : State {
                     }
                 tv_error_circular.text = errorText
                 ivBtn_close_circular.setOnClickListener { _ ->
-                    startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
-                    view.tag = null
-                    parent.removeView(this)
+//                    startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
+//                    view.tag = null
+                    result.cancel()
                 }
                 if ((result as BaseLiveTask<*>).retryable) {
                     cl_container_circular.visibility = View.VISIBLE
@@ -322,7 +322,7 @@ class BouncingLoading : State {
                     ivBtn_close_bouncing.setOnClickListener { _ ->
                         startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
                         view.tag = null
-                        parent.removeView(it)
+                        result.cancel()
                     }
                     if ((result as BaseLiveTask<*>).retryable) {
                         cl_container_bouncing.visibility = View.VISIBLE
@@ -368,7 +368,7 @@ class BlurCircularLoading : State {
                     ivBtn_close_blur_circular.setOnClickListener { _ ->
                         startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
                         view.tag = null
-                        parent.removeView(it)
+                        result.cancel()
                     }
                     if ((result as BaseLiveTask<*>).retryable) {
                         cl_container_blur_circular.visibility = View.VISIBLE

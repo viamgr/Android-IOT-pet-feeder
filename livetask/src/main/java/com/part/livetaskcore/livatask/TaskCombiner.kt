@@ -2,6 +2,7 @@ package com.part.livetaskcore.livatask
 
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.ErrorObserverCallback
+import com.part.livetaskcore.LiveTaskManager
 import com.viam.resource.Resource
 import com.viam.resource.withResult
 import kotlinx.coroutines.*
@@ -12,11 +13,11 @@ import kotlin.coroutines.EmptyCoroutineContext
  * Combines multiple [LiveTask]s that executes on the given [block] and in the specified.
  * */
 class TaskCombiner(
-    vararg requests: LiveTask<*>,
-    val block: suspend CombinerBuilder.() -> Unit
+    private vararg val requests: LiveTask<*>,
+    val block: suspend CombinerBuilder.() -> Unit,
+    liveTaskManager: LiveTaskManager = LiveTaskManager.instance
 ) : BaseLiveTask<Any>() {
-
-    private var taskList = mutableListOf<LiveTask<*>>()
+    private var errorMapper: ErrorMapper? = liveTaskManager.getErrorMapper()
     private var combineRunner: CombineRunner? = null
     private var onSuccessAction: (Any?) -> Unit = {}
     private var onErrorAction: (Exception) -> Unit = {}
@@ -27,84 +28,58 @@ class TaskCombiner(
     }
 
     private fun addTaskAsSource(task: LiveTask<*>) {
-        taskList.add(task)
         val asLiveData = task.asLiveData()
-        this.addSource(asLiveData) { liveTask ->
-            when (val result = liveTask.result()) {
-                is Resource.Success -> {
-                    checkIsThereAnyUnSuccess()
-                }
-                is Resource.Error -> {
-                    if (this.value?.result() !is Resource.Error && result.exception !is CancellationException) {
-
-                        when (result.exception) {
-                            is CancellationException -> {
-                                applyResult(task)
-                            }
-                            else -> {
-                                @Suppress("UNCHECKED_CAST")
-                                task as BaseLiveTask<Any>
-                                if ((task).retryCounts > task.retryAttempts) {
-                                    applyResult(task.result())
-                                }
-                            }
-                        }
-                    } else {
-                        checkIsThereAnyUnSuccess()
+        this.addSource(asLiveData) {
+            var cancelCount = 0
+            var successCount = 0
+            var loadingCount = 0
+            val exceptions = mutableListOf<Exception>()
+            requests.forEach {
+                val result = it.result()
+                if (result is Resource.Error) {
+                    if (result.exception !is CancellationException)
+                        exceptions.add(result.exception)
+                    else {
+                        cancelCount++
                     }
-                }
-                is Resource.Loading -> {
-                    when (this.value?.result()) {
-                        is Resource.Error -> {
-                            setLoadingIfNoErrorLeft()
-                        }
-                        is Resource.Success<*> -> {
-                            applyResult(Resource.Loading())
-                        }
-                        is Resource.Loading -> {
-                        }
-                        else -> {
-                            applyResult(Resource.Loading())
-                        }
-                    }
+                } else if (result is Resource.Success) {
+                    successCount++
+                } else if (result is Resource.Loading) {
+                    loadingCount++
+                } else {
+                    cancelCount++
                 }
             }
-        }
-    }
 
-    private fun setLoadingIfNoErrorLeft() {
-        val hasError = taskList.any {
-            it.result() is Resource.Error && (it.result() as Resource.Error).exception !is CancellationException
-        }
-        if (!hasError) {
-            applyResult(Resource.Loading())
-        }
-    }
 
-    private fun checkIsThereAnyUnSuccess() {
-        val anyRequestLeft = taskList.any {
-            it.result() is Resource.Loading || (it.result() is Resource.Error && (it.result() as Resource.Error).exception !is CancellationException)
-        }
-        if (!anyRequestLeft) {
-            applyResult(Resource.Success(Any()))
-        } else {
-            if (this.value?.result() is Resource.Loading) {
-                val oneOfErrors = taskList.find { coroutineLiveTask ->
-                    coroutineLiveTask.result() is Resource.Error && (coroutineLiveTask.result() as Resource.Error).exception !is CancellationException
+            println("progress: successCount:$successCount loadingCount:$loadingCount cancelCount:$cancelCount exceptions:${exceptions.size} exceptions:$exceptions")
+            when {
+                exceptions.isNotEmpty() -> {
+                    val exception = CombinedException(exceptions)
+                    applyResult(Resource.Error(errorMapper?.mapError(exception) ?: exception))
                 }
-                oneOfErrors?.let {
-                    applyResult(it)
+                successCount == requests.size -> {
+                    applyResult(Resource.Success(null))
+                }
+                cancelCount == requests.size -> {
+                    applyResult(Resource.Error(CancellationException()))
+                }
+                loadingCount > 0 -> {
+                    applyResult(Resource.Loading(null))
+                }
+                else -> {
+                    applyResult(Resource.Error(CancellationException()))
                 }
             }
+
         }
     }
 
     override fun retry() {
         applyResult(Resource.Loading())
-        val listOfUnSuccesses = taskList.filter { coroutineLiveTask ->
+        requests.filter { coroutineLiveTask ->
             coroutineLiveTask.result() is Resource.Error && (coroutineLiveTask.result() as Resource.Error).exception !is CancellationException
-        }
-        listOfUnSuccesses.forEach { coroutineLiveTask ->
+        }.forEach { coroutineLiveTask ->
             coroutineLiveTask.retry()
         }
     }
@@ -128,45 +103,40 @@ class TaskCombiner(
 
         combineRunner?.maybeRun()
 
-        taskList.forEach { it.runOn(context) }
+        requests.forEach { it.runOn(context) }
         return this
     }
 
     fun setRetryAttemptsTasks(attempts: Int) {
-        taskList.forEach {
+        requests.forEach {
             it as CoroutineLiveTask
             it.retryAttempts = attempts
         }
     }
 
     fun setAutoRetryForAll(bool: Boolean) {
-        taskList.forEach {
+        requests.forEach {
             it as CoroutineLiveTask
             it.autoRetry = bool
         }
     }
 
     fun setErrorMapper(errorMapper: ErrorMapper) {
-        taskList.forEach {
-            it as CoroutineLiveTask
-            it.setErrorMapper(errorMapper)
-        }
+        this.errorMapper = errorMapper
     }
 
     fun setErrorObserver(errorObserver: ErrorObserverCallback) {
-        taskList.forEach {
+        requests.forEach {
             it as CoroutineLiveTask
             it.setErrorObserver(errorObserver)
         }
     }
 
     override fun cancel() {
-        val listOfUnLoading = taskList.filter { coroutineLiveTask ->
-            coroutineLiveTask.result() is Resource.Loading
-        }
-
-        listOfUnLoading.forEach { coroutineLiveTask ->
-            coroutineLiveTask.cancel()
+        requests.filter { coroutineLiveTask ->
+            coroutineLiveTask.result() !is Resource.Success
+        }.forEach {
+            it.cancel()
         }
     }
 
@@ -182,9 +152,9 @@ class TaskCombiner(
         onErrorAction = action
     }
 
-    private fun applyResult(result: Resource<Any>?) {
+    private fun applyResult(result: Resource<Any>) {
         this.latestState = result
-        result?.withResult(
+        result.withResult(
             onSuccess = { onSuccessAction(it) },
             onError = { onErrorAction(it) },
             onLoading = { onLoadingAction(it) }

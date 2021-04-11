@@ -2,16 +2,16 @@ package com.part.livetaskcore
 
 class LiveTaskManager {
 
-    private var noConnectionInformer: NoConnectionInformer? = null
+    private var noConnectionInformer: NoConnectionInformerAAA? = null
     private var errorMapper: ErrorMapper = ErrorMapperImpl()
     private var errorObserver: ErrorObserverCallback = ErrorObserver
 
-    fun getNoConnectionInformer(): NoConnectionInformer? = noConnectionInformer
+    fun getNoConnectionInformer(): NoConnectionInformerAAA? = noConnectionInformer
     fun getErrorMapper() = errorMapper
     fun getErrorObserver() = errorObserver
 
     private fun applyItems(
-        noConnectionInformer: NoConnectionInformer?,
+        noConnectionInformer: NoConnectionInformerAAA?,
         errorMapper: ErrorMapper?,
         errorObserver: ErrorObserverCallback?
     ) {
@@ -29,7 +29,7 @@ class LiveTaskManager {
 
     inner class Builder {
 
-        private var noConnectionInformer: NoConnectionInformer? = null
+        private var noConnectionInformer: NoConnectionInformerAAA? = null
         private var errorMapper: ErrorMapper? = null
         private var errorObserver: ErrorObserverCallback? = null
 
@@ -43,7 +43,7 @@ class LiveTaskManager {
             return this
         }
 
-        fun setNoConnectionInformer(checker: NoConnectionInformer): Builder {
+        fun setNoConnectionInformer(checker: NoConnectionInformerAAA): Builder {
             noConnectionInformer = checker
             return this
         }

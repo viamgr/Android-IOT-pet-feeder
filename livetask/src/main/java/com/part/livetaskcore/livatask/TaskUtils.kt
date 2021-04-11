@@ -21,7 +21,9 @@ fun <T> liveTask(
 fun combine(
     vararg requests: LiveTask<*>,
     @BuilderInference block: suspend CombinerBuilder.() -> Unit = {}
-): LiveTask<Any> = TaskCombiner(*requests, block = block)
+): LiveTask<Any> {
+    return TaskCombiner(*requests, block = block)
+}
 
 
 @OptIn(ExperimentalTypeInference::class)

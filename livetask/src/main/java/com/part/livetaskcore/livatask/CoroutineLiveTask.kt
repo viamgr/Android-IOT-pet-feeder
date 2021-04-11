@@ -19,7 +19,7 @@ open class CoroutineLiveTask<T>(
 
     private var blockRunner: TaskRunner<T>? = null
     private var emittedSource: Emitted? = null
-    private var noConnectionInformer: NoConnectionInformer? =
+    private var noConnectionInformer: NoConnectionInformerAAA? =
         liveTaskManager.getNoConnectionInformer()
     var autoRetry = true
     private var errorObserver: ErrorObserverCallback? = liveTaskManager.getErrorObserver()
@@ -38,6 +38,7 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun run(coroutineContext: CoroutineContext): CoroutineLiveTask<T> {
+        println("run new task")
         unRegisterConnectionInformer()
         handleResult(Resource.Loading())
         val supervisorJob = SupervisorJob(coroutineContext[Job])
@@ -119,6 +120,7 @@ open class CoroutineLiveTask<T>(
     fun handleResult(result: Resource<T>?) {
         print("applyResult:")
         println(result)
+        unRegisterConnectionInformer()
         result?.onSuccess {
             onSuccessAction(it)
             this.latestState = result

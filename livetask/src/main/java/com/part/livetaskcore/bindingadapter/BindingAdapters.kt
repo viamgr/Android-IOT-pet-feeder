@@ -15,6 +15,8 @@ fun View.reactToTask(
     liveTask: LiveTask<*>?,
     progressType: ProgressType?
 ) {
+    print("reactToTask")
+    println(liveTask?.result())
     val loadingViewType = liveTask?.loadingViewType
     when (liveTask?.result()) {
         is Resource.Success -> {
