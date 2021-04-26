@@ -1,27 +1,21 @@
 package com.part.livetaskcore.livatask
 
-import com.part.livetaskcore.ErrorMapper
-import com.part.livetaskcore.ErrorObserverCallback
+import androidx.lifecycle.LiveData
 import com.part.livetaskcore.LiveTaskManager
 import com.viam.resource.Resource
-import com.viam.resource.withResult
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Combines multiple [LiveTask]s that executes on the given [block] and in the specified.
  * */
 class TaskCombiner(
-    private vararg val requests: LiveTask<*>,
-    val block: suspend CombinerBuilder.() -> Unit,
-    liveTaskManager: LiveTaskManager = LiveTaskManager.instance
-) : BaseLiveTask<Any>() {
-    private var errorMapper: ErrorMapper? = liveTaskManager.getErrorMapper()
-    private var combineRunner: CombineRunner? = null
-    private var onSuccessAction: (Any?) -> Unit = {}
-    private var onErrorAction: (Exception) -> Unit = {}
-    private var onLoadingAction: (Any?) -> Unit = {}
+    private vararg val requests: LiveTask<*>, val block: suspend LiveTaskBuilder<Any>.() -> Unit,
+    liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
+) : BaseLiveTask<Any>(liveTaskManager) {
+
 
     init {
         requests.forEach { addTaskAsSource(it) }
@@ -75,8 +69,14 @@ class TaskCombiner(
         }
     }
 
+
+    private fun run(context: CoroutineContext): TaskCombiner {
+        requests.forEach { it.run(context) }
+        return this
+    }
+
+
     override fun retry() {
-        applyResult(Resource.Loading())
         requests.filter { coroutineLiveTask ->
             coroutineLiveTask.result() is Resource.Error && (coroutineLiveTask.result() as Resource.Error).exception !is CancellationException
         }.forEach { coroutineLiveTask ->
@@ -85,90 +85,38 @@ class TaskCombiner(
     }
 
     override suspend fun run(): LiveTask<Any> {
-        val context = currentCoroutineContext()
-        return run(context)
+        return run(currentCoroutineContext())
     }
 
-    private fun run(context: CoroutineContext): TaskCombiner {
-        val supervisorJob = SupervisorJob(context[Job])
-        val scope = CoroutineScope(Dispatchers.IO + context + supervisorJob)
-        combineRunner = CombineRunner(
-            liveData = this,
-            block = block,
-            timeoutInMs = DEFAULT_TIMEOUT,
-            scope = scope
-        ) {
-            combineRunner = null
-        }
 
-        combineRunner?.maybeRun()
-
-        requests.forEach { it.runOn(context) }
+    override fun run(coroutineContext: CoroutineContext?): LiveTask<Any> {
+        run(coroutineContext)
         return this
-    }
-
-    fun setRetryAttemptsTasks(attempts: Int) {
-        requests.forEach {
-            it as CoroutineLiveTask
-            it.retryAttempts = attempts
-        }
-    }
-
-    fun setAutoRetryForAll(bool: Boolean) {
-        requests.forEach {
-            it as CoroutineLiveTask
-            it.autoRetry = bool
-        }
-    }
-
-    fun setErrorMapper(errorMapper: ErrorMapper) {
-        this.errorMapper = errorMapper
-    }
-
-    fun setErrorObserver(errorObserver: ErrorObserverCallback) {
-        requests.forEach {
-            it as CoroutineLiveTask
-            it.setErrorObserver(errorObserver)
-        }
     }
 
     override fun cancel() {
         requests.filter { coroutineLiveTask ->
-            coroutineLiveTask.result() !is Resource.Success
-        }.forEach {
-            it.cancel()
+            coroutineLiveTask.result() is Resource.Loading
+        }.forEach { coroutineLiveTask ->
+            coroutineLiveTask.retry()
         }
     }
 
-    fun setSuccessAction(action: (Any?) -> Unit) {
-        onSuccessAction = action
+    override suspend fun emit(result: Resource<Any>) {
+        throw IllegalStateException()
     }
 
-    fun setLoadingAction(action: (Any?) -> Unit) {
-        onLoadingAction = action
+    override suspend fun emitSource(source: LiveData<Resource<Any>>): DisposableHandle {
+        throw IllegalStateException()
     }
 
-    fun setErrorAction(action: (Exception) -> Unit) {
-        onErrorAction = action
-    }
+    override val isCancelable: Boolean
+        get() = cancelable ?: !(requests.all { it.isCancelable == false })
 
-    private fun applyResult(result: Resource<Any>) {
-        this.latestState = result
-        result.withResult(
-            onSuccess = { onSuccessAction(it) },
-            onError = { onErrorAction(it) },
-            onLoading = { onLoadingAction(it) }
-        )
-        postValue(this)
-    }
+    override val isRetryable: Boolean
+        get() = retryable ?: requests.any { it.isRetryable == true }
 
-    private fun applyResult(task: LiveTask<*>) {
-        @Suppress("UNCHECKED_CAST")
-        this.latestState = task.result() as Resource<Any>?
-        postValue(this)
-    }
+    override val isAutoRetry: Boolean
+        get() = retryable ?: requests.any { it.isAutoRetry == true }
 
-    override fun runOn(coroutineContext: CoroutineContext?): LiveTask<Any> {
-        return run(coroutineContext ?: EmptyCoroutineContext)
-    }
 }

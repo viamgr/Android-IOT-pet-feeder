@@ -7,12 +7,15 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 interface LiveTask<T> {
+    val isRetryable: Boolean?
+    val isAutoRetry: Boolean?
+    val isCancelable: Boolean?
     var loadingViewType: ProgressType
     fun result(): Resource<T>?
     fun asLiveData(): LiveData<LiveTask<T>>
     fun retry()
     suspend fun run(): LiveTask<T>
-    fun runOn(coroutineContext: CoroutineContext? = EmptyCoroutineContext): LiveTask<T>
+    fun run(coroutineContext: CoroutineContext? = EmptyCoroutineContext): LiveTask<T>
     fun cancel()
 }
 

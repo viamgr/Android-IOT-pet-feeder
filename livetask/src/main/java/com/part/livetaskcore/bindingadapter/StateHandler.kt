@@ -4,16 +4,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import com.part.livetask.R
-import com.part.livetaskcore.livatask.BaseLiveTask
 import com.part.livetaskcore.livatask.LiveTask
 import com.part.livetaskcore.livatask.ViewException
 import com.viam.resource.Resource
-import kotlinx.android.synthetic.main.loading_blur_circular.view.*
-import kotlinx.android.synthetic.main.loading_bouncing.view.*
 import kotlinx.android.synthetic.main.loading_circular.view.*
-import kotlinx.android.synthetic.main.loading_indicator.view.*
-import kotlinx.android.synthetic.main.loading_linear.view.*
-import kotlinx.android.synthetic.main.loading_sandy_clock.view.*
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
@@ -38,7 +32,6 @@ enum class ProgressType {
     INDICATOR, LINEAR, SANDY_CLOCK, CIRCULAR, BOUNCING, BLUR_CIRCULAR
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 fun ProgressType?.getState() =
     when (this) {
 //        ProgressType.INDICATOR -> IndicatorLoading()
@@ -81,6 +74,7 @@ interface State {
         }
     }
 }
+/*
 
 class IndicatorLoading : State {
     override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
@@ -88,7 +82,7 @@ class IndicatorLoading : State {
             it.apply {
                 cl_error_indicator.visibility = View.INVISIBLE
                 progressBar_indicator.visibility = View.VISIBLE
-                if ((result as BaseLiveTask<*>).cancelable) {
+                if (result.isCancelable) {
                     ivBtn_close_indicator.visibility = View.VISIBLE
                     ivBtn_close_indicator.setOnClickListener {
                         result.cancel()
@@ -108,7 +102,8 @@ class IndicatorLoading : State {
                     view.tag = null
                     parent.removeView(it)
                 } else {
-                    /*val red = Color.parseColor("#E91E63")
+                    */
+/*val red = Color.parseColor("#E91E63")
                     val white = Color.parseColor("#ffffff")
                     val border = GradientDrawable()
                     border.setColor(red) //white background
@@ -116,7 +111,8 @@ class IndicatorLoading : State {
                     it.background = border
                     tv_error_indicator.setTextColor(white)
                     ivBtn_close_indicator.setColorFilter(white)
-                    iv_retry_indicator.setColorFilter(white)*/
+                    iv_retry_indicator.setColorFilter(white)*//*
+
 
                     ivBtn_close_indicator.visibility = View.VISIBLE
                     cl_error_indicator.visibility = View.VISIBLE
@@ -146,7 +142,7 @@ class SandyClockLoading : State {
                 cl_error_sandy_clock.visibility = View.GONE
                 progressBar_sandy_clock.visibility = View.VISIBLE
                 tv_loading_sandy_clock.visibility = View.VISIBLE
-                if ((result as BaseLiveTask<*>).cancelable) {
+                if ((result as BaseLiveTask<*>).isCancelable) {
                     ivBtn_close_sandy_clock.visibility = View.VISIBLE
                     ivBtn_close_sandy_clock.setOnClickListener {
                         result.cancel()
@@ -195,7 +191,7 @@ class LinearLoading : State {
                 progressBar_linear.visibility = View.VISIBLE
                 tv_loading_linear.visibility = View.VISIBLE
                 progressBar_linear_sandy_clock.visibility = View.VISIBLE
-                if ((result as BaseLiveTask<*>).cancelable) {
+                if ((result as BaseLiveTask<*>).isCancelable) {
                     ivBtn_close_linear.visibility = View.VISIBLE
                     ivBtn_close_linear.setOnClickListener {
                         result.cancel()
@@ -241,6 +237,7 @@ class LinearLoading : State {
         }
     }
 }
+*/
 
 class CircularLoading : State {
     override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
@@ -248,7 +245,7 @@ class CircularLoading : State {
             cl_error_circular.visibility = View.GONE
             progressBar_circular.visibility = View.VISIBLE
             tv_loading_circular.visibility = View.VISIBLE
-            if ((result as BaseLiveTask<*>).cancelable) {
+            if (result.isCancelable == true) {
                 ivBtn_close_circular.visibility = View.VISIBLE
                 ivBtn_close_circular.setOnClickListener {
                     result.cancel()
@@ -274,10 +271,10 @@ class CircularLoading : State {
                         context.getString(R.string.tv_retry)
                     }
                 tv_error_circular.text = errorText
-                ivBtn_close_circular.setOnClickListener { _ ->
+                ivBtn_close_circular.setOnClickListener {
                     result.cancel()
                 }
-                if ((result as BaseLiveTask<*>).retryable) {
+                if (result.isRetryable == true) {
                     cl_container_circular.visibility = View.VISIBLE
                     cl_error_circular.setOnClickListener {
                         result.retry()
@@ -290,6 +287,7 @@ class CircularLoading : State {
         }
     }
 }
+/*
 
 class BouncingLoading : State {
     override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
@@ -298,7 +296,7 @@ class BouncingLoading : State {
                 cl_error_bouncing.visibility = View.GONE
                 progressBar_bouncing.visibility = View.VISIBLE
                 tv_loading_bouncing.visibility = View.VISIBLE
-                if ((result as BaseLiveTask<*>).cancelable) {
+                if ((result as BaseLiveTask<*>).isCancelable) {
                     ivBtn_close_bouncing.visibility = View.VISIBLE
                     ivBtn_close_bouncing.setOnClickListener { result.cancel() }
                 } else ivBtn_close_bouncing.visibility = View.INVISIBLE
@@ -345,7 +343,7 @@ class BlurCircularLoading : State {
                 cl_error_blur_circular.visibility = View.GONE
                 progressBar_blur_circular.visibility = View.VISIBLE
 //                tv_loading_blur_circular.visibility = View.VISIBLE
-                if ((result as BaseLiveTask<*>).cancelable) {
+                if ((result as BaseLiveTask<*>).isCancelable) {
                     ivBtn_close_blur_circular.visibility = View.VISIBLE
                     ivBtn_close_blur_circular.setOnClickListener { result.cancel() }
                 } else ivBtn_close_blur_circular.visibility = View.INVISIBLE
@@ -381,4 +379,4 @@ class BlurCircularLoading : State {
             }
         }
     }
-}
+}*/
