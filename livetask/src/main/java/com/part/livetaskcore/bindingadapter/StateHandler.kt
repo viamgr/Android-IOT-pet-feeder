@@ -3,6 +3,7 @@ package com.part.livetaskcore.bindingadapter
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import androidx.core.view.isVisible
 import com.part.livetask.R
 import com.part.livetaskcore.livatask.LiveTask
 import com.part.livetaskcore.livatask.ViewException
@@ -239,18 +240,15 @@ class LinearLoading : State {
 }
 */
 
+
 class CircularLoading : State {
     override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
         stateLayout?.apply {
             cl_error_circular.visibility = View.GONE
             progressBar_circular.visibility = View.VISIBLE
             tv_loading_circular.visibility = View.VISIBLE
-            if (result.isCancelable == true) {
-                ivBtn_close_circular.visibility = View.VISIBLE
-                ivBtn_close_circular.setOnClickListener {
-                    result.cancel()
-                }
-            } else ivBtn_close_circular.visibility = View.INVISIBLE
+            handleCancelable(result)
+
         }
     }
 
@@ -262,7 +260,6 @@ class CircularLoading : State {
                 view.tag = null
                 parent.removeView(this)
             } else {
-                ivBtn_close_circular.visibility = View.VISIBLE
                 cl_error_circular.visibility = View.VISIBLE
                 val errorText =
                     if ((result.result() as Resource.Error).exception is ViewException) {
@@ -271,9 +268,7 @@ class CircularLoading : State {
                         context.getString(R.string.tv_retry)
                     }
                 tv_error_circular.text = errorText
-                ivBtn_close_circular.setOnClickListener {
-                    result.cancel()
-                }
+                handleCancelable(result)
                 if (result.isRetryable == true) {
                     cl_container_circular.visibility = View.VISIBLE
                     cl_error_circular.setOnClickListener {
@@ -284,6 +279,17 @@ class CircularLoading : State {
                 tv_loading_circular.visibility = View.GONE
             }
 
+        }
+    }
+
+    private fun View.handleCancelable(result: LiveTask<*>) {
+        if (result.isCancelable == true) {
+            ivBtn_close_circular.isVisible = true
+            ivBtn_close_circular.setOnClickListener {
+                result.cancel()
+            }
+        } else {
+            ivBtn_close_circular.isVisible = false
         }
     }
 }

@@ -8,6 +8,7 @@ import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.bindingadapter.ProgressType
 import com.viam.resource.Resource
 import com.viam.resource.withResult
+import kotlin.coroutines.cancellation.CancellationException
 
 
 /**
@@ -17,7 +18,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     LiveTask<T>, LiveTaskBuilder<T> {
 
     protected var cancelable: Boolean? = true
-    protected var autoRetry: Boolean? = true
+    protected var autoRetry: Boolean? = false
     protected var retryable: Boolean? = true
     protected var blockRunner: TaskRunner<T>? = null
 
@@ -33,18 +34,21 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     override fun asLiveData(): LiveData<LiveTask<T>> = this
     override fun result(): Resource<T>? = latestState
 
+    fun hasError(liveTask: LiveTask<*>) =
+        liveTask.result() is Resource.Error && (liveTask.result() as Resource.Error).exception !is CancellationException
+
     protected fun applyResult(result: Resource<T>) {
         this.latestState = result
         result.withResult(
             onSuccess = { onSuccessAction(it) },
             onError = { onErrorAction(it) },
-            onLoading = { onLoadingAction(it) }
+            onLoading = { onLoadingAction(result) }
         )
         postValue(this)
     }
 
     override fun cancelable(bool: Boolean) {
-        cancelable = true
+        cancelable = bool
     }
 
 

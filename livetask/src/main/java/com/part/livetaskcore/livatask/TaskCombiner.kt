@@ -12,13 +12,15 @@ import kotlin.coroutines.cancellation.CancellationException
  * Combines multiple [LiveTask]s that executes on the given [block] and in the specified.
  * */
 class TaskCombiner(
-    private vararg val requests: LiveTask<*>, val block: suspend LiveTaskBuilder<Any>.() -> Unit,
+    private vararg val requests: LiveTask<*>,
+    val block: (LiveTaskBuilder<Any>.() -> Unit)? = null,
     liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
 ) : BaseLiveTask<Any>(liveTaskManager) {
 
 
     init {
         requests.forEach { addTaskAsSource(it) }
+        block?.invoke(this)
     }
 
     private fun addTaskAsSource(task: LiveTask<*>) {
@@ -53,13 +55,13 @@ class TaskCombiner(
                     applyResult(Resource.Error(errorMapper?.mapError(exception) ?: exception))
                 }
                 successCount == requests.size -> {
-                    applyResult(Resource.Success(null))
+                    applyResult(Resource.Success(Unit))
                 }
                 cancelCount == requests.size -> {
                     applyResult(Resource.Error(CancellationException()))
                 }
                 loadingCount > 0 -> {
-                    applyResult(Resource.Loading(null))
+                    applyResult(Resource.Loading())
                 }
                 else -> {
                     applyResult(Resource.Error(CancellationException()))
@@ -77,11 +79,8 @@ class TaskCombiner(
 
 
     override fun retry() {
-        requests.filter { coroutineLiveTask ->
-            coroutineLiveTask.result() is Resource.Error && (coroutineLiveTask.result() as Resource.Error).exception !is CancellationException
-        }.forEach { coroutineLiveTask ->
-            coroutineLiveTask.retry()
-        }
+        requests.filter { coroutineLiveTask -> hasError(coroutineLiveTask) }
+            .forEach { coroutineLiveTask -> coroutineLiveTask.retry() }
     }
 
     override suspend fun run(): LiveTask<Any> {
@@ -98,7 +97,7 @@ class TaskCombiner(
         requests.filter { coroutineLiveTask ->
             coroutineLiveTask.result() is Resource.Loading
         }.forEach { coroutineLiveTask ->
-            coroutineLiveTask.retry()
+            coroutineLiveTask.cancel()
         }
     }
 

@@ -18,22 +18,20 @@ fun View.reactToTask(
     print("reactToTask")
     println(liveTask?.result())
     val loadingViewType = liveTask?.loadingViewType
-    when (liveTask?.result()) {
-        is Resource.Success -> {
-            val viewParent = getViewParent(this, progressType, loadingViewType)
-            (progressType ?: loadingViewType).getState()
-                .success(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
-        }
-        is Resource.Loading -> {
-            val viewParent = getViewParent(this, progressType, loadingViewType)
-            (progressType ?: loadingViewType).getState()
-                .loading(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+    liveTask?.result()?.let {
+        val viewParent = getViewParent(this, progressType, loadingViewType)
+        val state = (progressType ?: loadingViewType).getState()
+        when (it) {
+            is Resource.Success -> {
+                state.success(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+            }
+            is Resource.Loading -> {
+                state.loading(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
 
-        }
-        is Resource.Error -> {
-            val viewParent = getViewParent(this, progressType, loadingViewType)
-            (progressType ?: loadingViewType).getState()
-                .error(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+            }
+            is Resource.Error -> {
+                state.error(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+            }
         }
     }
 }
