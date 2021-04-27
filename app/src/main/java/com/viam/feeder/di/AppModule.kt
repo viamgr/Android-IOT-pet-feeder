@@ -2,7 +2,7 @@ package com.viam.feeder.di
 
 import android.content.Context
 import com.part.livetaskcore.LiveTaskManager
-import com.part.livetaskcore.MultipleNoConnectionInformer
+import com.part.livetaskcore.MultipleConnectionInformer
 import com.part.livetaskcore.WebConnectionChecker
 import com.part.livetaskcore.connection.ConnectionManager
 import com.squareup.moshi.Moshi
@@ -40,10 +40,10 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideMultipleNoConnectionInformer(
+    fun provideMultipleConnectionInformer(
         socketConnectionChecker: SocketConnectionChecker,
         webConnectionChecker: WebConnectionChecker
-    ) = MultipleNoConnectionInformer(
+    ) = MultipleConnectionInformer(
         socketConnectionChecker,
 //        webConnectionChecker
     )

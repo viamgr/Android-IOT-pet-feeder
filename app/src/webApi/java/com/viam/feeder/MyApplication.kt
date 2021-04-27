@@ -7,7 +7,7 @@ import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.facebook.soloader.SoLoader
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.part.livetaskcore.LiveTaskManager
-import com.part.livetaskcore.MultipleNoConnectionInformer
+import com.part.livetaskcore.MultipleConnectionInformer
 import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.websocket.WebSocketApi
@@ -27,7 +27,7 @@ class MyApplication : MultiDexApplication() {
     lateinit var liveTaskManager: LiveTaskManager
 
     @Inject
-    lateinit var multipleNoConnectionInformer: MultipleNoConnectionInformer
+    lateinit var multipleConnectionInformer: MultipleConnectionInformer
 
     companion object {
         var mFirebaseAnalytics: FirebaseAnalytics? = null
@@ -41,9 +41,9 @@ class MyApplication : MultiDexApplication() {
     }
 
     private fun setupLiveTask() {
-        println("multipleNoConnectionInformer:${multipleNoConnectionInformer.hashCode()}")
+        println("multipleConnectionInformer:${multipleConnectionInformer.hashCode()}")
         liveTaskManager.Builder()
-            .setNoConnectionInformer(multipleNoConnectionInformer)
+            .setConnectionInformer(multipleConnectionInformer)
             .setErrorMapper { exception ->
                 ViewException(
                     exception.toMessage(this@MyApplication),

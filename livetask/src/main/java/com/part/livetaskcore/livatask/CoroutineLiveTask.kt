@@ -20,8 +20,8 @@ open class CoroutineLiveTask<T>(
     override var loadingViewType = ProgressType.CIRCULAR
 
     private var emittedSource: Emitted? = null
-    private var noConnectionInformer: NoConnectionInformerAAA? =
-        liveTaskManager.getNoConnectionInformer()
+    private var connectionInformer: ConnectionInformer? =
+        liveTaskManager.getConnectionInformer()
     var context: CoroutineContext? = null
 
 
@@ -81,7 +81,7 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun unRegisterConnectionInformer() {
-        noConnectionInformer?.unregister(this)
+        connectionInformer?.unregister(this)
     }
 
     override fun cancel() {
@@ -138,8 +138,8 @@ open class CoroutineLiveTask<T>(
 
     private fun handleAutoRetry(exception: Exception) {
         val canAutoRetry =
-            autoRetry ?: false && noConnectionInformer?.registerIfRetryable(exception, this) == true
-        if (!canAutoRetry && exception !is CancellationException) {
+            autoRetry ?: false && connectionInformer?.registerIfRetryable(exception, this) == true
+        if (canAutoRetry && exception !is CancellationException) {
             this.retry()
         }
     }

@@ -22,20 +22,3 @@ interface LiveTaskBuilder<T> {
     fun onError(action: (Exception) -> Unit)
     fun onLoading(action: (Any?) -> Unit)
 }
-
-/**
- * Interface that allows controlling a TaskCombiner from a coroutine block.
- */
-interface CombinerBuilder {
-    val latestValue: Resource<Any>?
-    fun cancelable(bool: Boolean)
-    fun loadingViewType(type: ProgressType)
-    fun retryable(bool: Boolean)
-    fun retryAttempts(attempts: Int)
-    fun autoRetry(bool: Boolean)
-    fun errorMapper(errorMapper: ErrorMapper)
-    fun errorObserver(errorObserver: ErrorObserverCallback)
-    fun onSuccess(action: (Any?) -> Unit)
-    fun onError(action: (Exception) -> Unit)
-    fun onLoading(action: (Any?) -> Unit)
-}

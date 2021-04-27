@@ -3,7 +3,7 @@ package com.part.livetaskcore
 import com.part.livetaskcore.connection.ConnectionManager
 
 class WebConnectionChecker(connectionManager: ConnectionManager) :
-    NoConnectionInformer({ callback ->
+    BaseConnectionInformer({ callback ->
         connectionManager.setOnStatusChangeListener { isConnected ->
             if (isConnected) {
                 callback()
