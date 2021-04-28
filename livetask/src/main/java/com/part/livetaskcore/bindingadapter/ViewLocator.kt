@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import com.part.livetask.R
 
 data class ViewParent(
     val view: View,
@@ -77,7 +76,7 @@ class ConstraintLayoutViewWrapper(
     }
 }
 
-class ViewGroupViewWrapper(val view: View, val layout: Int, private val parent: ViewGroup) :
+class ViewGroupViewWrapper(val view: View, private val layout: Int, private val parent: ViewGroup) :
     ViewWrapper() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun place(): ViewParent {
@@ -114,24 +113,8 @@ private fun typeHandler(view: View, layout: Int): ViewWrapper = when (view) {
 
 fun getViewParent(
     view: View,
-    progressType: ProgressType?,
-    loadingViewType: ProgressType?,
+    loadingViewType: ViewType,
 ): ViewParent {
-    val loadingLayout = when (progressType ?: loadingViewType) {
-        ProgressType.INDICATOR -> R.layout.loading_indicator
-        ProgressType.SANDY_CLOCK -> R.layout.loading_sandy_clock
-        ProgressType.LINEAR -> R.layout.loading_linear
-        ProgressType.CIRCULAR -> R.layout.loading_circular
-        ProgressType.BOUNCING -> R.layout.loading_bouncing
-        ProgressType.BLUR_CIRCULAR -> R.layout.loading_blur_circular
-        else -> R.layout.loading_circular
-    }
-    val placement = typeHandler(view, loadingLayout).place()
-//    var newView = placement.view
-//    if (newView == null) {
-//        newView.tag = null
-//        newView = typeHandler(newView, loadingLayout).place().view
-//    }
-//    val parent = placement.parent
+    val placement = typeHandler(view, loadingViewType.layoutId).place()
     return ViewParent(placement.view, placement.parent)
 }

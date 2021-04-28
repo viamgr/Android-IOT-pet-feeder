@@ -10,35 +10,49 @@ import com.part.livetaskcore.livatask.LiveTask
 import com.viam.resource.Resource
 
 @OptIn(ExperimentalStdlibApi::class)
-@BindingAdapter(value = ["reactToTask", "type"], requireAll = false)
+@BindingAdapter(value = ["reactToTask"], requireAll = false)
 fun View.reactToTask(
     liveTask: LiveTask<*>?,
-    progressType: ProgressType?
 ) {
     print("reactToTask")
     println(liveTask?.result())
-    val loadingViewType = liveTask?.loadingViewType
+    val loadingViewType = liveTask?.loadingViewType ?: CircularViewType()
     liveTask?.result()?.let {
-        val viewParent = getViewParent(this, progressType, loadingViewType)
-        val state = (progressType ?: loadingViewType).getState()
+        val viewParent = getViewParent(this, loadingViewType)
         when (it) {
             is Resource.Success -> {
-                state.success(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+                loadingViewType.success(
+                    viewParent.view,
+                    viewParent.parent as ViewGroup,
+                    liveTask,
+                    this
+                )
             }
             is Resource.Loading -> {
-                state.loading(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+                loadingViewType.loading(
+                    viewParent.view,
+                    viewParent.parent as ViewGroup,
+                    liveTask,
+                    this
+                )
 
             }
             is Resource.Error -> {
-                state.error(viewParent.view, viewParent.parent as ViewGroup, liveTask, this)
+                loadingViewType.error(
+                    viewParent.view,
+                    viewParent.parent as ViewGroup,
+                    liveTask,
+                    this
+                )
             }
         }
     }
+
 }
 
 fun View.reactToTask(liveTask: LiveTask<*>, viewLifecycleOwner: LifecycleOwner) {
     liveTask.asLiveData().observe(viewLifecycleOwner) {
-        reactToTask(it, it.loadingViewType)
+        reactToTask(it)
     }
 }
 

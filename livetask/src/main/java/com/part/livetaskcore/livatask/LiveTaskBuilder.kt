@@ -2,8 +2,7 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.ErrorMapper
-import com.part.livetaskcore.ErrorObserverCallback
-import com.part.livetaskcore.bindingadapter.ProgressType
+import com.part.livetaskcore.bindingadapter.ViewType
 import com.viam.resource.Resource
 import kotlinx.coroutines.DisposableHandle
 
@@ -15,7 +14,7 @@ interface LiveTaskBuilder<T> {
     suspend fun emitSource(source: LiveData<Resource<T>>): DisposableHandle
     fun autoRetry(bool: Boolean)
     fun cancelable(bool: Boolean)
-    fun loadingViewType(type: ProgressType)
+    fun viewType(viewType: ViewType)
     fun retryable(bool: Boolean)
     fun errorMapper(errorMapper: ErrorMapper)
     fun onSuccess(action: (T?) -> Unit)

@@ -2,7 +2,6 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.*
-import com.part.livetaskcore.bindingadapter.ProgressType
 import com.viam.resource.Resource
 import com.viam.resource.onError
 import com.viam.resource.onLoading
@@ -17,11 +16,10 @@ open class CoroutineLiveTask<T>(
     liveTaskManager: LiveTaskManager = LiveTaskManager.instance
 ) : BaseLiveTask<T>(liveTaskManager) {
     private var retryCounts = 1
-    override var loadingViewType = ProgressType.CIRCULAR
 
     private var emittedSource: Emitted? = null
     private var connectionInformer: ConnectionInformer? =
-        liveTaskManager.getConnectionInformer()
+        liveTaskManager.getconnectionInformer()
     var context: CoroutineContext? = null
 
 

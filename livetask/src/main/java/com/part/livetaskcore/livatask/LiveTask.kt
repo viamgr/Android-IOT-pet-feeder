@@ -1,7 +1,7 @@
 package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
-import com.part.livetaskcore.bindingadapter.ProgressType
+import com.part.livetaskcore.bindingadapter.ViewType
 import com.viam.resource.Resource
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -10,7 +10,7 @@ interface LiveTask<T> {
     val isRetryable: Boolean?
     val isAutoRetry: Boolean?
     val isCancelable: Boolean?
-    var loadingViewType: ProgressType
+    var loadingViewType: ViewType
     fun result(): Resource<T>?
     fun asLiveData(): LiveData<LiveTask<T>>
     fun retry()

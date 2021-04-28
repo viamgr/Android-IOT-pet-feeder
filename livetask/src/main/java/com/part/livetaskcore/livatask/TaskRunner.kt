@@ -8,7 +8,7 @@ internal typealias Block<T> = suspend LiveTaskBuilder<T>.() -> Unit
 /**
  * Handles running a block at most once to completion.
  */
-internal const val DEFAULT_TIMEOUT = 1000L
+internal const val DEFAULT_TIMEOUT = 250L
 
 class TaskRunner<T>(
     private val liveData: LiveTaskBuilder<T>,

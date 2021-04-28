@@ -6,7 +6,7 @@ class LiveTaskManager {
     private var errorMapper: ErrorMapper = ErrorMapperImpl()
     private var errorObserver: ErrorObserverCallback = ErrorObserver
 
-    fun getConnectionInformer(): ConnectionInformer? = connectionInformer
+    fun getconnectionInformer(): ConnectionInformer? = connectionInformer
     fun getErrorMapper() = errorMapper
     fun getErrorObserver() = errorObserver
 

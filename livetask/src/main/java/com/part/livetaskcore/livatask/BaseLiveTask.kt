@@ -3,9 +3,9 @@ package com.part.livetaskcore.livatask
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.part.livetaskcore.ErrorMapper
-import com.part.livetaskcore.ErrorMapperImpl
 import com.part.livetaskcore.LiveTaskManager
-import com.part.livetaskcore.bindingadapter.ProgressType
+import com.part.livetaskcore.bindingadapter.CircularViewType
+import com.part.livetaskcore.bindingadapter.ViewType
 import com.viam.resource.Resource
 import com.viam.resource.withResult
 import kotlin.coroutines.cancellation.CancellationException
@@ -30,7 +30,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     protected var onLoadingAction: (Any?) -> Unit = {}
     var latestState: Resource<T>? = null
 
-    override var loadingViewType = ProgressType.CIRCULAR
+    override var loadingViewType: ViewType = CircularViewType()
     override fun asLiveData(): LiveData<LiveTask<T>> = this
     override fun result(): Resource<T>? = latestState
 
@@ -52,8 +52,8 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     }
 
 
-    override fun loadingViewType(type: ProgressType) {
-        loadingViewType = type
+    override fun viewType(viewType: ViewType) {
+        loadingViewType = viewType
     }
 
 
