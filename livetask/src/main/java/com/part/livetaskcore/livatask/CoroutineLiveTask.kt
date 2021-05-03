@@ -2,24 +2,18 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.*
-import com.viam.resource.Resource
-import com.viam.resource.onError
-import com.viam.resource.onLoading
-import com.viam.resource.onSuccess
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-
 open class CoroutineLiveTask<T>(
     open val block: suspend LiveTaskBuilder<T>.() -> Unit = {},
-    liveTaskManager: LiveTaskManager = LiveTaskManager.instance
+    private val liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
 ) : BaseLiveTask<T>(liveTaskManager) {
     private var retryCounts = 1
 
     private var emittedSource: Emitted? = null
-    private var connectionInformer: ConnectionInformer? =
-        liveTaskManager.getconnectionInformer()
+    private var connectionInformer: ConnectionInformer? = liveTaskManager.connectionInformer
     var context: CoroutineContext? = null
 
 
@@ -103,7 +97,7 @@ open class CoroutineLiveTask<T>(
         emittedSource = null
     }
 
-    fun handleResult(result: Resource<T>?) {
+    private fun handleResult(result: Resource<T>?) {
         print("applyResult:")
         println(result)
         unRegisterConnectionInformer()
@@ -129,6 +123,32 @@ open class CoroutineLiveTask<T>(
         this.postValue(this)
     }
 
+    private fun handleResult(result: T) {
+        unRegisterConnectionInformer()
+        val mappedResult = liveTaskManager.resourceMapper.map(result)
+        mappedResult.onSuccess {
+            onSuccessAction(result)
+            setResult(Resource.Success(it) as Resource<T>)
+
+        }.onError {
+            it.printStackTrace()
+            onErrorAction(it)
+            if (it !is CancellationException) {
+                println(("it !is CancellationException"))
+                setResult(Resource.Error(errorMapper?.mapError(it) ?: it))
+            } else {
+                println(("it is CancellationException"))
+            }
+            handleAutoRetry(it)
+            setResult(Resource.Error(it))
+        }.onLoading<T, Any?> {
+            onLoadingAction(it)
+            setResult(Resource.Loading(it))
+        }
+
+        this.postValue(this)
+    }
+
     private fun setResult(result: Resource<T>) {
         println("setResult: $result")
         this.latestState = result
@@ -149,5 +169,14 @@ open class CoroutineLiveTask<T>(
             handleResult(result)
         }
     }
+
+    override suspend fun emit(result: T) {
+        clearSource()
+        withContext(context!! + Dispatchers.Main.immediate) {
+            println("emit $result")
+            handleResult(result)
+        }
+    }
+
 
 }

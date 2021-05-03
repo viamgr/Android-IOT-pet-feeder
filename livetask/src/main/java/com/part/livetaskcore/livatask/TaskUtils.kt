@@ -1,5 +1,6 @@
 package com.part.livetaskcore.livatask
 
+import com.part.livetaskcore.LiveTaskManager
 import kotlin.experimental.ExperimentalTypeInference
 
 /**
@@ -27,8 +28,9 @@ fun combine(
 
 
 @OptIn(ExperimentalTypeInference::class)
-fun <P, T> parameterLiveTask(
-    @BuilderInference block: suspend LiveTaskBuilder<T>.() -> Unit = {}
-): ParameterLiveTask<P, T> = ParameterCoroutineLiveTask(
-    block = block
+fun <P, T> parametricLiveTask(
+    liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
+    @BuilderInference block: suspend ParametricLiveTaskBuilder<P, T>.() -> Unit = {},
+): ParametricLiveTask<P, T> = ParametricCoroutineLiveTask(
+    parametricBlock = block, liveTaskManager
 )

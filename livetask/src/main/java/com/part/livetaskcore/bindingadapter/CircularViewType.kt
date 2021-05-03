@@ -5,9 +5,9 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import androidx.core.view.isVisible
 import com.part.livetask.R
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
 import com.part.livetaskcore.livatask.ViewException
-import com.viam.resource.Resource
 import kotlinx.android.synthetic.main.loading_circular.view.*
 import kotlin.coroutines.cancellation.CancellationException
 

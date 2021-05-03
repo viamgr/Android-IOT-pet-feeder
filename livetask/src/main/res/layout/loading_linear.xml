@@ -5,6 +5,7 @@
     android:id="@+id/cv_result_state_linear"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/custom_ripple"
     android:clickable="true"
     android:focusable="true"
     android:layoutDirection="rtl">
@@ -18,11 +19,12 @@
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/progressBar_linear_sandy_clock"
-            style="@style/loading"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginStart="100dp"
+            style="@style/loading"
             android:layout_marginTop="2dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginLeft="100dp"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -34,9 +36,9 @@
 
         <TextView
             android:id="@+id/tv_loading_linear"
-            style="@style/tv_loading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/tv_loading"
             android:translationZ="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/progressBar_linear_sandy_clock"
@@ -54,9 +56,9 @@
 
             <ImageView
                 android:id="@+id/iv_retry_linear"
-                style="@style/btn_retry"
                 android:layout_width="18dp"
                 android:layout_height="18dp"
+                style="@style/btn_retry"
                 android:contentDescription="@string/tv_retry"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_retry"
@@ -67,9 +69,9 @@
 
             <TextView
                 android:id="@+id/tv_error_linear"
-                style="@style/tv_retry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                style="@style/tv_retry"
                 android:translationZ="2dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/iv_retry_linear"
@@ -79,9 +81,9 @@
 
     <ImageView
         android:id="@+id/ivBtn_close_linear"
-        style="@style/close"
         android:layout_width="12dp"
         android:layout_height="12dp"
+        style="@style/close"
         android:contentDescription="@string/tv_close"
         android:scaleType="fitXY"
         android:src="@drawable/ic_close"

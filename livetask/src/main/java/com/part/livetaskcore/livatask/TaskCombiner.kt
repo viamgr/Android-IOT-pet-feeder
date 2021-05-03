@@ -2,7 +2,7 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.LiveTaskManager
-import com.viam.resource.Resource
+import com.part.livetaskcore.Resource
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.currentCoroutineContext
 import kotlin.coroutines.CoroutineContext
@@ -16,12 +16,20 @@ class TaskCombiner(
     val block: (LiveTaskBuilder<Any>.() -> Unit)? = null,
     liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
 ) : BaseLiveTask<Any>(liveTaskManager) {
-
-
     init {
         requests.forEach { addTaskAsSource(it) }
         block?.invoke(this)
     }
+
+    override val isCancelable: Boolean
+        get() = cancelable ?: !(requests.all { it.isCancelable == false })
+
+    override val isRetryable: Boolean
+        get() = retryable ?: requests.any { it.isRetryable == true }
+
+    override val isAutoRetry: Boolean
+        get() = retryable ?: requests.any { it.isAutoRetry == true }
+
 
     private fun addTaskAsSource(task: LiveTask<*>) {
         val asLiveData = task.asLiveData()
@@ -77,16 +85,15 @@ class TaskCombiner(
         return this
     }
 
-
     override fun retry() {
         requests.filter { coroutineLiveTask -> hasError(coroutineLiveTask) }
             .forEach { coroutineLiveTask -> coroutineLiveTask.retry() }
     }
 
+
     override suspend fun run(): LiveTask<Any> {
         return run(currentCoroutineContext())
     }
-
 
     override fun run(coroutineContext: CoroutineContext?): LiveTask<Any> {
         run(coroutineContext)
@@ -109,13 +116,8 @@ class TaskCombiner(
         throw IllegalStateException()
     }
 
-    override val isCancelable: Boolean
-        get() = cancelable ?: !(requests.all { it.isCancelable == false })
-
-    override val isRetryable: Boolean
-        get() = retryable ?: requests.any { it.isRetryable == true }
-
-    override val isAutoRetry: Boolean
-        get() = retryable ?: requests.any { it.isAutoRetry == true }
+    override suspend fun emit(result: Any) {
+        throw IllegalStateException()
+    }
 
 }

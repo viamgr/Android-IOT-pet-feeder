@@ -6,7 +6,7 @@
     android:id="@+id/cv_result_state_circular"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/purple_200"
+    android:background="@color/loading_layout_background"
     android:clickable="true"
     android:focusable="true">
 
@@ -31,6 +31,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
+            android:layout_marginLeft="100dp"
             app:lottie_rawRes="@raw/circular" />
 
         <TextView

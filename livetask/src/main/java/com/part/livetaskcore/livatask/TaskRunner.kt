@@ -1,6 +1,6 @@
 package com.part.livetaskcore.livatask
 
-import com.viam.resource.Resource
+import com.part.livetaskcore.Resource
 import kotlinx.coroutines.*
 
 internal typealias Block<T> = suspend LiveTaskBuilder<T>.() -> Unit

@@ -1,7 +1,7 @@
 package com.part.livetaskcore.usecases
 
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.*
-import com.viam.resource.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlin.experimental.ExperimentalTypeInference
@@ -11,18 +11,19 @@ fun <T> Flow<Resource<T>>.asLiveTask(
     @BuilderInference block: suspend LiveTaskBuilder<T>.() -> Unit = {},
 ): LiveTask<T> {
     return liveTask {
-        block.invoke(this)
+        val liveTaskBuilder = this
+        block.invoke(liveTaskBuilder)
         collect {
-            emit(it)
+            liveTaskBuilder.emit(it)
         }
     }
 }
 
-inline fun <P, R> ParameterFlow<P, R>.asLiveTask(
-    crossinline builder: (LiveTaskBuilder<R>.() -> Unit) = {}
-): ParameterLiveTask<P, R> {
-    var liveTask: ParameterLiveTask<P, R>? = null
-    liveTask = parameterLiveTask {
+inline fun <P, R> ParametricFlow<P, R>.asLiveTask(
+    crossinline builder: (ParametricLiveTaskBuilder<P, R>.() -> Unit) = {},
+): ParametricLiveTask<P, R> {
+    var liveTask: ParametricLiveTask<P, R>? = null
+    liveTask = parametricLiveTask {
         builder.invoke(this)
         invoke(liveTask!!.getParameter())
             .collect {
@@ -32,18 +33,14 @@ inline fun <P, R> ParameterFlow<P, R>.asLiveTask(
     return liveTask
 }
 
-inline fun <P, R> ParameterResource<P, R>.asLiveTask(
-    crossinline builder: (LiveTaskBuilder<R>.() -> Unit) = {}
-): ParameterLiveTask<P, R> {
-    var liveTask: ParameterLiveTask<P, R>? = null
-    liveTask = parameterLiveTask {
+inline fun <P, R> ParametricResource<P, R>.asLiveTask(
+    crossinline builder: (ParametricLiveTaskBuilder<P, R>.() -> Unit) = {},
+): ParametricLiveTask<P, R> {
+    var liveTask: ParametricLiveTask<P, R>? = null
+    liveTask = parametricLiveTask {
         builder.invoke(this)
-        val result: Resource<R> = try {
-            invoke(liveTask!!.getParameter())
-        } catch (e: Exception) {
-            Resource.Error(e)
-        }
-        emit(result)
+        val input = invoke(liveTask!!.getParameter())
+        emit(input)
     }
     return liveTask
 }

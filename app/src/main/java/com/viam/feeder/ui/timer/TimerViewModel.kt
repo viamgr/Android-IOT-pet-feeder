@@ -19,6 +19,7 @@ import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.event.SendLongValue
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValueMessage
+import com.viam.resource.dataOrNull
 import java.util.*
 
 class TimerViewModel @ViewModelInject constructor(
@@ -36,7 +37,7 @@ class TimerViewModel @ViewModelInject constructor(
     private val requestGetTimeTask = requestGetTime.asLiveTask()
     private val onLongValueTask = onLongValue.asLiveTask {
         onSuccess {
-            val timeInMillis = (it ?: 0) * 1000
+            val timeInMillis = (it.dataOrNull() ?: 0) * 1000
             val inDate = Date(timeInMillis)
             _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
             _time.value = DateFormat.format("h:mm", inDate).toString()

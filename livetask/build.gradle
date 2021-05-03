@@ -42,7 +42,6 @@ android {
 }
 
 dependencies {
-    api project(":resource")
     def lifecycle_version = "2.3.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

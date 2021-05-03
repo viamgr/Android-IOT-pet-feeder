@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.LiveTaskManager
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.bindingadapter.CircularViewType
 import com.part.livetaskcore.bindingadapter.ViewType
-import com.viam.resource.Resource
-import com.viam.resource.withResult
+import com.part.livetaskcore.withResult
 import kotlin.coroutines.cancellation.CancellationException
 
 
@@ -25,7 +25,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
 
     protected var onSuccessAction: (T?) -> Unit = {}
     protected var onErrorAction: (Exception) -> Unit = {}
-    protected var errorMapper: ErrorMapper? = liveTaskManager.getErrorMapper()
+    protected var errorMapper: ErrorMapper? = liveTaskManager.errorMapper
 
     protected var onLoadingAction: (Any?) -> Unit = {}
     var latestState: Resource<T>? = null
@@ -42,7 +42,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
         result.withResult(
             onSuccess = { onSuccessAction(it) },
             onError = { onErrorAction(it) },
-            onLoading = { onLoadingAction(result) }
+            onLoading = { onLoadingAction(it) }
         )
         postValue(this)
     }

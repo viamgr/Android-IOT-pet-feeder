@@ -1,8 +1,8 @@
 package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.bindingadapter.ViewType
-import com.viam.resource.Resource
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -19,8 +19,8 @@ interface LiveTask<T> {
     fun cancel()
 }
 
-interface ParameterLiveTask<P, T> : LiveTask<T> {
-    suspend operator fun invoke(parameter: P): LiveTask<T>
+interface ParametricLiveTask<P, T> : LiveTask<T> {
+    suspend operator fun invoke(parameter: P): ParametricLiveTask<P, T>
     fun getParameter(): P
-    fun setParameter(parameter: P): LiveTask<T>
+    fun setParameter(parameter: P): ParametricLiveTask<P, T>
 }

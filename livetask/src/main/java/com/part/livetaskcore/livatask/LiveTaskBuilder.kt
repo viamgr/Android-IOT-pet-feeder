@@ -2,8 +2,8 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.ErrorMapper
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.bindingadapter.ViewType
-import com.viam.resource.Resource
 import kotlinx.coroutines.DisposableHandle
 
 /**
@@ -11,6 +11,7 @@ import kotlinx.coroutines.DisposableHandle
  */
 interface LiveTaskBuilder<T> {
     suspend fun emit(result: Resource<T>)
+    suspend fun emit(result: T)
     suspend fun emitSource(source: LiveData<Resource<T>>): DisposableHandle
     fun autoRetry(bool: Boolean)
     fun cancelable(bool: Boolean)
