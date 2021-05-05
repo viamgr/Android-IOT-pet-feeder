@@ -8,12 +8,14 @@ import com.facebook.soloader.SoLoader
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.MultipleConnectionInformer
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 import javax.inject.Inject
+import com.viam.resource.Resource as AppResource
 
 @HiltAndroidApp
 class MyApplication : MultiDexApplication() {
@@ -35,7 +37,7 @@ class MyApplication : MultiDexApplication() {
 
     override fun onCreate() {
         super.onCreate()
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
         setupDebuggingTools()
         setupLiveTask()
     }
@@ -50,7 +52,29 @@ class MyApplication : MultiDexApplication() {
                     exception
                 )
             }
+            .setResourceMapper {
+                if (it is AppResource<*>) {
+                    it.toResource()
+                } else {
+                    Resource.Success(it)
+                }
+            }
             .apply()
+    }
+
+
+    private fun AppResource<*>.toResource(): Resource<*> {
+        return when (this) {
+            is AppResource.Success -> {
+                Resource.Success(data)
+            }
+            is AppResource.Error -> {
+                Resource.Error(exception)
+            }
+            is AppResource.Loading -> {
+                Resource.Loading()
+            }
+        }
     }
 
     private fun setupDebuggingTools() {

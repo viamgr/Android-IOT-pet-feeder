@@ -23,6 +23,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginStart="100dp"
+            android:layout_marginLeft="100dp"
             android:layout_marginTop="2dp"
             android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -31,7 +32,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
-            android:layout_marginLeft="100dp"
             app:lottie_rawRes="@raw/circular" />
 
         <TextView
@@ -99,6 +99,7 @@
         android:padding="16dp"
         android:scaleType="fitXY"
         android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

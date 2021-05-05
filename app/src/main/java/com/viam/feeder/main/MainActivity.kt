@@ -46,21 +46,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupViews()
-       /* networkStatusObserver
-            .withActivity(this)
-            .onPermissionCallback {
-                viewModel.askedWifiPermissions.set(true)
-            }
-            .observe(this) {
-//                AutoRetryHandler.value = it.isAvailable
-                val isUnknownOrKnownWifiConnection =
-                    isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
-                if (!viewModel.isWifiDialogShowing && !isUnknownOrKnownWifiConnection) {
-                    setIsWifiDialogShowing(true)
-                    navController.navigate(WifiFragmentDirections.toWifiFragment(true))
-                }
-            }
-            .start()*/
+        /* networkStatusObserver
+             .withActivity(this)
+             .onPermissionCallback {
+                 viewModel.askedWifiPermissions.set(true)
+             }
+             .observe(this) {
+ //                AutoRetryHandler.value = it.isAvailable
+                 val isUnknownOrKnownWifiConnection =
+                     isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
+                 if (!viewModel.isWifiDialogShowing && !isUnknownOrKnownWifiConnection) {
+                     setIsWifiDialogShowing(true)
+                     navController.navigate(WifiFragmentDirections.toWifiFragment(true))
+                 }
+             }
+             .start()*/
 
         /*  TaskEventLogger.events.observe(this, EventObserver { resource ->
               resource?.onError {
