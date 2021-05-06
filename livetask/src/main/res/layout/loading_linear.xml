@@ -100,17 +100,5 @@
         android:max="100"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!--    <com.airbnb.lottie.LottieAnimationView-->
-    <!--        android:id="@+id/progressBar_linear"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="36dp"-->
-    <!--        android:layout_gravity="center"-->
-    <!--        android:scaleType="fitXY"-->
-    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--        app:lottie_autoPlay="true"-->
-    <!--        app:lottie_colorFilter="#000000"-->
-    <!--        app:lottie_loop="true"-->
-    <!--        app:lottie_rawRes="@raw/linear" />-->
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

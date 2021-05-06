@@ -24,8 +24,8 @@ class BlurViewType(val errorText: String? = null) : ViewType() {
 
     override val layoutId = R.layout.loading_blur
 
-    override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.let {
+    override fun loading(stateLayout: View, parent: ViewGroup, result: LiveTask<*>, view: View) {
+        stateLayout.apply {
             val blurView = stateLayout.findViewById<BlurView>(R.id.blurView)
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 blurView.setupWith(stateLayout as ViewGroup)
@@ -35,19 +35,17 @@ class BlurViewType(val errorText: String? = null) : ViewType() {
                     .setHasFixedTransformationMatrix(true)
             }
 
-
-            it.apply {
-                error.text = context.getString(R.string.loading)
-                progress.isVisible = true
-                handleCancelable(result)
-            }
+            error.text = context.getString(R.string.loading)
+            progress.isVisible = true
+            retry.isVisible = false
+            handleCancelable(result)
 
         }
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun error(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.apply {
+    override fun error(stateLayout: View, parent: ViewGroup, result: LiveTask<*>, view: View) {
+        stateLayout.apply {
             if ((result.result() as Resource.Error).exception is CancellationException) {
                 startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
                 view.tag = null

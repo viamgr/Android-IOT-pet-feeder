@@ -24,8 +24,8 @@ class CircularViewType : ViewType() {
 
     override val layoutId = R.layout.loading_circular
 
-    override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.apply {
+    override fun loading(stateLayout: View, parent: ViewGroup, result: LiveTask<*>, view: View) {
+        stateLayout.apply {
             cl_error_circular.visibility = View.GONE
             progressBar_circular.visibility = View.VISIBLE
             tv_loading_circular.visibility = View.VISIBLE
@@ -35,8 +35,8 @@ class CircularViewType : ViewType() {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun error(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.apply {
+    override fun error(stateLayout: View, parent: ViewGroup, result: LiveTask<*>, view: View) {
+        stateLayout.apply {
             if ((result.result() as Resource.Error).exception is CancellationException) {
                 startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_out))
                 view.tag = null

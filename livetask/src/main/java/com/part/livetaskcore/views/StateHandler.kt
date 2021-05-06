@@ -14,29 +14,27 @@ abstract class ViewType {
     abstract val layoutId: Int
 
     abstract fun loading(
-        stateLayout: View?,
+        stateLayout: View,
         parent: ViewGroup,
         result: LiveTask<*>,
         view: View,
     )
 
     abstract fun error(
-        stateLayout: View?,
+        stateLayout: View,
         parent: ViewGroup,
         result: LiveTask<*>,
         view: View,
     )
 
     open fun success(
-        stateLayout: View?,
+        stateLayout: View,
         parent: ViewGroup,
         result: LiveTask<*>,
         view: View,
     ) {
-        stateLayout?.let {
-            view.tag = null
-            parent.removeView(it)
-        }
+        view.tag = null
+        parent.removeView(stateLayout)
     }
 
     fun getErrorText(result: LiveTask<*>, errorText: String) =

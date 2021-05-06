@@ -22,10 +22,16 @@
         android:background="@color/blur_loading_divider"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ProgressBar
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:id="@+id/progress"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/horizontal_loading"
         app:layout_constraintBottom_toBottomOf="@+id/error"
         app:layout_constraintEnd_toStartOf="@+id/retry"
         app:layout_constraintTop_toTopOf="@id/error" />

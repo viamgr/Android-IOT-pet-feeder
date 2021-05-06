@@ -21,8 +21,8 @@ class LinearViewType : ViewType() {
 
     override val layoutId = R.layout.loading_linear
 
-    override fun loading(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.let {
+    override fun loading(stateLayout: View, parent: ViewGroup, result: LiveTask<*>, view: View) {
+        stateLayout.let {
             it.apply {
                 cl_error_linear.visibility = View.GONE
                 progressBar_linear.visibility = View.VISIBLE
@@ -35,8 +35,8 @@ class LinearViewType : ViewType() {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun error(stateLayout: View?, parent: ViewGroup, result: LiveTask<*>, view: View) {
-        stateLayout?.let {
+    override fun error(stateLayout: View, parent: ViewGroup, result: LiveTask<*>, view: View) {
+        stateLayout.let {
             it.apply {
                 handleCancelable(result)
                 if ((result.result() as Resource.Error).exception is CancellationException) {
