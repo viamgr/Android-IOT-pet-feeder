@@ -1,6 +1,6 @@
 package com.viam.feeder.core.domain
 
-import com.part.livetaskcore.usecases.ParametricResource
+import com.part.livetaskcore.usecases.ParametricUseCase
 import com.viam.resource.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -10,7 +10,7 @@ import timber.log.Timber
  * Executes business logic synchronously or asynchronously using Coroutines.
  */
 abstract class UseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) :
-    ParametricResource<P, Resource<R>> {
+    ParametricUseCase<P, Resource<R>> {
 
     /** Executes the use case asynchronously and returns a [Result].
      *

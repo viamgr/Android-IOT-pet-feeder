@@ -1,4 +1,4 @@
-package com.part.livetaskcore.bindingadapter
+package com.part.livetaskcore.views
 
 import android.view.View
 import android.view.ViewGroup
@@ -7,11 +7,10 @@ import androidx.core.view.isVisible
 import com.part.livetask.R
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
-import com.part.livetaskcore.livatask.ViewException
 import kotlinx.android.synthetic.main.loading_circular.view.*
 import kotlin.coroutines.cancellation.CancellationException
 
-class CircularViewType : ViewType {
+class CircularViewType : ViewType() {
     private fun View.handleCancelable(result: LiveTask<*>) {
         if (result.isCancelable == true) {
             ivBtn_close_circular.isVisible = true
@@ -44,13 +43,8 @@ class CircularViewType : ViewType {
                 parent.removeView(this)
             } else {
                 cl_error_circular.visibility = View.VISIBLE
-                val errorText =
-                    if ((result.result() as Resource.Error).exception is ViewException) {
-                        ((result.result() as Resource.Error).exception as ViewException).viewMessage
-                    } else {
-                        context.getString(R.string.tv_retry)
-                    }
-                tv_error_circular.text = errorText
+                tv_error_circular.text =
+                    getErrorText(result, context.getString(R.string.task_error_text))
                 handleCancelable(result)
                 if (result.isRetryable == true) {
                     cl_container_circular.visibility = View.VISIBLE
@@ -64,4 +58,6 @@ class CircularViewType : ViewType {
 
         }
     }
+
+
 }

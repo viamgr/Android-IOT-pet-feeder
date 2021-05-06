@@ -155,10 +155,8 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun handleAutoRetry(exception: Exception) {
-        val canAutoRetry =
-            autoRetry ?: false && connectionInformer?.registerIfRetryable(exception, this) == true
-        if (canAutoRetry && exception !is CancellationException) {
-            this.retry()
+        if (autoRetry == true && exception !is CancellationException) {
+            connectionInformer?.register(exception, this)
         }
     }
 

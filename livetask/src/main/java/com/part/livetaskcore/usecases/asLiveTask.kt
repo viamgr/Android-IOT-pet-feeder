@@ -19,7 +19,7 @@ fun <T> Flow<Resource<T>>.asLiveTask(
     }
 }
 
-inline fun <P, R> ParametricFlow<P, R>.asLiveTask(
+inline fun <P, R> ParametricFlowUseCase<P, R>.asLiveTask(
     crossinline builder: (ParametricLiveTaskBuilder<P, R>.() -> Unit) = {},
 ): ParametricLiveTask<P, R> {
     var liveTask: ParametricLiveTask<P, R>? = null
@@ -33,7 +33,7 @@ inline fun <P, R> ParametricFlow<P, R>.asLiveTask(
     return liveTask
 }
 
-inline fun <P, R> ParametricResource<P, R>.asLiveTask(
+inline fun <P, R> ParametricUseCase<P, R>.asLiveTask(
     crossinline builder: (ParametricLiveTaskBuilder<P, R>.() -> Unit) = {},
 ): ParametricLiveTask<P, R> {
     var liveTask: ParametricLiveTask<P, R>? = null

@@ -8,8 +8,8 @@ class MultipleConnectionInformer(private vararg val informers: BaseConnectionInf
         return informers.any { it.isRetryable(throwable) }
     }
 
-    override fun registerIfRetryable(throwable: Throwable, liveTask: LiveTask<*>): Boolean {
-        return informers.any { it.registerIfRetryable(throwable, liveTask) }
+    override fun register(throwable: Throwable, liveTask: LiveTask<*>): Boolean {
+        return informers.any { it.register(throwable, liveTask) }
     }
 
     override fun retryFailed(): Boolean {

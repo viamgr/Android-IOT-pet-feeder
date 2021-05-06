@@ -1,40 +1,49 @@
-package com.part.livetaskcore.bindingadapter
+package com.part.livetaskcore.views
 
 import android.view.View
 import android.view.ViewGroup
+import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.ViewException
 
 /**
  * Interface that allows controlling UI on each state. You can implement [ViewType] to
  * handle your own User Interface states if you want to use our DataBinding Adapter.
  * */
-interface ViewType {
-    val layoutId: Int
+abstract class ViewType {
+    abstract val layoutId: Int
 
-    fun loading(
+    abstract fun loading(
         stateLayout: View?,
         parent: ViewGroup,
         result: LiveTask<*>,
-        view: View
+        view: View,
     )
 
-    fun error(
+    abstract fun error(
         stateLayout: View?,
         parent: ViewGroup,
         result: LiveTask<*>,
-        view: View
+        view: View,
     )
 
-    fun success(
+    open fun success(
         stateLayout: View?,
         parent: ViewGroup,
         result: LiveTask<*>,
-        view: View
+        view: View,
     ) {
         stateLayout?.let {
             view.tag = null
             parent.removeView(it)
         }
     }
+
+    fun getErrorText(result: LiveTask<*>, errorText: String) =
+        if ((result.result() as Resource.Error).exception is ViewException) {
+            ((result.result() as Resource.Error).exception as ViewException).viewMessage
+        } else {
+            errorText
+        }
 }
 

@@ -1,4 +1,4 @@
-package com.part.livetaskcore.bindingadapter
+package com.part.livetaskcore.views
 
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +9,7 @@ import com.part.livetaskcore.livatask.LiveTask
 import kotlinx.android.synthetic.main.loading_linear.view.*
 import kotlin.coroutines.cancellation.CancellationException
 
-class LinearViewType : ViewType {
+class LinearViewType : ViewType() {
     private fun View.handleCancelable(result: LiveTask<*>) {
         if (result.isCancelable == true) {
             ivBtn_close_linear.visibility = View.VISIBLE

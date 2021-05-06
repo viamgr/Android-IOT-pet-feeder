@@ -13,12 +13,10 @@ abstract class BaseConnectionInformer(callback: ConnectionCallback) : Connection
 
     private val registers = mutableListOf<Pair<LiveTask<*>, Throwable>>()
 
-    override fun registerIfRetryable(throwable: Throwable, liveTask: LiveTask<*>): Boolean {
-        val b = if (isRetryable(throwable))
+    override fun register(throwable: Throwable, liveTask: LiveTask<*>): Boolean {
+        return if (isRetryable(throwable))
             registers.add(Pair(liveTask, throwable))
         else false
-        println("registers:${registers.size} hashCode:${this@BaseConnectionInformer.hashCode()} ")
-        return b
     }
 
     override fun unregister(liveTask: LiveTask<*>) {

@@ -7,10 +7,12 @@ import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.ViewCompat
+import com.part.livetaskcore.views.ViewType
 
 data class ViewParent(
     val view: View,
-    val parent: Any
+    val parent: Any,
 )
 
 abstract class ViewWrapper {
@@ -28,13 +30,14 @@ abstract class ViewWrapper {
 class ConstraintLayoutViewWrapper(
     private val parent: ConstraintLayout,
     private val view: View,
-    val layout: Int
+    val layout: Int,
 ) :
     ViewWrapper() {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun place(): ViewParent {
         if (view.tag == null || parent.getViewById(view.tag as Int) == null) {
             val layout = inflateLayout(parent, layout)
+            ViewCompat.setElevation(layout, Float.MAX_VALUE)
             setConstraint(layout)
             layout.bringToFront()
             view.tag = layout.id
@@ -115,6 +118,7 @@ fun getViewParent(
     view: View,
     loadingViewType: ViewType,
 ): ViewParent {
+    if (view.id == -1) view.id = ViewCompat.generateViewId()
     val placement = typeHandler(view, loadingViewType.layoutId).place()
     return ViewParent(placement.view, placement.parent)
 }

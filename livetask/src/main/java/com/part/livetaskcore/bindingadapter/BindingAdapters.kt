@@ -8,6 +8,7 @@ import androidx.databinding.BindingAdapter
 import androidx.lifecycle.LifecycleOwner
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.views.CircularViewType
 
 @OptIn(ExperimentalStdlibApi::class)
 @BindingAdapter(value = ["reactToTask"], requireAll = false)

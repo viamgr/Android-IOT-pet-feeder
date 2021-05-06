@@ -3,7 +3,7 @@ package com.part.livetaskcore.livatask
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.Resource
-import com.part.livetaskcore.bindingadapter.ViewType
+import com.part.livetaskcore.views.ViewType
 import kotlinx.coroutines.DisposableHandle
 
 /**

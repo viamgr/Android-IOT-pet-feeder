@@ -10,12 +10,12 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkRequest
 import android.os.Build
-import androidx.lifecycle.LiveData
+import androidx.annotation.RequiresApi
 
 /**
  * An observable class that its value indicates the connectivity status.
  * */
-class ConnectionManager(private val context: Context) : LiveData<Boolean>() {
+class ConnectionManager(private val context: Context) {
 
     private var onStatusChangeListener: ((isConnected: Boolean) -> Unit)? = null
     private var connectivityManager: ConnectivityManager =
@@ -23,31 +23,31 @@ class ConnectionManager(private val context: Context) : LiveData<Boolean>() {
 
     private lateinit var connectivityManagerCallback: ConnectivityManager.NetworkCallback
 
+    init {
+        start()
+    }
+
     fun setOnStatusChangeListener(onStatusChangeListener: (isConnected: Boolean) -> Unit) {
         this.onStatusChangeListener = onStatusChangeListener
     }
 
-    override fun onActive() {
-        super.onActive()
-        updateConnection()
+    fun start() {
+//        updateConnection(activeNetwork?.isConnected == true)
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> connectivityManager.registerDefaultNetworkCallback(
-                getConnectivityManagerCallback()
+                registerConnectivityManager()
             )
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> lollipopNetworkAvailableRequest()
             else -> {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    context.registerReceiver(
-                        networkReceiver,
-                        IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
-                    )
-                }
+                context.registerReceiver(
+                    networkReceiver,
+                    IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+                )
             }
         }
     }
 
-    override fun onInactive() {
-        super.onInactive()
+    fun stop() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             connectivityManager.unregisterNetworkCallback(connectivityManagerCallback)
         } else {
@@ -62,41 +62,37 @@ class ConnectionManager(private val context: Context) : LiveData<Boolean>() {
             .addTransportType(android.net.NetworkCapabilities.TRANSPORT_WIFI)
         connectivityManager.registerNetworkCallback(
             builder.build(),
-            getConnectivityManagerCallback()
+            registerConnectivityManager()
         )
     }
 
-    private fun getConnectivityManagerCallback(): ConnectivityManager.NetworkCallback {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-            connectivityManagerCallback = object : ConnectivityManager.NetworkCallback() {
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun registerConnectivityManager(): ConnectivityManager.NetworkCallback {
+        connectivityManagerCallback =
+            object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
-                    postValue(true)
+                    updateConnection(true)
                     super.onAvailable(network)
                 }
 
                 override fun onLost(network: Network) {
-                    postValue(false)
+                    updateConnection(false)
                     super.onLost(network)
                 }
             }
-            return connectivityManagerCallback
-        } else {
-            throw IllegalAccessError("Should not happen")
-        }
+        return connectivityManagerCallback
     }
 
     private val networkReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            updateConnection()
+            val activeNetwork = connectivityManager.activeNetworkInfo
+
+            updateConnection(activeNetwork?.isConnected == true)
         }
     }
 
-    @Suppress("DEPRECATION")
-    private fun updateConnection() {
-        val activeNetwork = connectivityManager.activeNetworkInfo
-        postValue(activeNetwork?.isConnected == true)
-        onStatusChangeListener?.invoke(activeNetwork?.isConnected == true)
+    private fun updateConnection(isConnected: Boolean) {
+        onStatusChangeListener?.invoke(isConnected)
     }
 
 

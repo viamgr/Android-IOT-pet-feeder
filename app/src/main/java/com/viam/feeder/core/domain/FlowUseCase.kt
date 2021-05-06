@@ -1,6 +1,6 @@
 package com.viam.feeder.core.domain
 
-import com.part.livetaskcore.usecases.ParametricFlow
+import com.part.livetaskcore.usecases.ParametricFlowUseCase
 import com.viam.resource.Resource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.flowOn
  * Handling an exception (emit [Resource.Error] to the Resource) is the subclasses's responsibility.
  */
 abstract class FlowUseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) :
-    ParametricFlow<P, Resource<R>> {
+    ParametricFlowUseCase<P, Resource<R>> {
 
     protected abstract fun execute(parameter: P): Flow<Resource<R>>
     override operator fun invoke(parameter: P): Flow<Resource<R>> = execute(parameter)

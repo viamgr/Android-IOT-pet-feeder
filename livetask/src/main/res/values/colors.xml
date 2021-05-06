@@ -11,4 +11,6 @@
     <color name="loading_layout_background">#FFFFFF</color>
     <color name="loading_layout_background_transparent">#36FFFFFF</color>
     <color name="border">#E91E63</color>
+    <color name="blur_loading_divider">#E0E0E0</color>
+    <color name="blur_loading_image_tint">@color/black</color>
 </resources>

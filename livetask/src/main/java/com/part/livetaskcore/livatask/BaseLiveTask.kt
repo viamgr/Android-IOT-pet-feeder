@@ -5,8 +5,8 @@ import androidx.lifecycle.MediatorLiveData
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
-import com.part.livetaskcore.bindingadapter.CircularViewType
-import com.part.livetaskcore.bindingadapter.ViewType
+import com.part.livetaskcore.views.CircularViewType
+import com.part.livetaskcore.views.ViewType
 import com.part.livetaskcore.withResult
 import kotlin.coroutines.cancellation.CancellationException
 
