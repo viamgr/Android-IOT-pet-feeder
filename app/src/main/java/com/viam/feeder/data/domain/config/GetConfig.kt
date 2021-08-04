@@ -9,7 +9,6 @@ import com.viam.resource.Resource
 import com.viam.resource.onSuccess
 import com.viam.websocket.WebSocketApi
 import com.viam.websocket.model.SocketTransfer
-import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -18,7 +17,7 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Named
 
-@ActivityScoped
+
 class GetConfig @Inject constructor(
     private val coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     @Named("configFile") private val configFile: File,

@@ -1,16 +1,18 @@
 package com.viam.feeder.ui.record
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.viam.feeder.core.extensions.timerAsync
 import com.viam.feeder.core.livedata.Event
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RecordViewModel @ViewModelInject constructor() : ViewModel() {
+@HiltViewModel
+class RecordViewModel @Inject constructor() : ViewModel() {
 
     companion object {
         const val MAX_TIME = 10L

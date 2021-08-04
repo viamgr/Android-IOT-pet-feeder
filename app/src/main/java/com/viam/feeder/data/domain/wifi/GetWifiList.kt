@@ -8,12 +8,11 @@ import com.viam.feeder.data.models.KeyValueMessage
 import com.viam.feeder.data.models.WifiDevice
 import com.viam.resource.Resource
 import com.viam.websocket.WebSocketApi
-import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-@ActivityScoped
+
 class GetWifiList @Inject constructor(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     private val webSocketApi: WebSocketApi

@@ -1,7 +1,6 @@
 package com.viam.feeder.ui.timer
 
 import android.text.format.DateFormat
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,9 +19,12 @@ import com.viam.feeder.data.domain.event.SendLongValue
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValueMessage
 import com.viam.resource.dataOrNull
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
+import javax.inject.Inject
 
-class TimerViewModel @ViewModelInject constructor(
+@HiltViewModel
+class TimerViewModel @Inject constructor(
     getAlarms: GetAlarms,
     onLongValue: GetLongValue,
     requestGetTime: SendEvent,

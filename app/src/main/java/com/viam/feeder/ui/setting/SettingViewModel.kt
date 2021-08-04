@@ -1,6 +1,5 @@
 package com.viam.feeder.ui.setting
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.part.livetaskcore.usecases.asLiveTask
@@ -11,11 +10,14 @@ import com.viam.feeder.data.domain.config.WifiAuthentication
 import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.wifi.GetWifiList
 import com.viam.feeder.data.models.WifiDevice
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import javax.inject.Inject
 
-class SettingViewModel @ViewModelInject constructor(
+@HiltViewModel
+class SettingViewModel @Inject constructor(
     wifiList: GetWifiList,
     sendEvent: SendEvent,
     private val setWifiCredentials: SetWifiCredentials

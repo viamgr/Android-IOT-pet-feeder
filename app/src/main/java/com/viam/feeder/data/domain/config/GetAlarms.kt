@@ -4,10 +4,9 @@ import androidx.lifecycle.map
 import com.viam.feeder.core.domain.LiveDataUseCase
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.storage.ConfigFields
-import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
-@ActivityScoped
+
 class GetAlarms @Inject constructor(
     private val configFields: ConfigFields,
 ) : LiveDataUseCase<List<ClockTimer>>() {

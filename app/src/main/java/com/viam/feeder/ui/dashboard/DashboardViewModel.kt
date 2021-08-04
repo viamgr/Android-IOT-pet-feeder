@@ -1,6 +1,5 @@
 package com.viam.feeder.ui.dashboard
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,9 +19,12 @@ import com.viam.feeder.data.domain.specification.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.InputStream
+import javax.inject.Inject
 
-class DashboardViewModel @ViewModelInject constructor(
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
     getFeedingDurationVolume: GetFeedingDuration,
     getSoundVolume: GetSoundVolume,
     getLedTurnOffDelay: GetLedTurnOffDelay,

@@ -2,13 +2,20 @@
 buildscript {
     ext.kotlin_version = "1.4.10"
     repositories {
+        maven {
+            url "https://nexus.partdp.ir/repository/part-android/"
+            artifactUrls "https://nexus.partdp.ir/repository/part-android/"
+            credentials {
+                username "android-user"
+                password "p9PTCB[^Z}tcM}wn:ZF4NnVNd=DXC-ML=w3/6"
+            }
+        }
         google()
-        jcenter()
     }
     dependencies {
         classpath "com.android.tools.build:gradle:4.0.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.28-alpha'
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.38.1'
         classpath 'com.google.gms:google-services:4.3.5'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.3.0'
         classpath 'androidx.navigation:navigation-safe-args-gradle-plugin:2.3.2'
@@ -20,10 +27,15 @@ buildscript {
 
 allprojects {
     repositories {
+        maven {
+            url "https://nexus.partdp.ir/repository/part-android/"
+            artifactUrls "https://nexus.partdp.ir/repository/part-android/"
+            credentials {
+                username "android-user"
+                password "p9PTCB[^Z}tcM}wn:ZF4NnVNd=DXC-ML=w3/6"
+            }
+        }
         google()
-        jcenter()
-        maven { url "https://dl.bintray.com/windsekirun/maven/" }
-
     }
 }
 subprojects {

@@ -1,16 +1,17 @@
 package com.viam.feeder.ui.wifi
 
-import androidx.hilt.Assisted
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.viam.feeder.core.livedata.Event
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
-class WifiViewModel @ViewModelInject constructor(
-    @Assisted savedState: SavedStateHandle,
+@HiltViewModel
+class WifiViewModel @Inject constructor(
+    savedState: SavedStateHandle,
 ) : ViewModel() {
     private val _enableWifiClicked = MutableLiveData<Event<Unit>>()
     val enableWifiClicked: LiveData<Event<Unit>> = _enableWifiClicked
