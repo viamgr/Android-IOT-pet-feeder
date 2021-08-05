@@ -3,12 +3,13 @@ package com.part.livetaskcore.livatask
 import com.part.livetaskcore.LiveTaskManager
 
 class ParametricCoroutineLiveTask<P, T>(
-    parametricBlock: suspend ParametricLiveTaskBuilder<P, T>.() -> Unit = {},
     liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
+    parametricBlock: ParametricLiveTaskBuilder<P, T>.() -> Unit = {},
 ) : CoroutineLiveTask<T>(liveTaskManager = liveTaskManager), ParametricLiveTask<P, T>,
     ParametricLiveTaskBuilder<P, T> {
 
-    override val block = parametricBlock as suspend LiveTaskBuilder<T>.() -> Unit
+    override val block: LiveTaskBuilder<T>.() -> Unit =
+        parametricBlock as LiveTaskBuilder<T>.() -> Unit
 
     private var parameter: P? = null
     override fun getParameter(): P {

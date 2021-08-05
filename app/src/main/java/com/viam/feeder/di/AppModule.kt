@@ -2,9 +2,9 @@ package com.viam.feeder.di
 
 import android.content.Context
 import com.part.livetaskcore.LiveTaskManager
-import com.part.livetaskcore.MultipleConnectionInformer
-import com.part.livetaskcore.WebConnectionChecker
 import com.part.livetaskcore.connection.ConnectionManager
+import com.part.livetaskcore.connection.MultipleConnectionInformer
+import com.part.livetaskcore.connection.WebConnectionChecker
 import com.squareup.moshi.Moshi
 import com.viam.feeder.SocketConnectionChecker
 import dagger.Module

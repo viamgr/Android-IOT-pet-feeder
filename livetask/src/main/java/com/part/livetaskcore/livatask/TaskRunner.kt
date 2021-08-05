@@ -33,12 +33,15 @@ class TaskRunner<T>(
         }
     }
 
-    fun cancel() {
+    fun cancel(immediately: Boolean) {
         cancellationJob = scope.launch(Dispatchers.Main.immediate) {
-            delay(timeoutInMs)
+            if (!immediately)
+                delay(timeoutInMs)
             runningJob?.cancel()
             runningJob = null
-            liveData.emit(Resource.Error(CancellationException()))
+            liveData.emitBlock {
+                Resource.Error(CancellationException())
+            }
         }
     }
 }

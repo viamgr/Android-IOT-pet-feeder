@@ -18,7 +18,6 @@ import com.viam.feeder.data.domain.event.SendEvent
 import com.viam.feeder.data.domain.event.SendLongValue
 import com.viam.feeder.data.models.ClockTimer
 import com.viam.feeder.data.models.KeyValueMessage
-import com.viam.resource.dataOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
 import javax.inject.Inject
@@ -33,13 +32,13 @@ class TimerViewModel @Inject constructor(
 ) : ViewModel() {
 
     val setTimeTask = setTime.asLiveTask {
-        onSuccess { requestGetTime() }
+        onSuccess<Unit> { requestGetTime() }
     }
     private val setAlarmsTask = setAlarms.asLiveTask()
     private val requestGetTimeTask = requestGetTime.asLiveTask()
     private val onLongValueTask = onLongValue.asLiveTask {
-        onSuccess {
-            val timeInMillis = (it.dataOrNull() ?: 0) * 1000
+        onSuccess<Long> {
+            val timeInMillis = it * 1000
             val inDate = Date(timeInMillis)
             _date.value = DateFormat.format("EEE, MMMM dd, yyyy", inDate).toString()
             _time.value = DateFormat.format("h:mm", inDate).toString()

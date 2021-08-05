@@ -22,7 +22,6 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-
 class MainActivity : AppCompatActivity() {
 
     private var backPressedOnce = false

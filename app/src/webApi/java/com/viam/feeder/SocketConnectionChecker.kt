@@ -1,6 +1,6 @@
 package com.viam.feeder
 
-import com.part.livetaskcore.BaseConnectionInformer
+import com.part.livetaskcore.connection.BaseConnectionInformer
 import com.viam.websocket.SocketCloseException
 import com.viam.websocket.WebSocketApi
 import javax.inject.Inject

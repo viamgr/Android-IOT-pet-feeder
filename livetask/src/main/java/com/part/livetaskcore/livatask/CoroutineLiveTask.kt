@@ -2,52 +2,75 @@ package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
 import com.part.livetaskcore.*
+import com.part.livetaskcore.connection.ConnectionInformer
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
+
 
 open class CoroutineLiveTask<T>(
-    open val block: suspend LiveTaskBuilder<T>.() -> Unit = {},
     private val liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
+    open val block: LiveTaskBuilder<T>.() -> Unit = {},
 ) : BaseLiveTask<T>(liveTaskManager) {
-    private var retryCounts = 1
-
+    private var emitBlock: Any? = null
     private var emittedSource: Emitted? = null
     private var connectionInformer: ConnectionInformer? = liveTaskManager.connectionInformer
     var context: CoroutineContext? = null
 
 
-    override val isRetryable = retryable
-    override val isAutoRetry = autoRetry
-    override val isCancelable = cancelable
+    override fun configure() {
+        block.invoke(this@CoroutineLiveTask)
+    }
 
-    internal suspend fun addDisposableEmit(
+    override fun isRetryable(): Boolean = retryable == true
+    override fun isAutoRetry() = autoRetry == true
+    override fun isCancelable() = cancelable == true
+
+    private suspend fun addDisposableEmit(
         source: LiveData<Resource<T>>,
     ): Emitted = withContext(Dispatchers.Main.immediate) {
         addSource(source) {
-            latestState = it
+            setResult(it)
             value = this@CoroutineLiveTask
         }
         Emitted(source = source, mediator = this@CoroutineLiveTask)
     }
 
-    override fun run(coroutineContext: CoroutineContext?): LiveTask<T> {
-        return run(coroutineContext ?: EmptyCoroutineContext)
+    override fun run(coroutineContext: CoroutineContext): LiveTask<T> {
+        return runTask(coroutineContext)
+    }
+
+    override fun onErrorHappened(value: Resource.Error) {
+        super.onErrorHappened(value)
+        handleAutoRetry(value.exception)
     }
 
     override suspend fun run(): CoroutineLiveTask<T> {
-        return run(currentCoroutineContext())
+        return runTask(currentCoroutineContext())
     }
 
-    private fun run(coroutineContext: CoroutineContext): CoroutineLiveTask<T> {
-        println("run new task")
+    private fun runTask(coroutineContext: CoroutineContext): CoroutineLiveTask<T> {
+        emitBlock = null
+        configure()
         unRegisterConnectionInformer()
-        handleResult(Resource.Loading())
+        applyResult(Resource.Loading())
         val supervisorJob = SupervisorJob(coroutineContext[Job])
-        context = Dispatchers.IO + coroutineContext + supervisorJob
+        context = coroutineContext + supervisorJob
+
         blockRunner = TaskRunner(
             liveData = this,
-            block = block,
+            block = {
+                onRunCallback?.invoke()
+                emitBlock?.let {
+                    if (it is EmitDataBlock<*>) {
+                        val data = it.invoke()
+                        @Suppress("UNCHECKED_CAST")
+                        emitWithClear(getMappedResult(data as T))
+                    } else if (it is EmitResultBlock<*>) {
+                        @Suppress("UNCHECKED_CAST")
+                        emitWithClear(it.invoke() as Resource<T>)
+                    }
+                }
+            },
             timeoutInMs = DEFAULT_TIMEOUT,
             scope = CoroutineScope(context!!)
         ) {
@@ -55,6 +78,11 @@ open class CoroutineLiveTask<T>(
         }
         blockRunner?.maybeRun()
         return this
+    }
+
+    override fun applyResult(result: Resource<T>) {
+        unRegisterConnectionInformer()
+        super.applyResult(result)
     }
 
     override fun onActive() {
@@ -65,24 +93,28 @@ open class CoroutineLiveTask<T>(
     override fun onInactive() {
         super.onInactive()
         println("onInactive function")
-        blockRunner?.cancel()
+        blockRunner?.cancel(false)
     }
 
     override fun retry() {
+        if (context == null) {
+            throw Exception("You shouldn't retry before calling run")
+        }
         run(context!!)
     }
 
     private fun unRegisterConnectionInformer() {
-        connectionInformer?.unregister(this)
+        if (isAutoRetry())
+            connectionInformer?.unregister(this)
     }
 
-    override fun cancel() {
-        println("cancel function")
+    override fun cancel(immediately: Boolean?): LiveTask<T> {
         if (blockRunner == null) {
-            handleResult(Resource.Error(CancellationException()))
+            applyResult(Resource.Error(CancellationException()))
         } else {
-            blockRunner?.cancel()
+            blockRunner?.cancel(immediately == true)
         }
+        return this
     }
 
     override suspend fun emitSource(source: LiveData<Resource<T>>): DisposableHandle {
@@ -97,62 +129,6 @@ open class CoroutineLiveTask<T>(
         emittedSource = null
     }
 
-    private fun handleResult(result: Resource<T>?) {
-        print("applyResult:")
-        println(result)
-        unRegisterConnectionInformer()
-        result?.onSuccess {
-            onSuccessAction(it)
-            setResult(result)
-        }?.onError {
-            it.printStackTrace()
-            onErrorAction(it)
-            if (it !is CancellationException) {
-                println(("it !is CancellationException"))
-                setResult(Resource.Error(errorMapper?.mapError(it) ?: it))
-            } else {
-                println(("it is CancellationException"))
-                setResult(result)
-            }
-            handleAutoRetry(it)
-        }?.onLoading<T, Any?> {
-            onLoadingAction(it)
-            setResult(result)
-        }
-
-        this.postValue(this)
-    }
-
-    private fun handleResult(result: T) {
-        unRegisterConnectionInformer()
-        val mappedResult = liveTaskManager.resourceMapper.map(result)
-        mappedResult.onSuccess {
-            onSuccessAction(result)
-            setResult(Resource.Success(it) as Resource<T>)
-
-        }.onError {
-            it.printStackTrace()
-            onErrorAction(it)
-            if (it !is CancellationException) {
-                println(("it !is CancellationException"))
-                setResult(Resource.Error(errorMapper?.mapError(it) ?: it))
-            } else {
-                println(("it is CancellationException"))
-            }
-            handleAutoRetry(it)
-            setResult(Resource.Error(it))
-        }.onLoading<T, Any?> {
-            onLoadingAction(it)
-            setResult(Resource.Loading(it))
-        }
-
-        this.postValue(this)
-    }
-
-    private fun setResult(result: Resource<T>) {
-        println("setResult: $result")
-        this.latestState = result
-    }
 
     private fun handleAutoRetry(exception: Exception) {
         if (autoRetry == true && exception !is CancellationException) {
@@ -160,21 +136,27 @@ open class CoroutineLiveTask<T>(
         }
     }
 
-    override suspend fun emit(result: Resource<T>) {
-        clearSource()
-        withContext(context!! + Dispatchers.Main.immediate) {
-            println("emit $result")
-            handleResult(result)
-        }
+    override fun emitBlock(resultBlock: EmitResultBlock<T>) {
+        emitBlock = resultBlock
     }
 
-    override suspend fun emit(result: T) {
-        clearSource()
-        withContext(context!! + Dispatchers.Main.immediate) {
-            println("emit $result")
-            handleResult(result)
-        }
+    override fun emitData(dataBlock: EmitDataBlock<T>) {
+        emitBlock = dataBlock
     }
 
+    private suspend fun emitWithClear(result: Resource<T>) {
+        clearSource()
+        applyResult(result)
+    }
 
+    private fun getMappedResult(data: T): Resource<T> {
+        val map = liveTaskManager.resourceMapper?.map(data)
+        val resource = (map ?: Resource.Success(data))
+        @Suppress("UNCHECKED_CAST")
+        return resource as Resource<T>
+    }
+
+    override suspend fun emit(data: T) {
+        emitWithClear(getMappedResult(data))
+    }
 }

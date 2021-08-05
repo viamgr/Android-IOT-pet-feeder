@@ -15,7 +15,7 @@ class TimerController : TypedEpoxyController<List<ClockTimer>>() {
                 minute(clockTimer.minute)
                 time(if (clockTimer.hour < 12) R.string.am else R.string.pm)
                 removeListener { _ ->
-                    clickListener(clockTimer)
+                    this@TimerController.clickListener(clockTimer)
                 }
             }
         }

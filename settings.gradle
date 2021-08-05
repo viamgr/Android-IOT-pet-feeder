@@ -2,4 +2,6 @@ include ':websocket'
 include ':resource'
 include ':app'
 include ':livetask'
+include ':binding'
+//include ':compose'
 rootProject.name = "LiveTask2"

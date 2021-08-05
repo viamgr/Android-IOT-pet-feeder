@@ -58,6 +58,7 @@ class ConnectionManager(private val context: Context) {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private fun lollipopNetworkAvailableRequest() {
         val builder = NetworkRequest.Builder()
+            .addTransportType(android.net.NetworkCapabilities.TRANSPORT_VPN)
             .addTransportType(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)
             .addTransportType(android.net.NetworkCapabilities.TRANSPORT_WIFI)
         connectivityManager.registerNetworkCallback(

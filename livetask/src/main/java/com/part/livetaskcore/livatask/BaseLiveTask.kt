@@ -1,14 +1,13 @@
 package com.part.livetaskcore.livatask
 
+import androidx.annotation.CallSuper
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
-import com.part.livetaskcore.views.BlurViewType
 import com.part.livetaskcore.views.ViewType
-import com.part.livetaskcore.withResult
-import kotlin.coroutines.cancellation.CancellationException
 
 
 /**
@@ -16,36 +15,83 @@ import kotlin.coroutines.cancellation.CancellationException
  * */
 abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveData<LiveTask<T>>(),
     LiveTask<T>, LiveTaskBuilder<T> {
-
-    protected var cancelable: Boolean? = true
+    protected open val mediatorLiveResult = MediatorLiveData<Resource<T>?>()
+    override val liveResult: LiveData<Resource<T>?>
+        get() = mediatorLiveResult
+    protected var cancelable: Boolean? = null
+    protected var viewType: ViewType? = null
     protected var autoRetry: Boolean? = false
-    protected var retryable: Boolean? = true
+    protected var retryable: Boolean? = null
     protected var blockRunner: TaskRunner<T>? = null
-
-
-    protected var onSuccessAction: (T?) -> Unit = {}
+    protected var onSuccessAction: (Any?) -> Unit = {}
+    protected var onRunCallback: (suspend () -> Unit)? = null
     protected var onErrorAction: (Exception) -> Unit = {}
-    protected var errorMapper: ErrorMapper? = liveTaskManager.errorMapper
-
+    protected var errorMapper: ErrorMapper = liveTaskManager.errorMapper
     protected var onLoadingAction: (Any?) -> Unit = {}
-    var latestState: Resource<T>? = null
 
-    override var loadingViewType: ViewType = BlurViewType()
-    override fun asLiveData(): LiveData<LiveTask<T>> = this
-    override fun result(): Resource<T>? = latestState
+    @VisibleForTesting
+    fun isRetryableForTesting() = retryable
 
-    fun hasError(liveTask: LiveTask<*>) =
-        liveTask.result() is Resource.Error && (liveTask.result() as Resource.Error).exception !is CancellationException
+    private var latestResult: Resource<T>? = null
+        set(value) {
+            field = when (value) {
+                is Resource.Success -> {
+                    onSuccessHappened(value)
+                    value
+                }
+                is Resource.Error -> {
+                    val error = mapError(value)
+                    onErrorHappened(value)
+                    error
+                }
+                is Resource.Loading -> {
+                    onLoadingHappened(value)
+                    value
+                }
+                else -> value
+            }
+            fireChanges(field)
+        }
 
-    protected fun applyResult(result: Resource<T>) {
-        this.latestState = result
-        result.withResult(
-            onSuccess = { onSuccessAction(it) },
-            onError = { onErrorAction(it) },
-            onLoading = { onLoadingAction(it) }
-        )
-        postValue(this)
+    protected fun setResult(result: Resource<T>?) {
+        latestResult = result
     }
+
+    @VisibleForTesting
+    public fun setResultForTest(result: Resource<T>?) {
+        latestResult = result
+    }
+
+    @CallSuper
+    protected open fun onLoadingHappened(value: Resource.Loading) {
+        onLoadingAction(value.data)
+    }
+
+    @CallSuper
+    @Suppress("UNCHECKED_CAST")
+    protected open fun onSuccessHappened(value: Resource.Success<*>) {
+        onSuccessAction(value.data)
+    }
+
+    @CallSuper
+    @Suppress("UNCHECKED_CAST")
+    protected open fun onErrorHappened(value: Resource.Error) {
+        onErrorAction(value.exception)
+    }
+
+    private fun fireChanges(resource: Resource<T>?) {
+        postValue(this)
+        mediatorLiveResult.postValue(resource)
+    }
+
+    private fun mapError(value: Resource.Error): Resource.Error {
+        val mapError = errorMapper.mapError(value.exception)
+        return mapError.let { Resource.Error(it) }
+    }
+
+    override fun loadingViewType(): ViewType? = viewType
+    override fun asLiveData(): LiveData<LiveTask<T>> = this
+    override fun result(): Resource<T>? = latestResult
 
     override fun cancelable(bool: Boolean) {
         cancelable = bool
@@ -53,7 +99,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
 
 
     override fun viewType(viewType: ViewType) {
-        loadingViewType = viewType
+        this.viewType = viewType
     }
 
 
@@ -69,8 +115,9 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
         this.errorMapper = errorMapper
     }
 
-    override fun onSuccess(action: (T?) -> Unit) {
-        onSuccessAction = action
+    override fun <R> onSuccess(action: (R) -> Unit) {
+        @Suppress("UNCHECKED_CAST")
+        onSuccessAction = action as (Any?) -> Unit
     }
 
     override fun onError(action: (Exception) -> Unit) {
@@ -81,4 +128,12 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
         onLoadingAction = action
     }
 
+    override fun onRun(block: suspend () -> Unit) {
+        onRunCallback = block
+    }
+
+    @CallSuper
+    protected open fun applyResult(result: Resource<T>) {
+        latestResult = result
+    }
 }

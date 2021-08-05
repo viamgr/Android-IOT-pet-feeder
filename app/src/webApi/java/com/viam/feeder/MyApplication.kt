@@ -6,9 +6,10 @@ import com.facebook.flipper.android.utils.FlipperUtils
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.facebook.soloader.SoLoader
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.part.binidng.views.addDefaultClassicViewTypes
 import com.part.livetaskcore.LiveTaskManager
-import com.part.livetaskcore.MultipleConnectionInformer
 import com.part.livetaskcore.Resource
+import com.part.livetaskcore.connection.MultipleConnectionInformer
 import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.core.domain.utils.toMessage
 import com.viam.websocket.WebSocketApi
@@ -59,6 +60,8 @@ class MyApplication : MultiDexApplication() {
                     Resource.Success(it)
                 }
             }
+            .addDefaultClassicViewTypes()
+
             .apply()
     }
 

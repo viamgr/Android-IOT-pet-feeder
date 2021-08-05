@@ -7,16 +7,18 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 interface LiveTask<T> {
-    val isRetryable: Boolean?
-    val isAutoRetry: Boolean?
-    val isCancelable: Boolean?
-    var loadingViewType: ViewType
+    fun isRetryable(): Boolean
+    fun isAutoRetry(): Boolean
+    fun isCancelable(): Boolean
+    fun loadingViewType(): ViewType?
+    val liveResult: LiveData<Resource<T>?>
     fun result(): Resource<T>?
     fun asLiveData(): LiveData<LiveTask<T>>
     fun retry()
     suspend fun run(): LiveTask<T>
-    fun run(coroutineContext: CoroutineContext? = EmptyCoroutineContext): LiveTask<T>
-    fun cancel()
+    fun run(coroutineContext: CoroutineContext = EmptyCoroutineContext): LiveTask<T>
+    fun cancel(immediately: Boolean? = true): LiveTask<T>
+    fun configure()
 }
 
 interface ParametricLiveTask<P, T> : LiveTask<T> {
