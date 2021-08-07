@@ -2,26 +2,30 @@ package com.viam.feeder.core.databinding
 
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import androidx.viewbinding.ViewBinding
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-class FragmentViewBindingDelegate<T : ViewBinding>(
-    val fragment: Fragment,
-    val viewBindingFactory: (View) -> T
+//Todo Change it to Read/Write Property so I can use it with mutable bindings
+class ViewBindingProperty<T : ViewBinding>(
+    private val fragment: Fragment,
+    private val viewBindingFactory: (View) -> T,
+    private val beforeDestroyCallback: (T.() -> Unit)?
 ) : ReadOnlyProperty<Fragment, T> {
     private var binding: T? = null
 
     init {
-        fragment.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onCreate(owner: LifecycleOwner) {
+        fragment.lifecycle.addObserver(object : LifecycleObserver {
+            @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+            fun onCreate() {
                 fragment.viewLifecycleOwnerLiveData.observe(fragment) { viewLifecycleOwner ->
-                    viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
-                        override fun onDestroy(owner: LifecycleOwner) {
+                    viewLifecycleOwner.lifecycle.addObserver(object : LifecycleObserver {
+                        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+                        fun onDestroy() {
+                            binding?.let { beforeDestroyCallback?.invoke(it) }
                             binding = null
                         }
                     })
@@ -31,19 +35,20 @@ class FragmentViewBindingDelegate<T : ViewBinding>(
     }
 
     override fun getValue(thisRef: Fragment, property: KProperty<*>): T {
-        val binding = binding
         if (binding != null) {
-            return binding
+            return binding!!
         }
 
-        val lifecycle = fragment.viewLifecycleOwner.lifecycle
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
-            throw IllegalStateException("Should not attempt to get bindings when Fragment views are destroyed.")
+        if (!fragment.viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.INITIALIZED)) {
+            throw IllegalStateException(
+                "Should not attempt to get bindings when Fragment views are destroyed."
+            )
         }
-
-        return viewBindingFactory(thisRef.requireView()).also { this.binding = it }
+        return viewBindingFactory(thisRef.requireView()).also { binding = it }
     }
 }
 
-fun <T : ViewBinding> Fragment.viewBinding(viewBindingFactory: (View) -> T) =
-    FragmentViewBindingDelegate(this, viewBindingFactory)
+fun <T : ViewBinding> Fragment.viewBinding(
+    viewBindingFactory: (View) -> T,
+    beforeDestroyCallback: (T.() -> Unit)? = null
+) = ViewBindingProperty(this, viewBindingFactory, beforeDestroyCallback)
