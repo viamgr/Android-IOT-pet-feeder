@@ -19,11 +19,11 @@ import com.thanosfisherman.wifiutils.wifiConnect.ConnectionErrorCode
 import com.thanosfisherman.wifiutils.wifiConnect.ConnectionSuccessListener
 import com.viam.feeder.BR
 import com.viam.feeder.R
-import com.viam.feeder.constants.ACCESS_POINT_PASSWORD
-import com.viam.feeder.constants.ACCESS_POINT_SSID
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
+import com.viam.feeder.shared.ACCESS_POINT_PASSWORD
+import com.viam.feeder.shared.ACCESS_POINT_SSID
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

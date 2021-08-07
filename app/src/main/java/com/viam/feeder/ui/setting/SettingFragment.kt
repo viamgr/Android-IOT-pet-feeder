@@ -12,7 +12,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
-import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.databinding.FragmentSettingBinding
 import com.viam.resource.onError
 import com.viam.resource.onSuccess
@@ -48,7 +47,7 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         })
     }
 
-    private fun showPasswordDialog(wifiDevice: WifiDevice) {
+    private fun showPasswordDialog(wifiDevice: com.viam.feeder.model.WifiDevice) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_wifi_password, null)
         val inputLayout = dialogView?.findViewById<TextInputLayout>(R.id.password)!!
         val title = dialogView.findViewById<TextView>(R.id.title)!!

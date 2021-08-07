@@ -11,7 +11,7 @@ import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.connection.MultipleConnectionInformer
 import com.part.livetaskcore.livatask.ViewException
-import com.viam.feeder.core.domain.utils.toMessage
+import com.viam.feeder.core.utils.toMessage
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber

@@ -5,3 +5,7 @@ include ':livetask'
 include ':binding'
 //include ':compose'
 rootProject.name = "LiveTask2"
+include ':domain'
+include ':data'
+include ':model'
+include ':shared'

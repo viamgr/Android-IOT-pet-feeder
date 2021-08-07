@@ -3,12 +3,11 @@ package com.viam.feeder.ui.timer
 import com.airbnb.epoxy.TypedEpoxyController
 import com.viam.feeder.R
 import com.viam.feeder.clockTimer
-import com.viam.feeder.data.models.ClockTimer
 
-class TimerController : TypedEpoxyController<List<ClockTimer>>() {
-    lateinit var clickListener: (ClockTimer) -> Unit
-    override fun buildModels(data: List<ClockTimer>?) {
-        data?.forEach { clockTimer: ClockTimer ->
+class TimerController : TypedEpoxyController<List<com.viam.feeder.model.ClockTimer>>() {
+    lateinit var clickListener: (com.viam.feeder.model.ClockTimer) -> Unit
+    override fun buildModels(data: List<com.viam.feeder.model.ClockTimer>?) {
+        data?.forEach { clockTimer: com.viam.feeder.model.ClockTimer ->
             clockTimer {
                 id(clockTimer.id)
                 hour(if (clockTimer.hour > 12) clockTimer.hour % 12 else clockTimer.hour)

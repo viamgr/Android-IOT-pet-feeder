@@ -8,7 +8,7 @@
         <variable
             name="vm"
             type="com.viam.feeder.ui.wifi.WifiViewModel" />
-        <import type="com.viam.feeder.constants.AccessPointKt" />
+        <import type="com.viam.feeder.shared.AccessPointKt" />
     </data>
 
     <androidx.cardview.widget.CardView

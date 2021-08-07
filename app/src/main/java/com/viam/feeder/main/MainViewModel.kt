@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.utility.launchInScope
-import com.viam.feeder.data.domain.config.GetConfig
+import com.viam.feeder.domain.usecase.config.GetConfig
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay

@@ -1,13 +1,12 @@
 package com.viam.feeder.ui.setting
 
 import com.airbnb.epoxy.TypedEpoxyController
-import com.viam.feeder.data.models.WifiDevice
 import com.viam.feeder.wifiList
 
-class WifiController : TypedEpoxyController<List<WifiDevice>>() {
-    lateinit var clickListener: (WifiDevice) -> Unit
-    override fun buildModels(data: List<WifiDevice>?) {
-        data?.forEach { wifiDevice: WifiDevice ->
+class WifiController : TypedEpoxyController<List<com.viam.feeder.model.WifiDevice>>() {
+    lateinit var clickListener: (com.viam.feeder.model.WifiDevice) -> Unit
+    override fun buildModels(data: List<com.viam.feeder.model.WifiDevice>?) {
+        data?.forEach { wifiDevice: com.viam.feeder.model.WifiDevice ->
             wifiList {
                 id(wifiDevice.ssid)
                 ssid(wifiDevice.ssid)

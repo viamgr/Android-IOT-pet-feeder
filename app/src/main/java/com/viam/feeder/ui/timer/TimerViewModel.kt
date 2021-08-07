@@ -6,18 +6,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.usecases.asLiveTask
-import com.viam.feeder.constants.TIME_GET
-import com.viam.feeder.constants.TIME_IS
-import com.viam.feeder.constants.TIME_SET
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.utility.launchInScope
-import com.viam.feeder.data.domain.config.GetAlarms
-import com.viam.feeder.data.domain.config.SetAlarms
-import com.viam.feeder.data.domain.event.GetLongValue
-import com.viam.feeder.data.domain.event.SendEvent
-import com.viam.feeder.data.domain.event.SendLongValue
-import com.viam.feeder.data.models.ClockTimer
-import com.viam.feeder.data.models.KeyValueMessage
+import com.viam.feeder.data.constants.TIME_SET
+import com.viam.feeder.domain.usecase.config.GetAlarms
+import com.viam.feeder.domain.usecase.config.SetAlarms
+import com.viam.feeder.domain.usecase.event.GetLongValue
+import com.viam.feeder.domain.usecase.event.SendEvent
+import com.viam.feeder.domain.usecase.event.SendLongValue
+import com.viam.feeder.model.ClockTimer
+import com.viam.feeder.model.KeyValueMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.*
 import javax.inject.Inject
@@ -66,7 +64,7 @@ class TimerViewModel @Inject constructor(
     private val _openTimerDialog = MutableLiveData<Event<Unit>>()
     val openTimerDialog: LiveData<Event<Unit>> = _openTimerDialog
 
-    val timerList: LiveData<List<ClockTimer>> = getAlarms()
+    val timerList = getAlarms()
 
     private val _timerMode = MutableLiveData<Int>()
     val timerMode: LiveData<Int> = _timerMode
@@ -78,11 +76,11 @@ class TimerViewModel @Inject constructor(
     }
 
     private fun requestGetTime() = launchInScope {
-        requestGetTimeTask(TIME_GET)
+        requestGetTimeTask(com.viam.feeder.data.constants.TIME_GET)
     }
 
     private fun setTimeListener() = launchInScope {
-        onLongValueTask(TIME_IS)
+        onLongValueTask(com.viam.feeder.data.constants.TIME_IS)
     }
 
     fun removeTimer(timer: ClockTimer) = launchInScope {

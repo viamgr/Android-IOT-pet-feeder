@@ -7,6 +7,7 @@ import com.part.livetaskcore.connection.MultipleConnectionInformer
 import com.part.livetaskcore.connection.WebConnectionChecker
 import com.squareup.moshi.Moshi
 import com.viam.feeder.SocketConnectionChecker
+import com.viam.feeder.shared.FeederConstants.Companion.CONFIG_FILE_PATH
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -52,9 +53,6 @@ class AppModule {
     @Singleton
     @Named("configFile")
     fun provideConfigFile(@ApplicationContext context: Context) =
-        File(context.cacheDir, configFilePath)
+        File(context.cacheDir, CONFIG_FILE_PATH)
 
-    companion object {
-        const val configFilePath = "config.json"
-    }
 }
