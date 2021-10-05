@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_required">*</string>
+    <string name="permission_setting_required">Manually Set Permission</string>
+    <string name="required_permissions">Required Permissions</string>
+    <string name="continue_">Continue</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings">Settings</string>
+</resources>

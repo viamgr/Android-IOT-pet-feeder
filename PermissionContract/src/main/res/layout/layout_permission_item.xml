@@ -30,7 +30,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="4dp"
             android:text="@string/permission_required"
-            android:textColor="@color/red_500"
+            android:textColor="@color/permission_required"
             app:srcCompat="@drawable/ic_baseline_error_24" />
 
         <com.google.android.material.textview.MaterialTextView
@@ -49,5 +49,5 @@
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:layout_marginVertical="8dp"
-        android:background="@color/grey_300" />
+        android:background="@color/divider" />
 </LinearLayout>

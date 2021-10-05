@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.domain.usecase.config.GetConfig
+import com.viam.feeder.ui.wifi.NetworkStatus
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -16,6 +17,12 @@ class MainViewModel @Inject constructor(
     getConfig: GetConfig,
     webSocketApi: WebSocketApi
 ) : ViewModel() {
+    fun onNetworkStatusChanged(networkStatus: NetworkStatus) {
+        if (networkStatus.isAvailable) {
+//            networkStatus.
+        }
+    }
+
     init {
         webSocketApi.openWebSocket()
     }

@@ -24,7 +24,6 @@
     <string name="turn_on_motor">Turn On Motor</string>
     <string name="turn_off_motor">Turn Off Motor</string>
     <string name="timer">Timer</string>
-    <string name="settings">Settings</string>
     <string name="wifi">Wifi</string>
     <string name="few">Few</string>
     <string name="seconds">%d Seconds</string>
@@ -68,8 +67,6 @@
     <string name="access_fine_location">Access Fine Location</string>
     <string name="access_fine_location_desc">Access fine location is required</string>
     <string name="any_denied_multiple_permissions">any_denied_multiple_permissions</string>
-    <string name="permission_required">*</string>
-    <string name="permission_setting_required">Manually Set Permission</string>
     <string name="access_coarse_location">Access Coarse Location</string>
     <string name="access_coarse_location_desc">Access coarse location is required</string>
     <string name="access_wifi_state">access_wifi_state</string>
@@ -95,7 +92,6 @@
     <string name="connect_to">%s</string>
     <string name="calendar">Calendar</string>
     <string name="time_and_date_setting">Date And Time Settings</string>
-    <string name="required_permissions">Required Permissions</string>
     <string name="time_source">Time Source</string>
     <string name="manual_set_time">Manually Set Time</string>
     <string name="set_time_in_date">%s</string>

@@ -1,4 +1,4 @@
-package com.viam.feeder.ui.wifi
+package com.viam.networkavailablity
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -53,7 +53,6 @@ object Connectivity {
         return false
     }
 
-
     /**
      * Fetches Name of Current Wi-fi Access Point
      *
@@ -68,11 +67,8 @@ object Connectivity {
         }
     }
 
-
     fun Context.isUnknownOrKnownWifiConnection(ssid: String): Boolean {
         val deviceName = getWifiName()
         return isWifiConnected() && (deviceName == null || deviceName == ssid)
     }
-
-
 }

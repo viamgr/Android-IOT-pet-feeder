@@ -24,6 +24,7 @@ import com.viam.feeder.databinding.FragmentWifiBinding
 import com.viam.feeder.main.MainActivity
 import com.viam.feeder.shared.ACCESS_POINT_PASSWORD
 import com.viam.feeder.shared.ACCESS_POINT_SSID
+import com.viam.networkavailablity.NetworkStatusObserver
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

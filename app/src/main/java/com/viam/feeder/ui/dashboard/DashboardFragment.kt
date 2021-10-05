@@ -14,10 +14,10 @@ import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.core.utility.convertSeconds
-import com.viam.feeder.core.utility.permissionContract
 import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.FragmentDashboardBinding
 import com.viam.feeder.ui.record.RecordFragment
+import com.viam.permissioncontract.permissionContract
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import java.io.File

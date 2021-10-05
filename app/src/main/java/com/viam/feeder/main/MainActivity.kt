@@ -15,11 +15,10 @@ import com.viam.feeder.R
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.ActivityMainBinding
-import com.viam.feeder.ui.wifi.NetworkStatusObserver
 import com.viam.feeder.ui.wifi.WifiAutoConnect
+import com.viam.networkavailablity.NetworkStatusObserver
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -45,21 +44,22 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupViews()
-        /* networkStatusObserver
+        networkStatusObserver
              .withActivity(this)
              .onPermissionCallback {
-                 viewModel.askedWifiPermissions.set(true)
+//                 viewModel.askedWifiPermissions.set(true)
              }
-             .observe(this) {
- //                AutoRetryHandler.value = it.isAvailable
-                 val isUnknownOrKnownWifiConnection =
-                     isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
-                 if (!viewModel.isWifiDialogShowing && !isUnknownOrKnownWifiConnection) {
-                     setIsWifiDialogShowing(true)
-                     navController.navigate(WifiFragmentDirections.toWifiFragment(true))
-                 }
-             }
-             .start()*/
+            .observe(this) {
+                viewModel.onNetworkStatusChanged(it)
+                //                AutoRetryHandler.value = it.isAvailable
+                /*val isUnknownOrKnownWifiConnection =
+                    isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
+                if (!viewModel.isWifiDialogShowing && !isUnknownOrKnownWifiConnection) {
+                    setIsWifiDialogShowing(true)
+                    navController.navigate(WifiFragmentDirections.toWifiFragment(true))
+                }*/
+            }
+            .start()
 
         /*  TaskEventLogger.events.observe(this, EventObserver { resource ->
               resource?.onError {

@@ -8,6 +8,7 @@ import com.part.livetaskcore.connection.WebConnectionChecker
 import com.squareup.moshi.Moshi
 import com.viam.feeder.SocketConnectionChecker
 import com.viam.feeder.shared.FeederConstants.Companion.CONFIG_FILE_PATH
+import com.viam.networkavailablity.NetworkStatusObserver
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,4 +56,8 @@ class AppModule {
     fun provideConfigFile(@ApplicationContext context: Context) =
         File(context.cacheDir, CONFIG_FILE_PATH)
 
+    @Provides
+    @Singleton
+    fun provideNetworkStatusObserver() =
+        NetworkStatusObserver()
 }
