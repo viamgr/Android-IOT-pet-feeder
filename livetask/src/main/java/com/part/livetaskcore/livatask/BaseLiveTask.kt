@@ -8,11 +8,12 @@ import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.views.ViewType
-
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Contains common functions and properties of a LiveTask.
  * */
+//TODO find a way to remove live task from this class
 abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveData<LiveTask<T>>(),
     LiveTask<T>, LiveTaskBuilder<T> {
     protected open val mediatorLiveResult = MediatorLiveData<Resource<T>?>()
@@ -34,17 +35,18 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
 
     private var latestResult: Resource<T>? = null
         set(value) {
-            field = when (value) {
-                is Resource.Success -> {
+            field = when {
+                value is Resource.Success -> {
                     onSuccessHappened(value)
                     value
                 }
-                is Resource.Error -> {
+                value is Resource.Error && value.exception !is CancellationException
+                -> {
                     val error = mapError(value)
                     onErrorHappened(value)
                     error
                 }
-                is Resource.Loading -> {
+                value is Resource.Loading -> {
                     onLoadingHappened(value)
                     value
                 }
@@ -97,11 +99,9 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
         cancelable = bool
     }
 
-
     override fun viewType(viewType: ViewType) {
         this.viewType = viewType
     }
-
 
     override fun autoRetry(bool: Boolean) {
         autoRetry = bool

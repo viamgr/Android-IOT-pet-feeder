@@ -20,21 +20,18 @@ class MainViewModel @Inject constructor(
         webSocketApi.openWebSocket()
     }
 
-
     var askedWifiPermissions = AtomicBoolean(false)
     var isWifiDialogShowing: Boolean = false
     val getConfigTask = getConfig.asLiveTask {
-        cancelable(false)
+        cancelable(true)
+        withParameter(Unit)
     }.also {
         launchInScope {
             delay(1000)
-            it.invoke(Unit)
-
+            it.run()
             delay(2000)
-
         }
     }
-
 
     val transferFileProgress = webSocketApi.progress.asLiveData()
 }

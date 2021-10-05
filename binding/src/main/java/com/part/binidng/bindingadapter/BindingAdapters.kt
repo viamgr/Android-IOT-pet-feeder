@@ -19,16 +19,14 @@ fun View.reactToTask(
     liveTaskManager: LiveTaskManager? = LiveTaskManager.instance
 ) {
     print("reactToTask")
-    println(liveTask?.result())
-    liveTaskManager ?: LiveTaskManager.instance.apply {
+    val taskManager = liveTaskManager ?: LiveTaskManager.instance
+    taskManager.apply {
         findViewTypeHandler<ClassicViewTypeHandler>(liveTask?.loadingViewType()).onUpdate(
             liveTask,
             result ?: liveTask?.result(),
             this@reactToTask
         )
     }
-
-
 }
 
 fun View.reactToTask(liveTask: LiveTask<*>, viewLifecycleOwner: LifecycleOwner) {

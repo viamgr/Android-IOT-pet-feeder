@@ -37,7 +37,8 @@ class CombinedLiveTask(
 
     private fun addTaskAsSource(task: LiveTask<*>) {
         val asLiveData = task.liveResult
-        mediatorLiveResult.addSource(asLiveData) {
+        //TODO fix compose errors
+        this.addSource(asLiveData) {
             var cancelCount = 0
             var successCount = 0
             var loadingCount = 0

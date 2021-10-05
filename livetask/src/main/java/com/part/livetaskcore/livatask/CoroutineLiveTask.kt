@@ -6,7 +6,6 @@ import com.part.livetaskcore.connection.ConnectionInformer
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
-
 open class CoroutineLiveTask<T>(
     private val liveTaskManager: LiveTaskManager = LiveTaskManager.instance,
     open val block: LiveTaskBuilder<T>.() -> Unit = {},

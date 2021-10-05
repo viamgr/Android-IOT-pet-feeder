@@ -13,7 +13,13 @@ import com.viam.feeder.data.constants.EVENT_COMPOSITE_FEEDING
 import com.viam.feeder.data.constants.EVENT_FEEDING
 import com.viam.feeder.data.constants.EVENT_LED_TIMER
 import com.viam.feeder.data.constants.EVENT_PLAY_FEEDING_AUDIO
-import com.viam.feeder.domain.usecase.config.*
+import com.viam.feeder.domain.usecase.config.GetFeedingDuration
+import com.viam.feeder.domain.usecase.config.GetLedTurnOffDelay
+import com.viam.feeder.domain.usecase.config.GetSoundVolume
+import com.viam.feeder.domain.usecase.config.SetFeedingDuration
+import com.viam.feeder.domain.usecase.config.SetLedTurnOffDelay
+import com.viam.feeder.domain.usecase.config.SetSoundVolume
+import com.viam.feeder.domain.usecase.config.UploadBinary
 import com.viam.feeder.domain.usecase.event.SendEvent
 import com.viam.feeder.domain.usecase.specification.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
@@ -50,7 +56,9 @@ class DashboardViewModel @Inject constructor(
         convertUploadSoundTask,
         setLedTurnOffDelayTask,
         sendEventTask,
-    )
+    ) {
+        cancelable(true)
+    }
 
     private val _feedSounds = MutableLiveData(
         listOf(
@@ -125,7 +133,6 @@ class DashboardViewModel @Inject constructor(
     val soundVolumeList: LiveData<List<SoundVolume>> = _soundVolumeList
     val ledTimerList: LiveData<List<LedTimer>> = _ledTimerList
 
-
     fun onFeedingVolumeClicked(position: Int) = launchInScope {
         feedingDurationTask(_feedVolumeList.value!![position].duration)
     }
@@ -153,7 +160,6 @@ class DashboardViewModel @Inject constructor(
     fun onSoundVolumeChanged(value: Int) = launchInScope {
         soundLiveTask(_soundVolumeList.value!![value].value)
     }
-
 
     fun onSoundFilePicked(filePath: String) = launchInScope {
         convertUploadSoundTask(
