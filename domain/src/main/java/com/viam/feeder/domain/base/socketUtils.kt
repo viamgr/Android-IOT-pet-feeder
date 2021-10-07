@@ -14,7 +14,7 @@ fun SocketTransfer.toResource(): Resource<SocketTransfer> {
             Resource.Error(exception)
         }
         else -> {
-            Resource.Loading(Resource.Loading(this))
+            Resource.Loading(this)
         }
     }
 }

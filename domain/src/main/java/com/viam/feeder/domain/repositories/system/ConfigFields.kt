@@ -1,6 +1,7 @@
 package com.viam.feeder.domain.repositories.system
 
 import androidx.lifecycle.LiveData
+import com.viam.feeder.shared.FeederConstants.WifiMode
 
 interface ConfigFields {
     fun getAlarms(): LiveData<List<String>>
@@ -16,4 +17,5 @@ interface ConfigFields {
     fun setSoundVolume(value: Float)
     fun setWifiSsid(value: String)
     fun setWifiPassword(value: String)
+    fun setWifiMode(value: WifiMode)
 }

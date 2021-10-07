@@ -1,10 +1,10 @@
 package com.viam.feeder.data.repository
 
 import com.squareup.moshi.Types
-import com.viam.feeder.data.constants.WIFI_LIST_IS
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.model.KeyValueMessage
 import com.viam.feeder.model.WifiDevice
+import com.viam.feeder.shared.WIFI_LIST_IS
 import com.viam.resource.Resource
 import com.viam.websocket.WebSocketApi
 import com.viam.websocket.model.SocketMessage

@@ -1,4 +1,4 @@
-package com.viam.feeder.data.constants
+package com.viam.feeder.shared
 
 const val EVENT_FEEDING = "motor:start"
 const val EVENT_LED_TIMER = "lamp:start"

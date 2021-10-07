@@ -48,6 +48,7 @@ class MyApplication : MultiDexApplication() {
         liveTaskManager.Builder()
             .setConnectionInformer(multipleConnectionInformer)
             .setErrorMapper { exception ->
+                exception.printStackTrace()
                 ViewException(
                     exception.toMessage(this@MyApplication),
                     exception

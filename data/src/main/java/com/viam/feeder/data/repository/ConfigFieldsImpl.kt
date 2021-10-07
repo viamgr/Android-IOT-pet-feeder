@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import com.squareup.moshi.Moshi
 import com.viam.feeder.domain.repositories.system.ConfigFields
 import com.viam.feeder.domain.repositories.system.JsonPreferences
+import com.viam.feeder.shared.FeederConstants.WifiMode
+import com.viam.feeder.shared.FeederConstants.WifiMode.WIFI_MODE_AP
 import javax.inject.Inject
 
 class ConfigFieldsImpl @Inject constructor(
@@ -13,6 +15,7 @@ class ConfigFieldsImpl @Inject constructor(
     private var soundVolume = LiveDataConfig(configObject, "soundVolume", 3.99F)
     private var wifiSsid = LiveDataConfig(configObject, "wifiSsid", "")
     private var wifiPassword = LiveDataConfig(configObject, "wifiPassword", "")
+    private var wifiMode = LiveDataConfig(configObject, "wifiMode", WIFI_MODE_AP.ordinal)
     private var feedingDuration = LiveDataConfig(configObject, "feedingDuration", 2000)
     private var ledState = LiveDataConfig(configObject, "ledState", 2)
     private var ledTurnOffDelay = LiveDataConfig(configObject, "ledTurnOffDelay", 60000)
@@ -74,5 +77,9 @@ class ConfigFieldsImpl @Inject constructor(
 
     override fun setWifiPassword(value: String) {
         wifiPassword.store(value)
+    }
+
+    override fun setWifiMode(value: WifiMode) {
+        wifiMode.store(value.ordinal)
     }
 }

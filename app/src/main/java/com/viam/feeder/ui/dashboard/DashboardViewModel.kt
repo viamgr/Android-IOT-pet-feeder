@@ -9,10 +9,6 @@ import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.R
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.utility.launchInScope
-import com.viam.feeder.data.constants.EVENT_COMPOSITE_FEEDING
-import com.viam.feeder.data.constants.EVENT_FEEDING
-import com.viam.feeder.data.constants.EVENT_LED_TIMER
-import com.viam.feeder.data.constants.EVENT_PLAY_FEEDING_AUDIO
 import com.viam.feeder.domain.usecase.config.GetFeedingDuration
 import com.viam.feeder.domain.usecase.config.GetLedTurnOffDelay
 import com.viam.feeder.domain.usecase.config.GetSoundVolume
@@ -25,6 +21,10 @@ import com.viam.feeder.domain.usecase.specification.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
+import com.viam.feeder.shared.EVENT_COMPOSITE_FEEDING
+import com.viam.feeder.shared.EVENT_FEEDING
+import com.viam.feeder.shared.EVENT_LED_TIMER
+import com.viam.feeder.shared.EVENT_PLAY_FEEDING_AUDIO
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.InputStream
 import javax.inject.Inject

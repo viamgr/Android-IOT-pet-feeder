@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -12,6 +13,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
+import com.viam.feeder.core.utils.toMessage
 import com.viam.feeder.databinding.FragmentSettingBinding
 import com.viam.resource.onError
 import com.viam.resource.onSuccess
@@ -41,8 +43,10 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         viewModel.getWifiListTask.observe(viewLifecycleOwner, {
             it?.onSuccess { list ->
                 controller.setData(list)
-            }?.onError {
+            }?.onError { exception ->
                 controller.setData(emptyList())
+                Toast.makeText(requireContext(), exception.toMessage(requireContext()), Toast.LENGTH_SHORT)
+                    .show()
             }
         })
     }

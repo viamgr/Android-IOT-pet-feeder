@@ -8,7 +8,6 @@ import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.livedata.Event
 import com.viam.feeder.core.utility.launchInScope
-import com.viam.feeder.data.constants.TIME_SET
 import com.viam.feeder.domain.usecase.config.GetAlarms
 import com.viam.feeder.domain.usecase.config.SetAlarms
 import com.viam.feeder.domain.usecase.event.GetLongValue
@@ -16,8 +15,11 @@ import com.viam.feeder.domain.usecase.event.SendEvent
 import com.viam.feeder.domain.usecase.event.SendLongValue
 import com.viam.feeder.model.ClockTimer
 import com.viam.feeder.model.KeyValueMessage
+import com.viam.feeder.shared.TIME_GET
+import com.viam.feeder.shared.TIME_IS
+import com.viam.feeder.shared.TIME_SET
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.*
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -76,11 +78,11 @@ class TimerViewModel @Inject constructor(
     }
 
     private fun requestGetTime() = launchInScope {
-        requestGetTimeTask(com.viam.feeder.data.constants.TIME_GET)
+        requestGetTimeTask(TIME_GET)
     }
 
     private fun setTimeListener() = launchInScope {
-        onLongValueTask(com.viam.feeder.data.constants.TIME_IS)
+        onLongValueTask(TIME_IS)
     }
 
     fun removeTimer(timer: ClockTimer) = launchInScope {
