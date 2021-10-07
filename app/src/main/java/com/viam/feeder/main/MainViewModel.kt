@@ -13,9 +13,14 @@ import com.viam.feeder.domain.usecase.config.GetConfig
 import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
 import com.viam.feeder.domain.usecase.device.HasPingFromIp
 import com.viam.feeder.domain.usecase.device.HasPingFromIp.PingCheck
+import com.viam.feeder.model.ConnectionType.DIRECT_AP
+import com.viam.feeder.model.ConnectionType.OVER_ROUTER
+import com.viam.feeder.model.ConnectionType.OVER_SERVER
 import com.viam.feeder.model.Device
+import com.viam.feeder.model.DeviceConnection
 import com.viam.feeder.shared.ACCESS_POINT_SSID
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
+import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
 import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
 import com.viam.resource.Resource.Success
@@ -40,7 +45,7 @@ class MainViewModel @Inject constructor(
         cancelable(true)
         withParameter(Unit)
     }
-    val networkStatusCheckerLiveTask = parametricLiveTask<NetworkOptions, Resource<Unit>> {
+    val networkStatusCheckerLiveTask = parametricLiveTask<NetworkOptions, Resource<DeviceConnection>> {
         onSuccess<Resource<Unit>> {
             launchInScope {
                 getConfigTask.run()
@@ -50,15 +55,14 @@ class MainViewModel @Inject constructor(
             val networkOptions = getParameter()
             if (networkOptions.isAvailable) {
                 val device = getConfiguredDevice()
-                val pingCheck =
+                val deviceConnection =
                     isApConnection(networkOptions) ?: isConnectedOverRouter(device)
                     ?: isConnectedOverServer(device)
 
                 emit(
-                    if (pingCheck != null) {
-                        remoteConnectionConfig.url = pingCheck.host
-                        webSocketApi.openWebSocket()
-                        Success(Unit)
+                    if (deviceConnection != null) {
+                        onDeviceFound(deviceConnection)
+                        Success(deviceConnection)
                     } else {
                         Error(Exception("Can not connect to the device."))
                     }
@@ -66,26 +70,29 @@ class MainViewModel @Inject constructor(
             } else {
                 emit(Error(Exception("Disconnected from network.")))
             }
-
         }
+    }
 
+    private fun onDeviceFound(deviceConnection: DeviceConnection) {
+        remoteConnectionConfig.url = deviceConnection.host
+        webSocketApi.openWebSocket()
     }
 
     val combinedLiveTask = combine(getConfigTask, networkStatusCheckerLiveTask)
-    private suspend fun isConnectedOverRouter(device: Device?): PingCheck? {
+    private suspend fun isConnectedOverRouter(device: Device?): DeviceConnection? {
         if (device == null) return null
         val host = device.staticIp ?: return null
         val port = device.port
         val pingCheck = PingCheck(host, port)
         val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
-        return if (hasPing) pingCheck else null
+        return if (hasPing) DeviceConnection(pingCheck.host, pingCheck.port, OVER_ROUTER) else null
     }
 
-    private suspend fun isConnectedOverServer(device: Device?): PingCheck? {
+    private suspend fun isConnectedOverServer(device: Device?): DeviceConnection? {
         if (device == null) return null
         val pingCheck = PingCheck(API_IP, API_PORT)
         val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
-        return if (hasPing) pingCheck else null
+        return if (hasPing) DeviceConnection(pingCheck.host, pingCheck.port, OVER_SERVER) else null
     }
 
     private suspend fun getConfiguredDevice(): Device? {
@@ -93,11 +100,11 @@ class MainViewModel @Inject constructor(
         return configuredDevice.dataOrNull()
     }
 
-    private suspend fun isApConnection(networkOptions: NetworkOptions): PingCheck? {
+    private suspend fun isApConnection(networkOptions: NetworkOptions): DeviceConnection? {
         val isConnectedToAp = networkOptions.isAvailable && networkOptions.wifiName == ACCESS_POINT_SSID
-        val pingCheck = PingCheck(DEFAULT_ACCESS_POINT_IP)
+        val pingCheck = PingCheck(DEFAULT_ACCESS_POINT_IP, DEFAULT_ACCESS_POINT_PORT)
         return if (isConnectedToAp || hasPingFromIp(pingCheck).dataOrNull() == true) {
-            pingCheck
+            DeviceConnection(DEFAULT_ACCESS_POINT_IP, DEFAULT_ACCESS_POINT_PORT, DIRECT_AP)
         } else null
     }
 

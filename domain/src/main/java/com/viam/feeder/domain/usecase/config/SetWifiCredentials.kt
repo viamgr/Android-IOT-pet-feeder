@@ -6,7 +6,6 @@ import com.viam.feeder.domain.repositories.system.ConfigFields
 import com.viam.feeder.domain.repositories.system.JsonPreferences
 import javax.inject.Inject
 
-
 class SetWifiCredentials @Inject constructor(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
     private val configFields: ConfigFields,
@@ -23,4 +22,10 @@ class SetWifiCredentials @Inject constructor(
     }
 }
 
-data class WifiAuthentication(val ssid: String, val password: String)
+data class WifiAuthentication(
+    val ssid: String,
+    val password: String,
+    val ip: String? = null,
+    val gateway: String? = null,
+    val port: Int? = null
+)
