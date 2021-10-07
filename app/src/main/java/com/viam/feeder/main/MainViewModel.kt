@@ -2,44 +2,109 @@ package com.viam.feeder.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import com.part.livetaskcore.livatask.combine
+import com.part.livetaskcore.livatask.parametricLiveTask
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.utility.launchInScope
+import com.viam.feeder.data.datasource.RemoteConnectionConfig
+import com.viam.feeder.di.NetWorkModule.Companion.API_IP
+import com.viam.feeder.di.NetWorkModule.Companion.API_PORT
 import com.viam.feeder.domain.usecase.config.GetConfig
-import com.viam.feeder.ui.wifi.NetworkStatus
+import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
+import com.viam.feeder.domain.usecase.device.HasPingFromIp
+import com.viam.feeder.domain.usecase.device.HasPingFromIp.PingCheck
+import com.viam.feeder.model.Device
+import com.viam.feeder.shared.ACCESS_POINT_SSID
+import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
+import com.viam.resource.Resource
+import com.viam.resource.Resource.Error
+import com.viam.resource.Resource.Success
+import com.viam.resource.dataOrNull
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     getConfig: GetConfig,
-    webSocketApi: WebSocketApi
+    private val getConfiguredDevice: GetConfiguredDevice,
+    private val hasPingFromIp: HasPingFromIp,
+    private val webSocketApi: WebSocketApi,
+    private val remoteConnectionConfig: RemoteConnectionConfig
 ) : ViewModel() {
-    fun onNetworkStatusChanged(networkStatus: NetworkStatus) {
-        if (networkStatus.isAvailable) {
-//            networkStatus.
-        }
-    }
-
-    init {
-        webSocketApi.openWebSocket()
-    }
-
+    val transferFileProgress = webSocketApi.progress.asLiveData()
     var askedWifiPermissions = AtomicBoolean(false)
     var isWifiDialogShowing: Boolean = false
     val getConfigTask = getConfig.asLiveTask {
         cancelable(true)
         withParameter(Unit)
-    }.also {
-        launchInScope {
-            delay(1000)
-            it.run()
-            delay(2000)
+    }
+    val networkStatusCheckerLiveTask = parametricLiveTask<NetworkOptions, Resource<Unit>> {
+        onSuccess<Resource<Unit>> {
+            launchInScope {
+                getConfigTask.run()
+            }
         }
+        onRun {
+            val networkOptions = getParameter()
+            if (networkOptions.isAvailable) {
+                val device = getConfiguredDevice()
+                val pingCheck =
+                    isApConnection(networkOptions) ?: isConnectedOverRouter(device)
+                    ?: isConnectedOverServer(device)
+
+                emit(
+                    if (pingCheck != null) {
+                        remoteConnectionConfig.url = pingCheck.host
+                        webSocketApi.openWebSocket()
+                        Success(Unit)
+                    } else {
+                        Error(Exception("Can not connect to the device."))
+                    }
+                )
+            } else {
+                emit(Error(Exception("Disconnected from network.")))
+            }
+
+        }
+
     }
 
-    val transferFileProgress = webSocketApi.progress.asLiveData()
+    val combinedLiveTask = combine(getConfigTask, networkStatusCheckerLiveTask)
+    private suspend fun isConnectedOverRouter(device: Device?): PingCheck? {
+        if (device == null) return null
+        val host = device.staticIp ?: return null
+        val port = device.port
+        val pingCheck = PingCheck(host, port)
+        val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
+        return if (hasPing) pingCheck else null
+    }
+
+    private suspend fun isConnectedOverServer(device: Device?): PingCheck? {
+        if (device == null) return null
+        val pingCheck = PingCheck(API_IP, API_PORT)
+        val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
+        return if (hasPing) pingCheck else null
+    }
+
+    private suspend fun getConfiguredDevice(): Device? {
+        val configuredDevice = getConfiguredDevice(Unit)
+        return configuredDevice.dataOrNull()
+    }
+
+    private suspend fun isApConnection(networkOptions: NetworkOptions): PingCheck? {
+        val isConnectedToAp = networkOptions.isAvailable && networkOptions.wifiName == ACCESS_POINT_SSID
+        val pingCheck = PingCheck(DEFAULT_ACCESS_POINT_IP)
+        return if (isConnectedToAp || hasPingFromIp(pingCheck).dataOrNull() == true) {
+            pingCheck
+        } else null
+    }
+
+    fun onNetworkStatusChanged(networkOptions: NetworkOptions) = launchInScope {
+        networkStatusCheckerLiveTask.setParameter(networkOptions).run()
+    }
+
+    data class NetworkOptions(val isAvailable: Boolean, val isWifi: Boolean, val wifiName: String?)
 }
 

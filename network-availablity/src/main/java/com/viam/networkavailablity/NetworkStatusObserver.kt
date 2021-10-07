@@ -17,7 +17,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.viam.feeder.ui.wifi.NetworkStatus
 import com.viam.networkavailablity.Connectivity.isWifiConnected
 import com.viam.permissioncontract.PermissionContract
 import com.viam.permissioncontract.permissionContract

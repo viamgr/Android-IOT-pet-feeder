@@ -113,9 +113,8 @@ class WebSocketApi(
             }
     }
 
-
     fun openWebSocket() {
-
+        // TODO: 10/7/2021 Check is opened
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
@@ -171,7 +170,6 @@ class WebSocketApi(
                 }
             }
         })
-
     }
 
     @Suppress("BlockingMethodInNonBlockingContext")
@@ -385,5 +383,4 @@ class WebSocketApi(
             _progress.emit(it)
             it
         }
-
 }

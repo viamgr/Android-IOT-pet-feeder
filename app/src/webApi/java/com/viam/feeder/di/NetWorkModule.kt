@@ -14,7 +14,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 class NetWorkModule {
@@ -22,7 +21,8 @@ class NetWorkModule {
     @Provides
     @Singleton
     fun getHttpClient(
-        networkFlipperPlugin: NetworkFlipperPlugin
+        networkFlipperPlugin: NetworkFlipperPlugin,
+        dynamicUrlInterceptor: DynamicUrlInterceptor
     ): OkHttpClient {
         val okHttpBuilder = OkHttpClient.Builder()
 
@@ -31,6 +31,7 @@ class NetWorkModule {
 
         return okHttpBuilder
             .retryOnConnectionFailure(true)
+            .addInterceptor(dynamicUrlInterceptor)
             .addInterceptor(interceptor)
             .callTimeout(100, TimeUnit.SECONDS)
             .protocols(listOf(Protocol.HTTP_1_1))
@@ -65,8 +66,8 @@ class NetWorkModule {
     fun provideNetworkFlipperPlugin(): NetworkFlipperPlugin = NetworkFlipperPlugin()
 
     companion object {
-        const val BASE_URL = "http://192.168.4.1/"
+        const val API_IP = "192.168.4.1"
         const val API_PORT = 80
+        const val BASE_URL = "http://$API_IP:$API_PORT/"
     }
-
 }

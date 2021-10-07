@@ -15,9 +15,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.io.File
+import java.net.Socket
 import javax.inject.Named
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -60,4 +60,8 @@ class AppModule {
     @Singleton
     fun provideNetworkStatusObserver() =
         NetworkStatusObserver()
+
+    @Provides
+    @Singleton
+    fun provideSocket() = Socket()
 }

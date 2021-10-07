@@ -15,7 +15,10 @@ import com.viam.feeder.R
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.ActivityMainBinding
+import com.viam.feeder.main.MainViewModel.NetworkOptions
 import com.viam.feeder.ui.wifi.WifiAutoConnect
+import com.viam.networkavailablity.Connectivity.getWifiName
+import com.viam.networkavailablity.Connectivity.isWifiConnected
 import com.viam.networkavailablity.NetworkStatusObserver
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -31,10 +34,8 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var networkStatusObserver: NetworkStatusObserver
 
-
     @Inject
     lateinit var wifiAutoConnect: WifiAutoConnect
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +46,18 @@ class MainActivity : AppCompatActivity() {
 
         setupViews()
         networkStatusObserver
-             .withActivity(this)
-             .onPermissionCallback {
+            .withActivity(this)
+            .onPermissionCallback {
 //                 viewModel.askedWifiPermissions.set(true)
-             }
+            }
             .observe(this) {
-                viewModel.onNetworkStatusChanged(it)
+                viewModel.onNetworkStatusChanged(
+                    NetworkOptions(
+                        it.isAvailable,
+                        isWifiConnected(),
+                        getWifiName()
+                    )
+                )
                 //                AutoRetryHandler.value = it.isAvailable
                 /*val isUnknownOrKnownWifiConnection =
                     isUnknownOrKnownWifiConnection(ACCESS_POINT_SSID)
@@ -72,10 +79,13 @@ class MainActivity : AppCompatActivity() {
                   }
               }
           })*/
-        reactToTask(viewModel.getConfigTask)
+        reactToTask(viewModel.combinedLiveTask)
         viewModel.transferFileProgress.observe(this) {
             print("transfer")
             println(it)
+        }
+        viewModel.networkStatusCheckerLiveTask.asLiveData().observe(this) {
+            println(it.result())
         }
     }
 

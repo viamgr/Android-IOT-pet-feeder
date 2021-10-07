@@ -1,9 +1,11 @@
 package com.viam.feeder.data.di
 
 import com.viam.feeder.data.repository.ConfigFieldsImpl
+import com.viam.feeder.data.repository.DeviceRepositoryImpl
 import com.viam.feeder.data.repository.FfmpegRepositoryImpl
 import com.viam.feeder.data.repository.JsonPreferencesImpl
 import com.viam.feeder.data.repository.WebSocketRepositoryImpl
+import com.viam.feeder.domain.repositories.socket.DeviceRepository
 import com.viam.feeder.domain.repositories.socket.FfmpegRepository
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.domain.repositories.system.ConfigFields
@@ -12,7 +14,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,4 +31,6 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindWebSocketRepositoryImpl(repository: WebSocketRepositoryImpl): WebSocketRepository
 
+    @Binds
+    abstract fun bindDeviceRepository(repository: DeviceRepositoryImpl): DeviceRepository
 }
