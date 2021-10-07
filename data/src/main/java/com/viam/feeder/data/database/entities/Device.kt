@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Device(
-    @PrimaryKey(autoGenerate = true) val id: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long? = null,
     val name: String,
     val staticIp: String? = null,
     val port: Int? = 80,

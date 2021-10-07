@@ -3,6 +3,7 @@ package com.viam.feeder.di
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.squareup.moshi.Moshi
+import com.viam.feeder.data.datasource.RemoteConnectionConfig
 import com.viam.websocket.WebSocketApi
 import dagger.Module
 import dagger.Provides
@@ -13,7 +14,6 @@ import okhttp3.Request
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
-
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -34,8 +34,10 @@ class SocketModule {
     @Provides
     @Singleton
     fun getSocketRequest(
+        remoteConnectionConfig: RemoteConnectionConfig
     ): Request {
-        return Request.Builder().url("ws://$SOCKET_URL:$SOCKET_PORT").build()
+        return Request.Builder()
+            .url("ws://${remoteConnectionConfig.url}:${remoteConnectionConfig.socketPort}").build()
     }
 
     @Provides
@@ -58,10 +60,5 @@ class SocketModule {
             a.value = it
         }
         return a
-    }
-
-    companion object {
-        const val SOCKET_URL = "192.168.4.1"
-        const val SOCKET_PORT = 4200
     }
 }

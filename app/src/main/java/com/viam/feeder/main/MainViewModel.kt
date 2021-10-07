@@ -8,8 +8,8 @@ import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.datasource.RemoteConnectionConfig
 import com.viam.feeder.di.NetWorkModule.Companion.API_IP
-import com.viam.feeder.di.NetWorkModule.Companion.API_PORT
 import com.viam.feeder.domain.usecase.config.GetConfig
+import com.viam.feeder.domain.usecase.device.AddDevice
 import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
 import com.viam.feeder.domain.usecase.device.HasPingFromIp
 import com.viam.feeder.domain.usecase.device.HasPingFromIp.PingCheck
@@ -21,6 +21,7 @@ import com.viam.feeder.model.DeviceConnection
 import com.viam.feeder.shared.ACCESS_POINT_SSID
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
+import com.viam.feeder.shared.DeviceConnectionException
 import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
 import com.viam.resource.Resource.Success
@@ -36,6 +37,7 @@ class MainViewModel @Inject constructor(
     private val getConfiguredDevice: GetConfiguredDevice,
     private val hasPingFromIp: HasPingFromIp,
     private val webSocketApi: WebSocketApi,
+    private val addDevice: AddDevice,
     private val remoteConnectionConfig: RemoteConnectionConfig
 ) : ViewModel() {
     val transferFileProgress = webSocketApi.progress.asLiveData()
@@ -46,10 +48,8 @@ class MainViewModel @Inject constructor(
         withParameter(Unit)
     }
     val networkStatusCheckerLiveTask = parametricLiveTask<NetworkOptions, Resource<DeviceConnection>> {
-        onSuccess<Resource<Unit>> {
-            launchInScope {
-                getConfigTask.run()
-            }
+        onSuccess<DeviceConnection> {
+            onDeviceFound(it)
         }
         onRun {
             val networkOptions = getParameter()
@@ -61,21 +61,25 @@ class MainViewModel @Inject constructor(
 
                 emit(
                     if (deviceConnection != null) {
-                        onDeviceFound(deviceConnection)
                         Success(deviceConnection)
                     } else {
-                        Error(Exception("Can not connect to the device."))
+                        Error(DeviceConnectionException("Can not connect to the device."))
                     }
                 )
             } else {
-                emit(Error(Exception("Disconnected from network.")))
+                emit(Error(DeviceConnectionException("Disconnected from network.")))
             }
         }
+    }
+
+    private fun getConfigs() = launchInScope {
+        getConfigTask.run()
     }
 
     private fun onDeviceFound(deviceConnection: DeviceConnection) {
         remoteConnectionConfig.url = deviceConnection.host
         webSocketApi.openWebSocket()
+        getConfigs()
     }
 
     val combinedLiveTask = combine(getConfigTask, networkStatusCheckerLiveTask)
@@ -85,14 +89,14 @@ class MainViewModel @Inject constructor(
         val port = device.port
         val pingCheck = PingCheck(host, port)
         val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
-        return if (hasPing) DeviceConnection(pingCheck.host, pingCheck.port, OVER_ROUTER) else null
+        return if (hasPing) DeviceConnection(pingCheck.host, OVER_ROUTER) else null
     }
 
     private suspend fun isConnectedOverServer(device: Device?): DeviceConnection? {
         if (device == null) return null
-        val pingCheck = PingCheck(API_IP, API_PORT)
+        val pingCheck = PingCheck(API_IP)
         val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
-        return if (hasPing) DeviceConnection(pingCheck.host, pingCheck.port, OVER_SERVER) else null
+        return if (hasPing) DeviceConnection(pingCheck.host, OVER_SERVER) else null
     }
 
     private suspend fun getConfiguredDevice(): Device? {
@@ -104,7 +108,7 @@ class MainViewModel @Inject constructor(
         val isConnectedToAp = networkOptions.isAvailable && networkOptions.wifiName == ACCESS_POINT_SSID
         val pingCheck = PingCheck(DEFAULT_ACCESS_POINT_IP, DEFAULT_ACCESS_POINT_PORT)
         return if (isConnectedToAp || hasPingFromIp(pingCheck).dataOrNull() == true) {
-            DeviceConnection(DEFAULT_ACCESS_POINT_IP, DEFAULT_ACCESS_POINT_PORT, DIRECT_AP)
+            DeviceConnection(DEFAULT_ACCESS_POINT_IP, DIRECT_AP)
         } else null
     }
 
