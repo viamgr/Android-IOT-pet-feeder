@@ -9,10 +9,10 @@ import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.datasource.RemoteConnectionConfig
 import com.viam.feeder.di.NetWorkModule.Companion.API_IP
 import com.viam.feeder.domain.usecase.config.GetConfig
-import com.viam.feeder.domain.usecase.device.AddDevice
 import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
 import com.viam.feeder.domain.usecase.device.HasPingFromIp
 import com.viam.feeder.domain.usecase.device.HasPingFromIp.PingCheck
+import com.viam.feeder.domain.usecase.event.WebSocketEvents
 import com.viam.feeder.model.ConnectionType.DIRECT_AP
 import com.viam.feeder.model.ConnectionType.OVER_ROUTER
 import com.viam.feeder.model.ConnectionType.OVER_SERVER
@@ -26,8 +26,10 @@ import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
 import com.viam.resource.Resource.Success
 import com.viam.resource.dataOrNull
+import com.viam.resource.isSuccess
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -37,7 +39,7 @@ class MainViewModel @Inject constructor(
     private val getConfiguredDevice: GetConfiguredDevice,
     private val hasPingFromIp: HasPingFromIp,
     private val webSocketApi: WebSocketApi,
-    private val addDevice: AddDevice,
+    private val webSocketEvents: WebSocketEvents,
     private val remoteConnectionConfig: RemoteConnectionConfig
 ) : ViewModel() {
     val transferFileProgress = webSocketApi.progress.asLiveData()
@@ -72,14 +74,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    init {
+        watchSocketEvent()
+    }
+
+    private fun watchSocketEvent() = launchInScope {
+        webSocketEvents(Unit).collect {
+            if (it.isSuccess()) {
+                getConfigs()
+            }
+        }
+
+    }
+
     private fun getConfigs() = launchInScope {
         getConfigTask.run()
     }
 
-    private fun onDeviceFound(deviceConnection: DeviceConnection) {
+    private fun onDeviceFound(deviceConnection: DeviceConnection) = launchInScope {
         remoteConnectionConfig.url = deviceConnection.host
         webSocketApi.openWebSocket()
-        getConfigs()
     }
 
     val combinedLiveTask = combine(getConfigTask, networkStatusCheckerLiveTask)

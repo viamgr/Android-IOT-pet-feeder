@@ -2,6 +2,7 @@ package com.viam.feeder.data.repository
 
 import com.viam.feeder.domain.repositories.system.JsonPreferences
 import org.json.JSONObject
+import java.io.ByteArrayInputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,7 +44,10 @@ class JsonPreferencesImpl @Inject constructor() : JsonPreferences {
         json = JSONObject(saveJson.toString())
     }
 
-    override fun getByteStream() = json.toString().byteInputStream()
+    override fun getByteStream(): ByteArrayInputStream {
+        return json.toString().byteInputStream()
+    }
+
     override fun storeJson(jsonObject: JSONObject) {
         json = jsonObject
     }

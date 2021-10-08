@@ -8,5 +8,5 @@ sealed class SocketEvent {
     object Open : SocketEvent()
     object Closing : SocketEvent()
     object Closed : SocketEvent()
-    object Failure : SocketEvent()
+    data class Failure(val exception: Exception) : SocketEvent()
 }

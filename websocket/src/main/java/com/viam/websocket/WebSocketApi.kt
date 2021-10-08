@@ -38,7 +38,7 @@ class WebSocketApi(
     private var binaryCoroutineContext: CoroutineContext? = null
 
     private val errorListeners = mutableListOf<(e: Exception) -> Unit>()
-    val events = _events.asSharedFlow() // publicly exposed as read-only shared flow
+    val events: Flow<SocketEvent> = _events.asSharedFlow() // publicly exposed as read-only shared flow
     val progress = _progress.asSharedFlow() // publicly exposed as read-only shared flow
 
     private val socketRunnerScope = CoroutineScope(IO)
@@ -164,7 +164,7 @@ class WebSocketApi(
                 isOpenedSocket = false
                 println("onFailure socket")
                 myLaunch {
-                    _events.emit(SocketEvent.Failure)
+                    _events.emit(SocketEvent.Failure(Exception(t)))
                     delay(5000)
                     openWebSocket()
                 }
