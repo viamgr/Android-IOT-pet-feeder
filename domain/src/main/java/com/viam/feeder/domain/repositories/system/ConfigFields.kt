@@ -18,4 +18,8 @@ interface ConfigFields {
     fun setWifiSsid(value: String)
     fun setWifiPassword(value: String)
     fun setWifiMode(value: WifiMode)
+    fun setStaticIp(value: String)
+    fun setUseDhcp(value: Int)
+    fun setSubnet(value: String)
+    fun setGateway(value: String)
 }

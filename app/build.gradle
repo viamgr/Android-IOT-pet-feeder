@@ -66,14 +66,14 @@ android {
         ignoreAssetsPattern "!arm"
         ignoreAssetsPattern "!x86"
     }
- /*   splits {
+    splits {
         abi {
             enable true
             reset()
             include 'armeabi-v7a'
             universalApk false
         }
-    }*/
+    }
 }
 
 dependencies {

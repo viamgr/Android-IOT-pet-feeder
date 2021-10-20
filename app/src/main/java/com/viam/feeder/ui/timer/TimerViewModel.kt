@@ -51,6 +51,9 @@ class TimerViewModel @Inject constructor(
         requestGetTimeTask,
         onLongValueTask,
     )
+    {
+        cancelable(true)
+    }
     private val _time = MutableLiveData("0:00")
     val time: LiveData<String> = _time
 

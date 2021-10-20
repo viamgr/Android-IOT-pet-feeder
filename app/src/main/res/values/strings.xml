@@ -16,10 +16,9 @@
     <string name="wifi_settings">Wifi Settings</string>
     <string name="retry">retry</string>
     <string name="connected">connected</string>
-    <string name="not_connected">Not connected</string>
+    <string name="network_is_not_available">Network is not available</string>
     <string name="hello_worldRed"><![CDATA[<b><font color=#FF0000>Hello world!</font></b>]]></string>
-    <string name="wrong_connected">"You should connect to the
-<font color='red'>%s</font>\nWifi network"</string>
+    <string name="wrong_connected">Not Connected to the device</string>
     <string name="open_wifi_setting">Open Wifi Setting</string>
     <string name="turn_on_motor">Turn On Motor</string>
     <string name="turn_off_motor">Turn Off Motor</string>
@@ -45,6 +44,9 @@
     <string name="periodic">Periodic</string>
     <string name="minute">%d Minute</string>
     <string name="wifi_password">Wifi Password</string>
+    <string name="static_ip">Static Ip</string>
+    <string name="gateway">Gateway</string>
+    <string name="subnet">Subnet</string>
     <string name="enter_wifi_password">Enter wifi password</string>
     <string name="confirm">Confirm</string>
     <string name="continue_">Continue</string>
@@ -100,4 +102,6 @@
     <string name="hour_format">%d Hours</string>
     <string name="minute_format">%d Minutes</string>
     <string name="second_format">%d Seconds</string>
+    <string name="socket_close_error">Socket is Closed!</string>
+    <string name="static_ip_config">Advance static IP configuration</string>
 </resources>

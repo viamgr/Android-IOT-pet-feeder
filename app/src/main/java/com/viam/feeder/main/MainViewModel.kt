@@ -22,6 +22,7 @@ import com.viam.feeder.shared.ACCESS_POINT_SSID
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
 import com.viam.feeder.shared.DeviceConnectionException
+import com.viam.feeder.shared.NetworkNotAvailableException
 import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
 import com.viam.resource.Resource.Success
@@ -30,8 +31,10 @@ import com.viam.resource.isSuccess
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
+import okhttp3.Request
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import javax.inject.Provider
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -40,7 +43,8 @@ class MainViewModel @Inject constructor(
     private val hasPingFromIp: HasPingFromIp,
     private val webSocketApi: WebSocketApi,
     private val webSocketEvents: WebSocketEvents,
-    private val remoteConnectionConfig: RemoteConnectionConfig
+    private val remoteConnectionConfig: RemoteConnectionConfig,
+    private val request: Provider<Request>
 ) : ViewModel() {
     val transferFileProgress = webSocketApi.progress.asLiveData()
     var askedWifiPermissions = AtomicBoolean(false)
@@ -69,7 +73,7 @@ class MainViewModel @Inject constructor(
                     }
                 )
             } else {
-                emit(Error(DeviceConnectionException("Disconnected from network.")))
+                emit(Error(NetworkNotAvailableException("Network is not available")))
             }
         }
     }
@@ -93,7 +97,7 @@ class MainViewModel @Inject constructor(
 
     private fun onDeviceFound(deviceConnection: DeviceConnection) = launchInScope {
         remoteConnectionConfig.url = deviceConnection.host
-        webSocketApi.openWebSocket()
+        webSocketApi.openWebSocket(request.get())
     }
 
     val combinedLiveTask = combine(getConfigTask, networkStatusCheckerLiveTask)
@@ -127,7 +131,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun onNetworkStatusChanged(networkOptions: NetworkOptions) = launchInScope {
-        networkStatusCheckerLiveTask.setParameter(networkOptions).run()
+        networkStatusCheckerLiveTask(networkOptions)
     }
 
     data class NetworkOptions(val isAvailable: Boolean, val isWifi: Boolean, val wifiName: String?)

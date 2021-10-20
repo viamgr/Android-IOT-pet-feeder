@@ -16,6 +16,10 @@ class ConfigFieldsImpl @Inject constructor(
     private var wifiSsid = LiveDataConfig(configObject, "wifiSsid", "")
     private var wifiPassword = LiveDataConfig(configObject, "wifiPassword", "")
     private var wifiMode = LiveDataConfig(configObject, "wifiMode", WIFI_MODE_AP.ordinal)
+    private var staticIp = LiveDataConfig(configObject, "staticIp", "")
+    private var gateway = LiveDataConfig(configObject, "gateway", "")
+    private var subnet = LiveDataConfig(configObject, "subnet", "")
+    private var useDhcp = LiveDataConfig(configObject, "useDhcp", 1)
     private var feedingDuration = LiveDataConfig(configObject, "feedingDuration", 2000)
     private var ledState = LiveDataConfig(configObject, "ledState", 2)
     private var ledTurnOffDelay = LiveDataConfig(configObject, "ledTurnOffDelay", 60000)
@@ -61,6 +65,22 @@ class ConfigFieldsImpl @Inject constructor(
 
     override fun setFeedingDuration(value: Int) {
         feedingDuration.store(value)
+    }
+
+    override fun setStaticIp(value: String) {
+        staticIp.store(value)
+    }
+
+    override fun setGateway(value: String) {
+        gateway.store(value)
+    }
+
+    override fun setSubnet(value: String) {
+        subnet.store(value)
+    }
+
+    override fun setUseDhcp(value: Int) {
+        useDhcp.store(value)
     }
 
     override fun setLedTurnOffDelay(value: Int) {

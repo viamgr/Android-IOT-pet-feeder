@@ -47,7 +47,7 @@ dependencies {
     implementation project(path: ':domain')
     implementation project(path: ':model')
 
-    implementation "com.google.dagger:hilt-android:2.38.1"
+    api "com.google.dagger:hilt-android:2.38.1"
     kapt "com.google.dagger:hilt-android-compiler:2.38.1"
     kapt 'androidx.hilt:hilt-compiler:1.0.0'
 
@@ -57,16 +57,16 @@ dependencies {
     implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.12.0")
 
-    implementation 'com.arthenica:mobile-ffmpeg-full:4.4.LTS'
+//    implementation 'com.arthenica:mobile-ffmpeg-full:4.4.LTS'
 
     def room_version = "2.3.0"
 
-    implementation("androidx.room:room-runtime:$room_version")
+    api("androidx.room:room-runtime:$room_version")
 
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:$room_version")
 
     // optional - Kotlin Extensions and Coroutines support for Room
-    implementation("androidx.room:room-ktx:$room_version")
+    api("androidx.room:room-ktx:$room_version")
 
 }

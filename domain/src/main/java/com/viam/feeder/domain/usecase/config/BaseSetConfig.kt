@@ -5,9 +5,12 @@ import com.viam.feeder.domain.base.FlowUseCase
 import com.viam.feeder.domain.base.toResource
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.domain.repositories.system.JsonPreferences
+import com.viam.feeder.shared.EVENT_CONFIG_RESET
 import com.viam.feeder.shared.FeederConstants.Companion.CONFIG_FILE_PATH
 import com.viam.resource.Resource
+import com.viam.websocket.model.SocketMessage
 import com.viam.websocket.model.SocketTransfer
+import com.viam.websocket.model.SocketTransfer.Success
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
@@ -33,7 +36,18 @@ abstract class BaseSetConfig<T>(
                             }
                         }
                     }
-                }.collect {
+                }
+                .map {
+                    if (it is Success) {
+                        webSocketRepository.sendJson(
+                            SocketMessage(EVENT_CONFIG_RESET),
+                            SocketMessage::class.java
+                        )
+                    }
+                    it
+                }
+                .collect {
+                    println("collect:$it")
                     emit(it.toResource())
                 }
         }
@@ -41,5 +55,4 @@ abstract class BaseSetConfig<T>(
 
     @Throws(RuntimeException::class)
     protected abstract suspend fun setConfigField(value: T)
-
 }

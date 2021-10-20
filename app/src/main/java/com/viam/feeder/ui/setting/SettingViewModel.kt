@@ -38,7 +38,7 @@ class SettingViewModel @Inject constructor(
         onSuccess<Any> {
             val parameter = getParameter()
             addDevice(parameter)
-            sendRestartEvent()
+//            sendRestartEvent()
         }
     }
 
@@ -57,8 +57,8 @@ class SettingViewModel @Inject constructor(
     }
 
     private fun addDevice(parameter: WifiAuthentication) = launchInScope {
-        addDeviceTask(Device(1, "Device1", parameter.ip, parameter.port, parameter.gateway))
-        remoteConnectionConfig.url = parameter.ip ?: DEFAULT_ACCESS_POINT_IP
+        addDeviceTask(Device(1, "Device1", parameter.staticIp, parameter.port, parameter.gateway))
+        remoteConnectionConfig.url = parameter.staticIp ?: DEFAULT_ACCESS_POINT_IP
         remoteConnectionConfig.port = parameter.port ?: DEFAULT_ACCESS_POINT_PORT
     }
 
@@ -71,7 +71,13 @@ class SettingViewModel @Inject constructor(
         }
     }
 
-    fun onPasswordConfirmed(wifiDevice: WifiDevice, password: String) = launchInScope {
-        setWifiCredentialsTask(WifiAuthentication(wifiDevice.ssid, password))
+    fun onPasswordConfirmed(
+        wifiDevice: WifiDevice,
+        password: String,
+        staticIp: String?,
+        gateway: String?,
+        subnet: String?
+    ) = launchInScope {
+        setWifiCredentialsTask(WifiAuthentication(wifiDevice.ssid, password, staticIp, gateway, subnet))
     }
 }

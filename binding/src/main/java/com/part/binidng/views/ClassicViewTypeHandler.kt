@@ -95,7 +95,7 @@ abstract class ClassicViewTypeHandler : ViewTypeHandler {
         result: Resource.Error
     ) {
         if (result.exception is CancellationException) {
-            hideWithAnimate(view)
+//            hideWithAnimate(view)
             removeView(view, parent, inflatedView)
         } else {
             onError(view, inflatedView, parent, liveTask, result)

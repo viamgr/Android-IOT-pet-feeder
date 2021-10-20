@@ -4,7 +4,7 @@ import com.viam.feeder.domain.base.CoroutinesDispatcherProvider
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.domain.repositories.system.ConfigFields
 import com.viam.feeder.domain.repositories.system.JsonPreferences
-import com.viam.feeder.shared.FeederConstants.WifiMode.WIFI_MODE_AP_STA
+import com.viam.feeder.shared.FeederConstants.WifiMode.WIFI_MODE_STA
 import javax.inject.Inject
 
 class SetWifiCredentials @Inject constructor(
@@ -20,14 +20,24 @@ class SetWifiCredentials @Inject constructor(
     override suspend fun setConfigField(value: WifiAuthentication) {
         configFields.setWifiSsid(value.ssid)
         configFields.setWifiPassword(value.password)
-        configFields.setWifiMode(WIFI_MODE_AP_STA)
+        configFields.setWifiMode(WIFI_MODE_STA)
+        val useDhcp =
+            if (value.staticIp.isNullOrEmpty() || value.staticIp.isNullOrEmpty() || value.subnet.isNullOrEmpty()) {
+                1
+            } else 0
+
+        configFields.setUseDhcp(useDhcp)
+        configFields.setGateway(value.gateway.orEmpty())
+        configFields.setStaticIp(value.staticIp.orEmpty())
+        configFields.setSubnet(value.subnet.orEmpty())
     }
 }
 
 data class WifiAuthentication(
     val ssid: String,
     val password: String,
-    val ip: String? = null,
+    val staticIp: String? = null,
     val gateway: String? = null,
+    val subnet: String? = null,
     val port: Int? = null
 )

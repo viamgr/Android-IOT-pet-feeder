@@ -18,7 +18,7 @@ fun View.reactToTask(
     result: Resource<*>?,
     liveTaskManager: LiveTaskManager? = LiveTaskManager.instance
 ) {
-    print("reactToTask")
+    println("reactToTask")
     val taskManager = liveTaskManager ?: LiveTaskManager.instance
     taskManager.apply {
         findViewTypeHandler<ClassicViewTypeHandler>(liveTask?.loadingViewType()).onUpdate(

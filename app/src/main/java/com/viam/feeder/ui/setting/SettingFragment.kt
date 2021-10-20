@@ -6,15 +6,18 @@ import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.utils.toMessage
 import com.viam.feeder.databinding.FragmentSettingBinding
+import com.viam.feeder.model.WifiDevice
 import com.viam.resource.onError
 import com.viam.resource.onSuccess
 import dagger.hilt.android.AndroidEntryPoint
@@ -51,9 +54,13 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
         })
     }
 
-    private fun showPasswordDialog(wifiDevice: com.viam.feeder.model.WifiDevice) {
+    private fun showPasswordDialog(wifiDevice: WifiDevice) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_wifi_password, null)
         val inputLayout = dialogView?.findViewById<TextInputLayout>(R.id.password)!!
+        val staticIpConfiguration = dialogView.findViewById<MaterialCheckBox>(R.id.static_ip_configuration)!!
+        val staticIp = dialogView.findViewById<TextInputLayout>(R.id.static_ip)!!
+        val gateway = dialogView.findViewById<TextInputLayout>(R.id.gateway)!!
+        val subnet = dialogView.findViewById<TextInputLayout>(R.id.subnet)!!
         val title = dialogView.findViewById<TextView>(R.id.title)!!
         val dialog = MaterialAlertDialogBuilder(requireActivity())
             .setView(dialogView)
@@ -61,7 +68,11 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
             .setCancelable(false)
             .setNegativeButton(R.string.cancel, null)
             .create()
-
+        staticIpConfiguration.setOnCheckedChangeListener { _, value ->
+            staticIp.isVisible = value
+            gateway.isVisible = value
+            subnet.isVisible = value
+        }
         title.text = wifiDevice.ssid
         inputLayout.editText?.doAfterTextChanged {
             inputLayout.error = null
@@ -78,7 +89,13 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
                     getString(R.string.input_wrong, getString(R.string.wifi_password))
             } else {
                 dialog.dismiss()
-                viewModel.onPasswordConfirmed(wifiDevice, password)
+                viewModel.onPasswordConfirmed(
+                    wifiDevice,
+                    password,
+                    staticIp.editText?.text.toString(),
+                    subnet.editText?.text.toString(),
+                    gateway.editText?.text.toString(),
+                )
             }
         }
     }

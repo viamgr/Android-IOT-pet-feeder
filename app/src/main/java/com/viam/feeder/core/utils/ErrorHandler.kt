@@ -2,10 +2,9 @@ package com.viam.feeder.core.utils
 
 import android.content.Context
 import com.part.livetaskcore.livatask.CombinedException
-import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.R
-import com.viam.feeder.shared.ACCESS_POINT_SSID
 import com.viam.feeder.shared.DeviceConnectionException
+import com.viam.feeder.shared.NetworkNotAvailableException
 import com.viam.websocket.SocketCloseException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -15,8 +14,14 @@ import java.net.ConnectException
 
 fun Throwable.toMessage(context: Context): String {
     return when {
+        this is NetworkNotAvailableException -> {
+            context.getString(R.string.network_is_not_available)
+        }
+        this.cause is SocketCloseException -> {
+            context.getString(R.string.socket_close_error)
+        }
         isConnectionError() -> {
-            context.getString(R.string.wrong_connected, ACCESS_POINT_SSID)
+            context.getString(R.string.wrong_connected)
         }
         else -> {
             context.getString(R.string.error_happened)
@@ -29,9 +34,7 @@ fun Throwable.isConnectionError(): Boolean {
         this is DeviceConnectionException ||
         this is SocketCloseException ||
         this.cause is SocketCloseException ||
-        (this is ViewException && this.cause is SocketCloseException) ||
         this.cause is DeviceConnectionException ||
-        (this is ViewException && this.cause is DeviceConnectionException) ||
         (this is CombinedException && this.exceptions.any {
             it.isConnectionError()
         })

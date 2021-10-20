@@ -15,6 +15,7 @@ interface WebSocketRepository {
         inputStream: InputStream,
     ): Flow<SocketTransfer>
 
+    fun <T> sendJson(message: T, clazz: Class<T>)
     fun receiveBinary(
         remoteFilePath: String,
         outputStream: OutputStream
@@ -24,7 +25,6 @@ interface WebSocketRepository {
         key: String,
         clazz: Class<T>
     ): Flow<T>
-
 
     fun onLongMessageReceived(
         key: String,

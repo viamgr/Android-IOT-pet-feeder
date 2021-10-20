@@ -33,7 +33,7 @@ class NetWorkModule {
             .retryOnConnectionFailure(true)
             .addInterceptor(dynamicUrlInterceptor)
             .addInterceptor(interceptor)
-            .callTimeout(100, TimeUnit.SECONDS)
+            .callTimeout(30, TimeUnit.SECONDS)
             .protocols(listOf(Protocol.HTTP_1_1))
             .addInterceptor {
                 val newBuilder = it.request().newBuilder()
@@ -44,9 +44,9 @@ class NetWorkModule {
                 val request = newBuilder.build()
                 it.proceed(request)
             }
-            .connectTimeout(100, TimeUnit.SECONDS)
-            .readTimeout(100, TimeUnit.SECONDS)
-            .writeTimeout(100, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor(FlipperOkhttpInterceptor(networkFlipperPlugin))
             .build()
     }

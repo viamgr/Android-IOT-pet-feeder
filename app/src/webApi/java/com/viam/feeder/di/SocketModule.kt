@@ -32,7 +32,6 @@ class SocketModule {
     }
 
     @Provides
-    @Singleton
     fun getSocketRequest(
         remoteConnectionConfig: RemoteConnectionConfig
     ): Request {
@@ -44,10 +43,9 @@ class SocketModule {
     @Singleton
     fun provideWebSocketApi(
         @Named("socket") okHttpClient: OkHttpClient,
-        moshi: Moshi,
-        request: Request
+        moshi: Moshi
     ): WebSocketApi {
-        return WebSocketApi(okHttpClient, moshi, request)
+        return WebSocketApi(okHttpClient, moshi)
     }
 
     @Provides
