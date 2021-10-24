@@ -10,7 +10,6 @@ import com.part.binidng.views.addDefaultClassicViewTypes
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.connection.MultipleConnectionInformer
-import com.part.livetaskcore.livatask.ViewException
 import com.viam.feeder.core.utils.toMessage
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.HiltAndroidApp
@@ -50,7 +49,7 @@ class MyApplication : MultiDexApplication() {
             .setErrorMapper { exception ->
                 println("livetask setErrorMapper exception")
                 exception.printStackTrace()
-                ViewException(
+                Exception(
                     exception.toMessage(this@MyApplication),
                     exception
                 )
@@ -66,7 +65,6 @@ class MyApplication : MultiDexApplication() {
 
             .apply()
     }
-
 
     private fun AppResource<*>.toResource(): Resource<*> {
         return when (this) {

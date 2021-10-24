@@ -13,6 +13,7 @@ import kotlinx.coroutines.DisposableHandle
 
 interface LiveTaskBuilder<T> {
     fun emitResult(resultBlock: EmitResultBlock<T>)
+    fun emitResult(resource: Resource<T>)
     fun emitData(dataBlock: EmitDataBlock<T>)
     fun retry()
     suspend fun emit(data: T)

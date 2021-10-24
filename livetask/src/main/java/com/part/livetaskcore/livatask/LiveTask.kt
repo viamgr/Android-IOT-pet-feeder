@@ -1,6 +1,7 @@
 package com.part.livetaskcore.livatask
 
 import androidx.lifecycle.LiveData
+import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.views.ViewType
 import kotlin.coroutines.CoroutineContext
@@ -13,6 +14,7 @@ interface LiveTask<T> {
     fun loadingViewType(): ViewType?
     val liveResult: LiveData<Resource<T>?>
     fun result(): Resource<T>?
+    fun errorMapper(): ErrorMapper
     fun asLiveData(): LiveData<LiveTask<T>>
     fun retry()
     suspend fun run(): LiveTask<T>

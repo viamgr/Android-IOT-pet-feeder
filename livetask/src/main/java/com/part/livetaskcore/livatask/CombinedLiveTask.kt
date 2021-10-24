@@ -133,4 +133,8 @@ class CombinedLiveTask(
     override suspend fun emit(data: Any) {
         throw IllegalStateException("You are not allowed to call 'emit' function inside combine CombinedLiveTask builder")
     }
+
+    override fun emitResult(resource: Resource<Any>) {
+        throw IllegalStateException("Not yet implemented")
+    }
 }

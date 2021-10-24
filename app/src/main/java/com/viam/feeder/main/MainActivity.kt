@@ -15,7 +15,7 @@ import com.viam.feeder.R
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.ActivityMainBinding
-import com.viam.feeder.main.MainViewModel.NetworkOptions
+import com.viam.feeder.domain.usecase.ConnectionStatus.NetworkOptions
 import com.viam.feeder.ui.wifi.WifiAutoConnect
 import com.viam.networkavailablity.Connectivity.getWifiName
 import com.viam.networkavailablity.Connectivity.isWifiConnected

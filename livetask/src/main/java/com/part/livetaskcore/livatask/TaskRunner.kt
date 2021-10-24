@@ -44,9 +44,7 @@ class TaskRunner<T>(
                 delay(timeoutInMs)
             runningJob?.cancel()
             runningJob = null
-            liveData.emitResult {
-                Resource.Error(CancellationException())
-            }
+            liveData.emitResult(Resource.Error(CancellationException()))
         }
     }
 }

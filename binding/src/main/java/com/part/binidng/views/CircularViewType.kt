@@ -7,11 +7,16 @@ import com.part.binidng.R
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
 import com.part.livetaskcore.views.getErrorText
-import kotlinx.android.synthetic.main.loading_circular.view.*
+import kotlinx.android.synthetic.main.loading_circular.view.cl_container_circular
+import kotlinx.android.synthetic.main.loading_circular.view.cl_error_circular
+import kotlinx.android.synthetic.main.loading_circular.view.ivBtn_close_circular
+import kotlinx.android.synthetic.main.loading_circular.view.progressBar_circular
+import kotlinx.android.synthetic.main.loading_circular.view.tv_error_circular
+import kotlinx.android.synthetic.main.loading_circular.view.tv_loading_circular
 
 class CircularViewType : ClassicViewTypeHandler() {
     private fun View.handleCancelable(result: LiveTask<*>) {
-        if (result.isCancelable() == true) {
+        if (result.isCancelable()) {
             ivBtn_close_circular.isVisible = true
             ivBtn_close_circular.setOnClickListener {
                 result.cancel()
@@ -48,10 +53,9 @@ class CircularViewType : ClassicViewTypeHandler() {
     ) {
         inflatedView.apply {
             cl_error_circular.visibility = View.VISIBLE
-            tv_error_circular.text =
-                result.getErrorText(context.getString(R.string.task_error_text))
+            tv_error_circular.text = result.getErrorText(liveTask)
             handleCancelable(liveTask)
-            if (liveTask.isRetryable() == true) {
+            if (liveTask.isRetryable()) {
                 cl_container_circular.visibility = View.VISIBLE
                 cl_error_circular.setOnClickListener {
                     liveTask.retry()
@@ -62,6 +66,4 @@ class CircularViewType : ClassicViewTypeHandler() {
 
         }
     }
-
-
 }

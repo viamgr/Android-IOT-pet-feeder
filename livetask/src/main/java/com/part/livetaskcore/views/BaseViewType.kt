@@ -2,9 +2,7 @@ package com.part.livetaskcore.views
 
 import android.view.View
 import android.view.ViewGroup
-import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
-import com.part.livetaskcore.livatask.ViewException
 
 /**
  * Interface that allows controlling UI on each state. You can implement [BaseViewType] to
@@ -35,12 +33,5 @@ abstract class BaseViewType {
         view.tag = null
         parent.removeView(stateLayout)
     }
-
-    fun getErrorText(result: LiveTask<*>, errorText: String) =
-        if ((result.result() as Resource.Error).exception is ViewException) {
-            ((result.result() as Resource.Error).exception as ViewException).viewMessage
-        } else {
-            errorText
-        }
 }
 

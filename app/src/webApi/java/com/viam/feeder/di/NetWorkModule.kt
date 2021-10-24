@@ -2,6 +2,7 @@ package com.viam.feeder.di
 
 import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
+import com.viam.feeder.shared.BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,10 +66,4 @@ class NetWorkModule {
     @Singleton
     fun provideNetworkFlipperPlugin(): NetworkFlipperPlugin = NetworkFlipperPlugin()
 
-    companion object {
-        const val API_IP = "192.168.1.50"
-        const val API_PORT = 80
-        const val API_SOCKET_PORT = 4200
-        const val BASE_URL = "http://$API_IP:$API_PORT/"
-    }
 }

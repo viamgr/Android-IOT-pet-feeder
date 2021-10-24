@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.loading_blur.view.error
 import kotlinx.android.synthetic.main.loading_blur.view.progress
 import kotlinx.android.synthetic.main.loading_blur.view.retry
 
-class BlurViewType(val errorText: String? = null) : ClassicViewTypeHandler() {
+class BlurViewType : ClassicViewTypeHandler() {
     private fun View.handleCancelable(result: LiveTask<*>) {
         close.isVisible = result.isCancelable()
         if (result.isCancelable()) {
@@ -72,8 +72,7 @@ class BlurViewType(val errorText: String? = null) : ClassicViewTypeHandler() {
             retry.isVisible = liveTask.isRetryable() == true
             progress.isVisible = false
 
-            error.text =
-                result.getErrorText(context.getString(R.string.task_error_text))
+            error.text = result.getErrorText(liveTask)
             if (liveTask.isRetryable()) {
                 retry.setOnClickListener {
                     liveTask.retry()

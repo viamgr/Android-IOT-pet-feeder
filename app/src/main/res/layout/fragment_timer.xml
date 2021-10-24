@@ -13,7 +13,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/transBack">
+        android:background="@color/transBack"
+        reactToTask="@{vm.combined.asLiveData()}">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/timer_settings"
@@ -21,8 +22,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="12dp"
-            app:cardElevation="4dp"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:cardElevation="4dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -127,14 +128,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:srcCompat="@drawable/ic_baseline_add_24" />
-
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/clock_list"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tab" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/scheduling_group"

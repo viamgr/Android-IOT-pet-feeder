@@ -94,9 +94,12 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     }
 
     private fun mapError(value: Resource.Error): Resource.Error {
-        val mapError = errorMapper.mapError(value.exception)
-        return mapError.let { Resource.Error(it) }
+//        val mapError = errorMapper.mapError(value.exception)
+//        return mapError.let { Resource.Error(it) }
+        return value
     }
+
+    override fun errorMapper() = errorMapper
 
     override fun loadingViewType(): ViewType? = viewType
     override fun asLiveData(): LiveData<LiveTask<T>> = this

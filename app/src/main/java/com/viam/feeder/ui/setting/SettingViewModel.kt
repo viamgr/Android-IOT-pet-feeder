@@ -77,8 +77,10 @@ class SettingViewModel @Inject constructor(
 
     private fun requestGetWifiList() = launchInScope {
         getWifiList(WIFI_LIST_WITCH)
-        delay(5000)
+        delay(2000)
         getWifiList(WIFI_LIST_WITCH)
+        delay(5000)
+
         while (currentCoroutineContext().isActive) {
             getWifiList(WIFI_LIST_WITCH)
             delay(10000)

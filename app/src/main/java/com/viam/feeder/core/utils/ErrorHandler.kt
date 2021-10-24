@@ -14,10 +14,13 @@ import java.net.ConnectException
 
 fun Throwable.toMessage(context: Context): String {
     return when {
+        this is CombinedException -> {
+            exceptions.map { it.toMessage(context) }.distinct().joinToString("\n") { it }
+        }
         this is NetworkNotAvailableException -> {
             context.getString(R.string.network_is_not_available)
         }
-        this.cause is SocketCloseException -> {
+        this is SocketCloseException -> {
             context.getString(R.string.socket_close_error)
         }
         isConnectionError() -> {
@@ -32,9 +35,6 @@ fun Throwable.toMessage(context: Context): String {
 fun Throwable.isConnectionError(): Boolean {
     return this is ConnectException ||
         this is DeviceConnectionTimoutException ||
-        this is SocketCloseException ||
-        this.cause is SocketCloseException ||
-        this.cause is DeviceConnectionTimoutException ||
         (this is CombinedException && this.exceptions.any {
             it.isConnectionError()
         })

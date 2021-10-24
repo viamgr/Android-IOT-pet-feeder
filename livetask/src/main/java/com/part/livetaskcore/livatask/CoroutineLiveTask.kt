@@ -15,7 +15,6 @@ open class CoroutineLiveTask<T>(
     private var connectionInformer: ConnectionInformer? = liveTaskManager.connectionInformer
     var context: CoroutineContext? = null
 
-
     override fun configure() {
         block.invoke(this@CoroutineLiveTask)
     }
@@ -128,7 +127,6 @@ open class CoroutineLiveTask<T>(
         emittedSource = null
     }
 
-
     private fun handleAutoRetry(exception: Exception) {
         if (autoRetry == true && exception !is CancellationException) {
             connectionInformer?.register(exception, this)
@@ -137,6 +135,10 @@ open class CoroutineLiveTask<T>(
 
     override fun emitResult(resultBlock: EmitResultBlock<T>) {
         emitBlock = resultBlock
+    }
+
+    override fun emitResult(resource: Resource<T>) {
+        applyResult(resource)
     }
 
     override fun emitData(dataBlock: EmitDataBlock<T>) {

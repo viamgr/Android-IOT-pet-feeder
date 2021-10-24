@@ -12,10 +12,9 @@ import com.google.android.material.tabs.TabLayout
 import com.viam.feeder.R
 import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
-import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.FragmentTimerBinding
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
+import java.util.Date
 
 @AndroidEntryPoint
 
@@ -39,7 +38,6 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
             vm = viewModel
             clockList.setController(controller)
         }
-        reactToTask(viewModel.combined)
 
         viewModel.timerList.observe(viewLifecycleOwner, {
             controller.setData(it)

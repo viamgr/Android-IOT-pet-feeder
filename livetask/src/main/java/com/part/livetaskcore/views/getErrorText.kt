@@ -1,11 +1,8 @@
 package com.part.livetaskcore.views
 
 import com.part.livetaskcore.Resource
-import com.part.livetaskcore.livatask.ViewException
+import com.part.livetaskcore.livatask.LiveTask
 
-fun Resource.Error.getErrorText(default: String) =
-    if (this.exception is ViewException) {
-        this.exception.viewMessage
-    } else {
-        default
-    }
+// TODO: 10/24/2021 handle default error text
+fun Resource.Error.getErrorText(liveTask: LiveTask<*>) =
+    liveTask.errorMapper().mapError(this.exception).message
