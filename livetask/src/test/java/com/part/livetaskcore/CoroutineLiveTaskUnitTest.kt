@@ -5,14 +5,20 @@ import com.part.livetaskcore.connection.WebConnectionChecker
 import com.part.livetaskcore.livatask.CoroutineLiveTask
 import com.part.livetaskcore.livatask.LiveTaskBuilder
 import com.part.livetaskcore.views.ViewType
-import io.mockk.*
+import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-
 
 class CoroutineLiveTaskUnitTest {
     @Rule
@@ -150,7 +156,7 @@ class CoroutineLiveTaskUnitTest {
             mappedException
         }
         val result = CoroutineLiveTask<String>(liveTaskManager) {
-            emitBlock { Resource.Error(Exception("Another Exception")) }
+            emitResult { Resource.Error(Exception("Another Exception")) }
         }
             .run(coroutineDispatcher)
             .result()
@@ -166,7 +172,7 @@ class CoroutineLiveTaskUnitTest {
             errorMapper {
                 mappedException
             }
-            emitBlock { Resource.Error(Exception("Another Exception")) }
+            emitResult { Resource.Error(Exception("Another Exception")) }
         }
             .run(coroutineDispatcher)
             .result()
@@ -179,7 +185,7 @@ class CoroutineLiveTaskUnitTest {
     fun errorMapper_withResult_shouldCall() = runBlocking {
         val mappedException = Exception("Mapped Exception")
         val result = CoroutineLiveTask<String>(liveTaskManager) {
-            emitBlock { Resource.Error(Exception("Another Exception")) }
+            emitResult { Resource.Error(Exception("Another Exception")) }
 
             errorMapper {
                 mappedException
@@ -196,7 +202,7 @@ class CoroutineLiveTaskUnitTest {
     fun connectionInformer_withoutAutoRetry_shouldNotCall() = runBlocking {
         val exception = Exception("An Exception")
         CoroutineLiveTask<String>(liveTaskManager) {
-            emitBlock { Resource.Error(exception) }
+            emitResult { Resource.Error(exception) }
         }
             .run(coroutineDispatcher).let {
                 val connectionInformer = liveTaskManager.connectionInformer
@@ -211,7 +217,7 @@ class CoroutineLiveTaskUnitTest {
         val exception = Exception("An Exception")
         CoroutineLiveTask<String>(liveTaskManager) {
             autoRetry(true)
-            emitBlock { Resource.Error(exception) }
+            emitResult { Resource.Error(exception) }
         }
             .run(coroutineDispatcher).let {
                 verify {
@@ -238,7 +244,7 @@ class CoroutineLiveTaskUnitTest {
             onSuccess<Nothing?> {
                 successCount++
             }
-            emitBlock { success }
+            emitResult { success }
         }.run(coroutineDispatcher)
             .let {
                 assertEquals(1, successCount)
@@ -253,7 +259,7 @@ class CoroutineLiveTaskUnitTest {
             onSuccess<String> {
                 onSuccessData = it
             }
-            emitBlock { success }
+            emitResult { success }
         }.run(coroutineDispatcher)
             .let {
                 assertEquals(success.data, onSuccessData)
@@ -273,7 +279,7 @@ class CoroutineLiveTaskUnitTest {
             onError {
                 errorHappenedInCallback = it
             }
-            emitBlock { error }
+            emitResult { error }
         }.run(coroutineDispatcher)
             .let {
                 assertEquals(error.exception, errorHappenedInCallback)
@@ -284,7 +290,7 @@ class CoroutineLiveTaskUnitTest {
     fun liveResult_shouldChange() = runBlocking {
         val error = Resource.Error(Exception())
         CoroutineLiveTask<String>(liveTaskManager) {
-            emitBlock { error }
+            emitResult { error }
         }.run(coroutineDispatcher)
             .let {
                 val liveResult = it.liveResult

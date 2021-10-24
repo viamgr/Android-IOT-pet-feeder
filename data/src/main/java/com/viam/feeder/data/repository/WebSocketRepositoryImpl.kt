@@ -25,6 +25,13 @@ class WebSocketRepositoryImpl @Inject constructor(private val webSocketApi: WebS
         webSocketApi.sendJson(message, clazz)
     }
 
+    override fun sendEvent(key: String) {
+        webSocketApi.sendJson(
+            SocketMessage(key),
+            SocketMessage::class.java
+        )
+    }
+
     override fun receiveBinary(
         remoteFilePath: String,
         outputStream: OutputStream

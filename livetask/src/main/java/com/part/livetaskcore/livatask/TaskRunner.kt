@@ -1,7 +1,12 @@
 package com.part.livetaskcore.livatask
 
 import com.part.livetaskcore.Resource
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 internal typealias Block<T> = suspend LiveTaskBuilder<T>.() -> Unit
 
@@ -39,7 +44,7 @@ class TaskRunner<T>(
                 delay(timeoutInMs)
             runningJob?.cancel()
             runningJob = null
-            liveData.emitBlock {
+            liveData.emitResult {
                 Resource.Error(CancellationException())
             }
         }

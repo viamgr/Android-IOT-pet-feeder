@@ -2,6 +2,12 @@ package com.viam.websocket
 
 import com.squareup.moshi.Moshi
 import com.viam.websocket.model.*
+import com.viam.websocket.model.SocketEvent.Binary
+import com.viam.websocket.model.SocketEvent.Closed
+import com.viam.websocket.model.SocketEvent.Closing
+import com.viam.websocket.model.SocketEvent.Failure
+import com.viam.websocket.model.SocketEvent.Open
+import com.viam.websocket.model.SocketEvent.Text
 import com.viam.websocket.model.SocketTransfer.Error
 import com.viam.websocket.model.SocketTransfer.Progress
 import com.viam.websocket.model.SocketTransfer.Start
@@ -46,7 +52,7 @@ class WebSocketApi(
 
     private val socketRunnerScope = CoroutineScope(IO)
     lateinit var webSocket: WebSocket
-    fun myLaunch(block: suspend () -> Unit): Job {
+    fun launch(block: suspend () -> Unit): Job {
         return socketRunnerScope.launch {
             try {
                 println("new Launch")
@@ -71,7 +77,7 @@ class WebSocketApi(
     inline fun <reified T : SocketEvent> onEvent(
         crossinline callback: (data: T) -> Unit
     ) {
-        myLaunch {
+        launch {
             events
                 .filterIsInstance<T>()
                 .collect {
@@ -89,7 +95,7 @@ class WebSocketApi(
             throw SocketCloseException()
         }
         events
-            .filterIsInstance<SocketEvent.Text>()
+            .filterIsInstance<Text>()
             .map {
                 val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)
                 return@map if (socketMessage?.key == key) {
@@ -107,7 +113,7 @@ class WebSocketApi(
         clazz: Class<T>
     ): Flow<T> {
         return events
-            .filterIsInstance<SocketEvent.Text>()
+            .filterIsInstance<Text>()
             .map {
                 val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)
                 return@map if (socketMessage?.key == key) {
@@ -118,32 +124,32 @@ class WebSocketApi(
     }
 
     fun openWebSocket(request: Request) {
-        /*   if (::webSocket.isInitialized) {
-               return
-           }*/
+        if (isOpenedSocket) {
+            return
+        }
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
                 println("onOpen socket")
                 isOpenedSocket = true
-                myLaunch {
-                    _events.emit(SocketEvent.Open)
+                launch {
+                    _events.emit(Open)
                 }
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 super.onMessage(webSocket, text)
                 println("onMessage socket $text")
-                myLaunch {
-                    _events.emit(SocketEvent.Text(text))
+                launch {
+                    _events.emit(Text(text))
                 }
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
                 super.onMessage(webSocket, bytes)
                 println("onMessage socket $bytes")
-                myLaunch {
-                    _events.emit(SocketEvent.Binary(bytes))
+                launch {
+                    _events.emit(Binary(bytes))
                 }
             }
 
@@ -151,8 +157,8 @@ class WebSocketApi(
                 super.onClosing(webSocket, code, reason)
                 isOpenedSocket = false
                 println("onClosing socket")
-                myLaunch {
-                    _events.emit(SocketEvent.Closing)
+                launch {
+                    _events.emit(Closing)
                 }
             }
 
@@ -160,19 +166,26 @@ class WebSocketApi(
                 super.onClosed(webSocket, code, reason)
                 isOpenedSocket = false
                 println("onClosed socket")
-                myLaunch {
-                    _events.emit(SocketEvent.Closed)
+                launch {
+                    _events.emit(Closed)
                 }
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
-                isOpenedSocket = false
                 println("onFailure socket")
-                myLaunch {
-                    _events.emit(SocketEvent.Failure(Exception(t)))
-//                    delay(5000)
-//                    openWebSocket()
+                isOpenedSocket = false
+                okHttpClient.dispatcher.cancelAll()
+                okHttpClient.connectionPool.evictAll();
+                webSocket.cancel()
+                webSocket.close(1000, "Connection closed");
+
+//                response?.body?.close()
+//                webSocket.cancel()
+                launch {
+                    _events.emit(Failure(Exception(t)))
+                    delay(5000)
+                    openWebSocket(request)
                 }
             }
         })
@@ -182,89 +195,64 @@ class WebSocketApi(
     fun receiveBinary(
         remoteFilePath: String,
         outputStream: OutputStream
-    ): Flow<SocketTransfer> {
-        cancelOldBinaryTransfer()
+    ): Flow<SocketTransfer> = channelFlow {
         println("Start Download: $remoteFilePath")
 
-        fun clear() {
-            binaryCoroutineContext = null
-            outputStream.close()
-        }
-        return channelFlow {
-            binaryCoroutineContext = currentCoroutineContext()
-            fun onError(e: Throwable) {
-                e.printStackTrace()
-                throw e
-            }
+        var wrote = 0
+        var size = 0
 
-            var wrote = 0
-            var size = 0
+        sendJson(FileDetailRequest(remoteFilePath), FileDetailRequest::class.java)
+        send(Progress(0F))
 
-            CoroutineScope(currentCoroutineContext()).launch {
-                sendJson(FileDetailRequest(remoteFilePath), FileDetailRequest::class.java)
-                    .onMessageReceived(
-                        FILE_DETAIL_CALLBACK,
-                        FileDetailCallback::class.java
-                    )
-                    .collect { detailCallback: FileDetailCallback ->
+        events.collect {
+            if (it is Text) {
+                val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)!!
+                println("socketMessage.key: ${socketMessage.key}")
+                when (socketMessage.key) {
+                    FILE_DETAIL_CALLBACK -> {
+                        val detailCallback =
+                            moshi.adapter(FileDetailCallback::class.java).fromJson(it.data)!!
                         size = detailCallback.size
-                        send(SocketTransfer.Start(size, TransferType.Download))
-                        sendJson(
-                            FileRequestSlice(wrote),
-                            FileRequestSlice::class.java
-                        )
+                        sendJson(FileRequestSlice(wrote), FileRequestSlice::class.java)
+                        send(Start(size, TransferType.Download))
                     }
-            }
-            CoroutineScope(currentCoroutineContext()).launch {
-                onBinaryReceived()
-                    .collect {
-                        val toByteArray = it.data.toByteArray()
-                        outputStream.write(toByteArray)
-                        wrote += toByteArray.size
-                        if (wrote < size) {
-                            sendJson(
-                                FileRequestSlice(wrote),
-                                FileRequestSlice::class.java
-                            )
-                            send(SocketTransfer.Progress(wrote.toFloat() / size))
-                        } else {
-                            sendJson(
-                                SocketMessage(FILE_REQUEST_FINISHED),
-                                SocketMessage::class.java
-                            )
-                            send(SocketTransfer.Progress(1F))
-                            send(Success)
-
-                            clear()
-                        }
+                    FILE_SEND_ERROR -> {
+                        val detailCallback =
+                            moshi.adapter(FileDetailCallback::class.java).fromJson(it.data)!!
+                        size = detailCallback.size
+                        send(Error(Exception(FILE_REQUEST_ERROR)))
                     }
+                }
+            } else if (it is Binary) {
+                val toByteArray = it.data.toByteArray()
+                outputStream.write(toByteArray)
+                wrote += toByteArray.size
+                if (wrote < size) {
+                    sendJson(FileRequestSlice(wrote), FileRequestSlice::class.java)
+                    send(Progress(wrote.toFloat() / size))
+                } else {
+                    sendJson(SocketMessage(FILE_REQUEST_FINISHED), SocketMessage::class.java)
+                    send(Progress(1F))
+                    send(Success)
+                }
             }
-
-            CoroutineScope(currentCoroutineContext()).launch {
-                onMessageReceived<SocketMessage>(FILE_SEND_ERROR, SocketMessage::class.java)
-                    .collect {
-                        println("FILE_REQUEST_ERROR")
-                        onError(Exception(FILE_REQUEST_ERROR))
-                        clear()
-                    }
-            }
-
-        }.onCompletion { e ->
-            clear()
-            println("onCompletion $e")
         }
     }
+
+    var buffered: BufferedInputStream? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     fun sendBinary(
         remoteFilePath: String,
         inputStream: InputStream,
-    ): Flow<SocketTransfer> = channelFlow {
-        cancelOldBinaryTransfer()
-        var buffered: BufferedInputStream? = null
+    ): Flow<SocketTransfer> {
+        if (buffered != null) {
+            throw IllegalStateException()
+        }
 
         fun close() {
             buffered?.close()
+            buffered = null
         }
 
         val startFlow: Flow<SocketTransfer> = flow {
@@ -274,7 +262,7 @@ class WebSocketApi(
         }
 
         val messagesFlow = events
-            .filterIsInstance<SocketEvent.Text>().map {
+            .filterIsInstance<Text>().map {
                 val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)!!
                 println("socketMessage.key: ${socketMessage.key}")
                 when (socketMessage.key) {
@@ -300,20 +288,13 @@ class WebSocketApi(
                 }
             }
 
-        startFlow
+        return startFlow
             .flatMapLatest {
                 messagesFlow
             }
-            .onCompletion { e ->
-                e?.let {
-                    emit(Error(e as Exception))
-                }
-                close()
-            }
-            .collect {
-                send(it)
-                if (it is Success || it is Error) {
-                    cancel()
+            .onEach {
+                if (it is Error || it is Success) {
+                    close()
                 }
             }
     }

@@ -11,7 +11,10 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -46,7 +49,7 @@ class CombinedLiveTaskUnitTest {
     fun singleLiveTask_onSuccess_returnSuccess() {
         val success = Resource.Success("value")
         val liveTask1 = CoroutineLiveTask<String> {
-            emitBlock { success }
+            emitResult { success }
         }
         val combinedLiveTask = CombinedLiveTask(liveTask1, liveTaskManager = liveTaskManager)
         liveTask1.run(coroutineDispatcher)
@@ -59,10 +62,10 @@ class CombinedLiveTaskUnitTest {
         val success1 = Resource.Success("value")
         val success2 = Resource.Success("value")
         val liveTask1 = CoroutineLiveTask<String> {
-            emitBlock { success1 }
+            emitResult { success1 }
         }
         val liveTask2 = CoroutineLiveTask<String> {
-            emitBlock { success2 }
+            emitResult { success2 }
         }
         val combinedLiveTask =
             CombinedLiveTask(liveTask1, liveTask2, liveTaskManager = liveTaskManager)
@@ -94,10 +97,10 @@ class CombinedLiveTaskUnitTest {
         val success = Resource.Success("value")
         val error = Resource.Error(Exception())
         val successLiveTask = CoroutineLiveTask<String> {
-            emitBlock { success }
+            emitResult { success }
         }.run(coroutineDispatcher)
         val errorLiveTask = CoroutineLiveTask<String> {
-            emitBlock { error }
+            emitResult { error }
         }.run(coroutineDispatcher)
 
         val combinedLiveTask =
@@ -111,7 +114,7 @@ class CombinedLiveTaskUnitTest {
         val error = Resource.Error(Exception())
 
         val errorLiveTask = CoroutineLiveTask<String> {
-            emitBlock { error }
+            emitResult { error }
         }.run(coroutineDispatcher)
 
         every { liveTaskManager.errorMapper } returns ErrorMapper {
@@ -130,15 +133,15 @@ class CombinedLiveTaskUnitTest {
         val loading = Resource.Loading()
 
         val successLiveTask = CoroutineLiveTask<String> {
-            emitBlock { success }
+            emitResult { success }
         }.run(coroutineDispatcher)
 
         val loadingLiveTask = CoroutineLiveTask<String> {
-            emitBlock { loading }
+            emitResult { loading }
         }.run(coroutineDispatcher)
 
         val errorLiveTask = CoroutineLiveTask<String> {
-            emitBlock { error }
+            emitResult { error }
         }.run(coroutineDispatcher)
 
         val combinedLiveTask =
@@ -158,11 +161,11 @@ class CombinedLiveTaskUnitTest {
         val loading = Resource.Loading()
 
         val successLiveTask = CoroutineLiveTask<String> {
-            emitBlock { success }
+            emitResult { success }
         }.run(coroutineDispatcher)
 
         val loadingLiveTask = CoroutineLiveTask<String> {
-            emitBlock { loading }
+            emitResult { loading }
         }.run(coroutineDispatcher)
 
         val combinedLiveTask =
@@ -245,7 +248,7 @@ class CombinedLiveTaskUnitTest {
         val error = Resource.Error(Exception())
         val errorLiveTask = spyk(CoroutineLiveTask<Any> {
             retryable(false)
-            emitBlock { error }
+            emitResult { error }
         })
         errorLiveTask.run(coroutineDispatcher)
 
@@ -262,14 +265,14 @@ class CombinedLiveTaskUnitTest {
         val error = Resource.Error(Exception())
         val errorLiveTask = spyk(CoroutineLiveTask<Any> {
             retryable(false)
-            emitBlock { error }
+            emitResult { error }
         })
         errorLiveTask.run(coroutineDispatcher)
 
         val success = Resource.Success(null)
         val successLiveTask = spyk(CoroutineLiveTask<Any> {
             retryable(true)
-            emitBlock { success }
+            emitResult { success }
         })
         successLiveTask.run(coroutineDispatcher)
 
@@ -297,11 +300,11 @@ class CombinedLiveTaskUnitTest {
         val success2 = Resource.Success(null)
 
         val successLiveTask = CoroutineLiveTask<String> {
-            emitBlock { success }
+            emitResult { success }
         }.run(coroutineDispatcher)
 
         val success2LiveTask = CoroutineLiveTask<String> {
-            emitBlock { success2 }
+            emitResult { success2 }
         }.run(coroutineDispatcher)
 
 

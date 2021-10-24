@@ -15,7 +15,6 @@ import com.viam.feeder.R
 import com.viam.feeder.core.utility.bindingAdapter.contentView
 import com.viam.feeder.core.utility.reactToTask
 import com.viam.feeder.databinding.ActivityMainBinding
-import com.viam.feeder.domain.usecase.device.HasPingFromIp
 import com.viam.feeder.main.MainViewModel.NetworkOptions
 import com.viam.feeder.ui.wifi.WifiAutoConnect
 import com.viam.networkavailablity.Connectivity.getWifiName
@@ -37,9 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var wifiAutoConnect: WifiAutoConnect
-
-    @Inject
-    lateinit var hasPingFromIp: HasPingFromIp
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

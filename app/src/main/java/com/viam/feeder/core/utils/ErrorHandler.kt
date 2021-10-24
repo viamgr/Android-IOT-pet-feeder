@@ -3,7 +3,7 @@ package com.viam.feeder.core.utils
 import android.content.Context
 import com.part.livetaskcore.livatask.CombinedException
 import com.viam.feeder.R
-import com.viam.feeder.shared.DeviceConnectionException
+import com.viam.feeder.shared.DeviceConnectionTimoutException
 import com.viam.feeder.shared.NetworkNotAvailableException
 import com.viam.websocket.SocketCloseException
 import kotlinx.coroutines.CancellationException
@@ -31,10 +31,10 @@ fun Throwable.toMessage(context: Context): String {
 
 fun Throwable.isConnectionError(): Boolean {
     return this is ConnectException ||
-        this is DeviceConnectionException ||
+        this is DeviceConnectionTimoutException ||
         this is SocketCloseException ||
         this.cause is SocketCloseException ||
-        this.cause is DeviceConnectionException ||
+        this.cause is DeviceConnectionTimoutException ||
         (this is CombinedException && this.exceptions.any {
             it.isConnectionError()
         })

@@ -30,7 +30,7 @@ class NetWorkModule {
         interceptor.apply { interceptor.level = HttpLoggingInterceptor.Level.HEADERS }
 
         return okHttpBuilder
-            .retryOnConnectionFailure(true)
+            .retryOnConnectionFailure(false)
             .addInterceptor(dynamicUrlInterceptor)
             .addInterceptor(interceptor)
             .callTimeout(30, TimeUnit.SECONDS)

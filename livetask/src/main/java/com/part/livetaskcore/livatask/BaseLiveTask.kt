@@ -7,6 +7,7 @@ import androidx.lifecycle.MediatorLiveData
 import com.part.livetaskcore.ErrorMapper
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
+import com.part.livetaskcore.ResourceMapper
 import com.part.livetaskcore.views.ViewType
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -28,6 +29,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     protected var onRunCallback: (suspend () -> Unit)? = null
     protected var onErrorAction: (Exception) -> Unit = {}
     protected var errorMapper: ErrorMapper = liveTaskManager.errorMapper
+    protected var resourceMapper: ResourceMapper<*>? = liveTaskManager.resourceMapper
     protected var onLoadingAction: (Any?) -> Unit = {}
 
     @VisibleForTesting
@@ -35,24 +37,29 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
 
     private var latestResult: Resource<T>? = null
         set(value) {
-            field = when {
+            when {
                 value is Resource.Success -> {
+                    fireChanges(value)
+                    field = value
                     onSuccessHappened(value)
-                    value
                 }
                 value is Resource.Error && value.exception !is CancellationException
                 -> {
                     val error = mapError(value)
+                    fireChanges(error)
+                    field = value
                     onErrorHappened(value)
-                    error
                 }
                 value is Resource.Loading -> {
+                    fireChanges(value)
+                    field = value
                     onLoadingHappened(value)
-                    value
                 }
-                else -> value
+                else -> {
+                    field = value
+                    fireChanges(value)
+                }
             }
-            fireChanges(field)
         }
 
     protected fun setResult(result: Resource<T>?) {
@@ -109,6 +116,10 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
 
     override fun retryable(bool: Boolean) {
         retryable = bool
+    }
+
+    override fun resourceMapper(resourceMapper: ResourceMapper<*>) {
+        this.resourceMapper = resourceMapper
     }
 
     override fun errorMapper(errorMapper: ErrorMapper) {

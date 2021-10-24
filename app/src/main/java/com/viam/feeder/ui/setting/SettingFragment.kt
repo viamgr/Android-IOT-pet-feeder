@@ -93,8 +93,8 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
                     wifiDevice,
                     password,
                     staticIp.editText?.text.toString(),
-                    subnet.editText?.text.toString(),
                     gateway.editText?.text.toString(),
+                    subnet.editText?.text.toString(),
                 )
             }
         }

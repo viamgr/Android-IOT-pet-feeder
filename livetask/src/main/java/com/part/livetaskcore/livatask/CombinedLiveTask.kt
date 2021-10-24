@@ -36,7 +36,7 @@ class CombinedLiveTask(
 
 
     private fun addTaskAsSource(task: LiveTask<*>) {
-        val asLiveData = task.liveResult
+        val asLiveData = task.asLiveData()
         //TODO fix compose errors
         this.addSource(asLiveData) {
             var cancelCount = 0
@@ -118,7 +118,7 @@ class CombinedLiveTask(
         throw IllegalStateException("You are not allowed to call 'emitSource' function inside combine CombinedLiveTask builder")
     }
 
-    override fun emitBlock(resultBlock: EmitResultBlock<Any>) {
+    override fun emitResult(resultBlock: EmitResultBlock<Any>) {
         throw IllegalStateException("You are not allowed to call 'emitBlock' function inside combine CombinedLiveTask builder")
     }
 

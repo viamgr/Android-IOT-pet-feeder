@@ -25,6 +25,7 @@ class JsonPreferencesImpl @Inject constructor() : JsonPreferences {
     }
 
     private fun triggerChanges() {
+        // TODO: 10/22/2021 check the key here
         json.keys().forEach { key ->
             changeListeners.forEach {
                 it.invoke(key, getByKey(key))
@@ -40,7 +41,7 @@ class JsonPreferencesImpl @Inject constructor() : JsonPreferences {
         changeListeners.remove(listener)
     }
 
-    override fun resetFromTemp() {
+    override fun commitChanges() {
         json = JSONObject(saveJson.toString())
     }
 

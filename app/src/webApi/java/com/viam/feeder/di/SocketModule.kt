@@ -25,9 +25,9 @@ class SocketModule {
     fun getHttpClient(
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .retryOnConnectionFailure(true)
-            .readTimeout(2, TimeUnit.SECONDS)
-            .connectTimeout(2, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(false)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
             .build()
     }
 

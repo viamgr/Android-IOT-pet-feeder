@@ -8,7 +8,6 @@ import com.viam.feeder.domain.repositories.system.JsonPreferences
 import com.viam.feeder.shared.EVENT_CONFIG_RESET
 import com.viam.feeder.shared.FeederConstants.Companion.CONFIG_FILE_PATH
 import com.viam.resource.Resource
-import com.viam.websocket.model.SocketMessage
 import com.viam.websocket.model.SocketTransfer
 import com.viam.websocket.model.SocketTransfer.Success
 import kotlinx.coroutines.flow.Flow
@@ -32,17 +31,14 @@ abstract class BaseSetConfig<T>(
                     it.also {
                         if (it is SocketTransfer.Success) {
                             withContext(coroutinesDispatcherProvider.main) {
-                                jsonPreferences.resetFromTemp()
+                                jsonPreferences.commitChanges()
                             }
                         }
                     }
                 }
                 .map {
                     if (it is Success) {
-                        webSocketRepository.sendJson(
-                            SocketMessage(EVENT_CONFIG_RESET),
-                            SocketMessage::class.java
-                        )
+                        webSocketRepository.sendEvent(EVENT_CONFIG_RESET)
                     }
                     it
                 }

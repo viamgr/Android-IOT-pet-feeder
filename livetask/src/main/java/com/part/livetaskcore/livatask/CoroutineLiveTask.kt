@@ -135,7 +135,7 @@ open class CoroutineLiveTask<T>(
         }
     }
 
-    override fun emitBlock(resultBlock: EmitResultBlock<T>) {
+    override fun emitResult(resultBlock: EmitResultBlock<T>) {
         emitBlock = resultBlock
     }
 
@@ -149,7 +149,7 @@ open class CoroutineLiveTask<T>(
     }
 
     private fun getMappedResult(data: T): Resource<T> {
-        val map = liveTaskManager.resourceMapper?.map(data)
+        val map = resourceMapper?.map(data)
         val resource = (map ?: Resource.Success(data))
         @Suppress("UNCHECKED_CAST")
         return resource as Resource<T>

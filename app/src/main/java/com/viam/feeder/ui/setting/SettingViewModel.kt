@@ -15,7 +15,6 @@ import com.viam.feeder.model.Device
 import com.viam.feeder.model.WifiDevice
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
-import com.viam.feeder.shared.EVENT_WIFI_CONNECT
 import com.viam.feeder.shared.WIFI_LIST_WITCH
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.currentCoroutineContext
@@ -31,43 +30,58 @@ class SettingViewModel @Inject constructor(
     setWifiCredentials: SetWifiCredentials,
     private val remoteConnectionConfig: RemoteConnectionConfig
 ) : ViewModel() {
-    val sendEventTask = sendEvent.asLiveTask()
+    val getWifiList = sendEvent.asLiveTask {
+        /* resourceMapper {
+             if (it is LiveTaskError) {
+                 LiveTaskResource.Error(it.exception)
+             } else if (result() !is LiveTaskResource.Success) {
+                 LiveTaskResource.Loading(it)
+             } else {
+                 LiveTaskResource.Success(it)
+             }
+         }*/
+    }
     val addDeviceTask = addDevice.asLiveTask()
     val getWifiListTask = wifiList(Unit).asLiveData()
     val setWifiCredentialsTask = setWifiCredentials.asLiveTask {
         onSuccess<Any> {
             val parameter = getParameter()
             addDevice(parameter)
-//            sendRestartEvent()
         }
     }
 
     val combinedTasks = combine(
-        sendEventTask,
+        getWifiList,
         addDeviceTask,
         setWifiCredentialsTask
     )
 
-    private fun sendRestartEvent() = launchInScope {
-        sendEventTask(EVENT_WIFI_CONNECT)
-    }
-
     init {
-        requestToGetWifiList()
+        requestGetWifiList()
     }
 
     private fun addDevice(parameter: WifiAuthentication) = launchInScope {
-        addDeviceTask(Device(1, "Device1", parameter.staticIp, parameter.port, parameter.gateway))
+        addDeviceTask(
+            Device(
+                1,
+                "Device1",
+                parameter.staticIp,
+                parameter.port,
+                parameter.gateway,
+                parameter.subnet
+            )
+        )
         remoteConnectionConfig.url = parameter.staticIp ?: DEFAULT_ACCESS_POINT_IP
         remoteConnectionConfig.port = parameter.port ?: DEFAULT_ACCESS_POINT_PORT
     }
 
-    private fun requestToGetWifiList() = launchInScope {
-        sendEventTask(WIFI_LIST_WITCH)
-        delay(1000)
+    private fun requestGetWifiList() = launchInScope {
+        getWifiList(WIFI_LIST_WITCH)
+        delay(5000)
+        getWifiList(WIFI_LIST_WITCH)
         while (currentCoroutineContext().isActive) {
-            sendEventTask(WIFI_LIST_WITCH)
-            delay(5000)
+            getWifiList(WIFI_LIST_WITCH)
+            delay(10000)
         }
     }
 

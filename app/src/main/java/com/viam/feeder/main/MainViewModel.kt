@@ -2,6 +2,7 @@ package com.viam.feeder.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.livatask.parametricLiveTask
 import com.part.livetaskcore.usecases.asLiveTask
@@ -21,7 +22,7 @@ import com.viam.feeder.model.DeviceConnection
 import com.viam.feeder.shared.ACCESS_POINT_SSID
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
-import com.viam.feeder.shared.DeviceConnectionException
+import com.viam.feeder.shared.DeviceConnectionTimoutException
 import com.viam.feeder.shared.NetworkNotAvailableException
 import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
@@ -30,7 +31,10 @@ import com.viam.resource.dataOrNull
 import com.viam.resource.isSuccess
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import okhttp3.Request
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -53,7 +57,22 @@ class MainViewModel @Inject constructor(
         cancelable(true)
         withParameter(Unit)
     }
+
+    var retryTimeoutJob: Job? = null
+    private fun retryTimeout() {
+        retryTimeoutJob?.cancel()
+        retryTimeoutJob = viewModelScope.launch {
+            delay(5000)
+            networkStatusCheckerLiveTask.retry()
+        }
+    }
+
     val networkStatusCheckerLiveTask = parametricLiveTask<NetworkOptions, Resource<DeviceConnection>> {
+        onError {
+
+            if (it is DeviceConnectionTimoutException && getParameter().isAvailable)
+                retryTimeout()
+        }
         onSuccess<DeviceConnection> {
             onDeviceFound(it)
         }
@@ -65,13 +84,11 @@ class MainViewModel @Inject constructor(
                     isApConnection(networkOptions) ?: isConnectedOverRouter(device)
                     ?: isConnectedOverServer(device)
 
-                emit(
-                    if (deviceConnection != null) {
-                        Success(deviceConnection)
-                    } else {
-                        Error(DeviceConnectionException("Can not connect to the device."))
-                    }
-                )
+                if (deviceConnection != null) {
+                    emit(Success(deviceConnection))
+                } else {
+                    emit(Error(DeviceConnectionTimoutException("Can not connect to the device.")))
+                }
             } else {
                 emit(Error(NetworkNotAvailableException("Network is not available")))
             }
@@ -104,9 +121,10 @@ class MainViewModel @Inject constructor(
     private suspend fun isConnectedOverRouter(device: Device?): DeviceConnection? {
         if (device == null) return null
         val host = device.staticIp ?: return null
-        val port = device.port
-        val pingCheck = PingCheck(host, port)
-        val hasPing = hasPingFromIp(pingCheck).dataOrNull() == true
+        val pingCheck = PingCheck(host)
+        val hasPingFromIp1 = hasPingFromIp(pingCheck)
+        val dataOrNull = hasPingFromIp1.dataOrNull()
+        val hasPing = dataOrNull == true
         return if (hasPing) DeviceConnection(pingCheck.host, OVER_ROUTER) else null
     }
 
@@ -131,6 +149,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun onNetworkStatusChanged(networkOptions: NetworkOptions) = launchInScope {
+        retryTimeoutJob?.cancel()
         networkStatusCheckerLiveTask(networkOptions)
     }
 

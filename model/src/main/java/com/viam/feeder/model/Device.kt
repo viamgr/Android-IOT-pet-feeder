@@ -5,5 +5,6 @@ data class Device(
     val name: String,
     val staticIp: String? = null,
     val port: Int? = 80,
-    val gateway: String? = null
+    val gateway: String? = null,
+    val subnet: String? = null
 )
