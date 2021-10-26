@@ -32,5 +32,6 @@ interface WebSocketRepository {
     ): Flow<KeyValueMessage<Long>>
 
     fun sendLongValueMessage(parameters: KeyValueMessage<Long>)
+    fun sendStringMessage(keyValue: KeyValueMessage<String>)
     fun getWifiList(): Flow<Resource<List<WifiDevice>>>
 }

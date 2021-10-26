@@ -14,7 +14,6 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.viam.networkavailablity.Connectivity.isWifiConnected
@@ -103,7 +102,6 @@ class NetworkStatusObserver {
     }
 
     private val _networkStatus = MutableLiveData<NetworkStatus>()
-    val networkStatus: LiveData<NetworkStatus> = _networkStatus
 
     private fun setStatus(isAvailable: Boolean) {
         _networkStatus.postValue(NetworkStatus(isAvailable = isAvailable))

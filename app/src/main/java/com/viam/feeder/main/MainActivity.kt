@@ -53,9 +53,7 @@ class MainActivity : AppCompatActivity() {
             .observe(this) {
                 viewModel.onNetworkStatusChanged(
                     NetworkOptions(
-                        it.isAvailable,
-                        isWifiConnected(),
-                        getWifiName()
+                        it.isAvailable, isWifiConnected(), getWifiName()
                     )
                 )
                 //                AutoRetryHandler.value = it.isAvailable
@@ -68,17 +66,6 @@ class MainActivity : AppCompatActivity() {
             }
             .start()
 
-        /*  TaskEventLogger.events.observe(this, EventObserver { resource ->
-              resource?.onError {
-                  Timber.e(it)
-                  if (it.isConnectionError() && !viewModel.isWifiDialogShowing && viewModel.askedWifiPermissions.get()) {
-                      setIsWifiDialogShowing(true)
-                      navController.navigate(WifiFragmentDirections.toWifiFragment(false))
-                  } else {
-                      showMessage(it.toMessage(this))
-                  }
-              }
-          })*/
         reactToTask(viewModel.combinedLiveTask)
         viewModel.transferFileProgress.observe(this) {
             print("transfer")

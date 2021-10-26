@@ -175,9 +175,9 @@ class WebSocketApi(
                 super.onFailure(webSocket, t, response)
                 println("onFailure socket")
                 isOpenedSocket = false
-                okHttpClient.dispatcher.cancelAll()
-                okHttpClient.connectionPool.evictAll();
-                webSocket.cancel()
+//                okHttpClient.dispatcher.cancelAll()
+//                okHttpClient.connectionPool.evictAll();
+//                webSocket.cancel()
                 webSocket.close(1000, "Connection closed");
 
 //                response?.body?.close()

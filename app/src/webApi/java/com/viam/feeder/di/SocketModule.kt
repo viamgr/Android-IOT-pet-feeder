@@ -26,6 +26,8 @@ class SocketModule {
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .retryOnConnectionFailure(false)
+            .pingInterval(20, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
             .connectTimeout(10, TimeUnit.SECONDS)
             .build()

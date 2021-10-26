@@ -31,7 +31,7 @@ class ConnectionStatus @Inject constructor(
         if (parameter.isAvailable) {
             val device = deviceRepository.getAll().firstOrNull()
             val deviceConnection =
-                isApConnection(parameter) ?: isConnectedOverRouter(device)
+                isApConnection(parameter) ?: isConnectedOverRouter(parameter, device)
                 ?: isConnectedOverServer(device)
 
             if (deviceConnection != null) {
@@ -45,13 +45,13 @@ class ConnectionStatus @Inject constructor(
     }
 
     private fun isConnectedOverServer(device: Device?): DeviceConnection? {
-        if (device == null) return null
+//        if (device == null) return null
         val hasPing = hasPingFromIp(API_IP, 5000)
         return if (hasPing) DeviceConnection(API_IP, OVER_SERVER) else null
     }
 
-    private fun isConnectedOverRouter(device: Device?): DeviceConnection? {
-        if (device == null) return null
+    private fun isConnectedOverRouter(networkOptions: NetworkOptions, device: Device?): DeviceConnection? {
+        if (device == null || !networkOptions.isWifi) return null
         val host = device.staticIp ?: return null
         return if (hasPingFromIp(host, 5000)) DeviceConnection(host, OVER_ROUTER) else null
     }
@@ -67,7 +67,7 @@ class ConnectionStatus @Inject constructor(
     }
 
     private fun isApConnection(networkOptions: NetworkOptions): DeviceConnection? {
-        val isConnectedToAp = networkOptions.isAvailable && networkOptions.wifiName == ACCESS_POINT_SSID
+        val isConnectedToAp = networkOptions.wifiName == ACCESS_POINT_SSID
         return if (isConnectedToAp || hasPingFromIp(DEFAULT_ACCESS_POINT_IP, 5000)) {
             DeviceConnection(DEFAULT_ACCESS_POINT_IP, DIRECT_AP)
         } else null

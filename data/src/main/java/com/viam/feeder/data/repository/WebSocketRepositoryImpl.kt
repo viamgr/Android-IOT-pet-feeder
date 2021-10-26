@@ -56,6 +56,13 @@ class WebSocketRepositoryImpl @Inject constructor(private val webSocketApi: WebS
         )
     }
 
+    override fun sendStringMessage(keyValue: KeyValueMessage<String>) {
+        webSocketApi.sendJson(
+            keyValue,
+            Types.newParameterizedType(KeyValueMessage::class.java, String::class.javaObjectType)
+        )
+    }
+
     override fun getWifiList(): Flow<Resource<List<WifiDevice>>> {
         val clazz = Types.newParameterizedType(
             KeyValueMessage::class.java, Types.newParameterizedType(
