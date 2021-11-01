@@ -5,6 +5,11 @@ import com.squareup.moshi.Types
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.model.KeyValueMessage
 import com.viam.feeder.model.WifiDevice
+import com.viam.feeder.model.socket.FileDetailCallback
+import com.viam.feeder.model.socket.FileDetailRequest
+import com.viam.feeder.model.socket.FileRequestSlice
+import com.viam.feeder.shared.FILE_DETAIL_CALLBACK
+import com.viam.feeder.shared.FILE_REQUEST_ERROR
 import com.viam.feeder.shared.FeederConstants
 import com.viam.feeder.shared.PAIR
 import com.viam.feeder.shared.PAIR_DONE
@@ -14,13 +19,8 @@ import com.viam.feeder.shared.SUBSCRIBE_DONE
 import com.viam.feeder.shared.SUBSCRIBE_ERROR
 import com.viam.feeder.shared.WIFI_LIST_IS
 import com.viam.resource.Resource
-import com.viam.websocket.FILE_DETAIL_CALLBACK
-import com.viam.websocket.FILE_REQUEST_ERROR
 import com.viam.websocket.WebSocketApi
 import com.viam.websocket.checkHasError
-import com.viam.websocket.model.FileDetailCallback
-import com.viam.websocket.model.FileDetailRequest
-import com.viam.websocket.model.FileRequestSlice
 import com.viam.websocket.model.SocketConnectionStatus
 import com.viam.websocket.model.SocketConnectionStatus.Configured
 import com.viam.websocket.model.SocketConnectionStatus.Configuring
@@ -40,8 +40,6 @@ import com.viam.websocket.model.SocketTransfer.Success
 import com.viam.websocket.model.TransferType.Download
 import com.viam.websocket.sendEventWithCallbackCheck
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -52,9 +50,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.produceIn
@@ -64,12 +60,15 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class WebSocketRepositoryImpl @Inject constructor(
     private val webSocketApi: WebSocketApi,
     val moshi: Moshi
-) :
-    WebSocketRepository {
+) : WebSocketRepository {
+    private val downloadingMutex = Mutex()
+
     override fun getEvents(): Flow<SocketEvent> = webSocketApi.events
     override fun sendBinary(
         remoteFilePath: String,
@@ -77,7 +76,7 @@ class WebSocketRepositoryImpl @Inject constructor(
     ) = webSocketApi.sendBinary(remoteFilePath, inputStream)
 
     override fun sendJson(message: SocketMessage) {
-        webSocketApi.sendJson(message)
+        webSocketApi.sendParametericMessage(message)
     }
 
     override fun <T> sendJson(message: T, clazz: Class<T>) {
@@ -94,8 +93,9 @@ class WebSocketRepositoryImpl @Inject constructor(
     override fun subscribeAndPair(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus> =
         channelFlow {
             var isSubscribing = false
-            val triggers = merge(flowOf(Unit), getEvents().filterIsInstance<Open>())
-
+//            val triggers = merge(flowOf(Unit), getEvents().filterIsInstance<Open>())
+            val triggers = getEvents().filterIsInstance<Open>()
+            // TODO: 11/1/2021 fix triggers
             triggers
                 .filter {
                     !isSubscribing
@@ -122,11 +122,13 @@ class WebSocketRepositoryImpl @Inject constructor(
                     when (it) {
                         is Start -> send(Configuring(0F))
                         is Progress -> send(Configuring(it.progress))
+                        is Success -> send(Configured)
+                        is SocketTransfer.Error -> send(SocketConnectionStatus.Failure(it.exception))
+
                     }
                 }
                 .onCompletion {
                     isSubscribing = false
-                    send(Configured)
                 }
                 .catch { e ->
                     send(SocketConnectionStatus.Failure(e as Exception))
@@ -165,31 +167,28 @@ class WebSocketRepositoryImpl @Inject constructor(
         return toByteArray.size
     }
 
-    private suspend fun requestGetDetailAndWaitForCallback(remoteFilePath: String): FileDetailCallback =
-        coroutineScope {
-            val channel = receiveChannel()
+    private suspend fun requestGetDetailAndWaitForCallback(remoteFilePath: String): FileDetailCallback {
+        val channel = receiveChannel()
 
-            async {
-                requestDetail(remoteFilePath)
-            }
-            val callback =
-                channel.sendEventWithCallbackCheck(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
-            moshi.adapter(FileDetailCallback::class.java).fromJson(callback.data)!!
-        }
+        requestDetail(remoteFilePath)
+
+        val callback =
+            channel.sendEventWithCallbackCheck(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
+        return moshi.adapter(FileDetailCallback::class.java).fromJson(callback.data)!!
+    }
 
     private fun requestDetail(remoteFilePath: String) {
-        webSocketApi.sendJson(FileDetailRequest(remoteFilePath))
+        webSocketApi.sendParametericMessage(FileDetailRequest(remoteFilePath))
     }
 
     private suspend fun sendSliceRequestAndWaitForCallback(
         from: Int
-    ): Binary = coroutineScope {
+    ): Binary {
         val channel = receiveChannel()
         println("request $from")
-        async {
-            requestReceiveFile(from)
-        }
-        channel
+        requestReceiveFile(from)
+
+        return channel
             .sendEventWithCallbackCheck(1000) {
                 it.checkHasError(FILE_REQUEST_ERROR)
                 it.isBinary()
@@ -197,7 +196,7 @@ class WebSocketRepositoryImpl @Inject constructor(
     }
 
     private fun requestReceiveFile(from: Int) {
-        webSocketApi.sendJson(FileRequestSlice(from))
+        webSocketApi.sendParametericMessage(FileRequestSlice(from))
     }
 
     private fun SocketEvent.isBinary() = this is Binary
@@ -225,7 +224,16 @@ class WebSocketRepositoryImpl @Inject constructor(
     private suspend fun receiveChannel() = getEvents().produceIn(CoroutineScope(currentCoroutineContext()))
 
     private fun sendPairMessage() {
-        webSocketApi.sendJson(SocketMessage(PAIR))
+        // TODO: 11/1/2021 get Feeder1 from other place
+
+        val newParameterizedType = Types.newParameterizedType(
+            KeyValueMessage::class.java,
+            String::class.java
+        )
+        webSocketApi.sendJson(
+            KeyValueMessage(PAIR, "Feeder1"),
+            newParameterizedType
+        )
     }
 
     private fun sendSubscribeMessage() {
@@ -268,10 +276,6 @@ class WebSocketRepositoryImpl @Inject constructor(
         ).map {
             Resource.Success(it.value)
         }
-    }
-
-    companion object {
-        val downloadingMutex = Mutex()
     }
 }
 

@@ -1,6 +1,6 @@
 package com.viam.feeder.data
 
-import com.viam.websocket.model.FileDetailCallback
+import com.viam.feeder.model.socket.FileDetailCallback
 import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketEvent.Text
 import com.viam.websocket.model.SocketTransfer.Progress

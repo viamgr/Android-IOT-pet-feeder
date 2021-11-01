@@ -20,10 +20,10 @@ suspend fun ReceiveChannel<SocketEvent>.sendEventWithCallbackCheck(
     }
 }
 
-private fun SocketEvent.containsKey(key: String) = this is Text && (this.data == key)
+private fun SocketEvent.containsKey(key: String) = this is Text && (this.data.contains("\"key\":\"$key\""))
 
 fun SocketEvent.checkHasError(errorKey: String) {
-    if (this is Text && this.data == errorKey) {
+    if (this is Text && this.containsKey(errorKey)) {
         throw Exception(this.data)
     }
 }

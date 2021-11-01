@@ -9,19 +9,14 @@ import com.viam.websocket.model.SocketEvent.Failure
 import com.viam.websocket.model.SocketEvent.Open
 import com.viam.websocket.model.SocketEvent.Text
 import com.viam.websocket.model.SocketTransfer.Error
-import com.viam.websocket.model.SocketTransfer.Progress
-import com.viam.websocket.model.SocketTransfer.Start
-import com.viam.websocket.model.SocketTransfer.Success
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.*
 import okhttp3.*
 import okio.ByteString
-import okio.ByteString.Companion.toByteString
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.lang.reflect.ParameterizedType
-import java.util.concurrent.TimeoutException
 import kotlin.coroutines.CoroutineContext
 
 typealias ConnectionListener = (Boolean) -> Unit
@@ -201,7 +196,7 @@ class WebSocketApi(
         remoteFilePath: String,
         inputStream: InputStream,
     ): Flow<SocketTransfer> {
-        var timeout: Job? = null
+        /*var timeout: Job? = null
         if (buffered != null) {
             throw IllegalStateException()
         }
@@ -275,7 +270,8 @@ class WebSocketApi(
                 if (it is Error || it is Success) {
                     close()
                 }
-            }
+            }*/
+        return flowOf()
     }
 
     fun sendByteString(message: ByteString) {
@@ -285,21 +281,18 @@ class WebSocketApi(
 
     fun <T> sendJson(message: T, clazz: ParameterizedType): WebSocketApi {
         val toJson = moshi.adapter<T>(clazz).toJson(message)
-        println("send text $toJson")
         sendMessage(toJson)
         return this
     }
 
     fun <T> sendJson(message: T, clazz: Class<T>): WebSocketApi {
         val toJson = moshi.adapter(clazz).toJson(message)
-        println("send text $toJson")
         sendMessage(toJson)
         return this
     }
 
-    inline fun <reified T> sendJson(message: T): WebSocketApi {
+    inline fun <reified T> sendParametericMessage(message: T): WebSocketApi {
         val toJson = moshi.adapter(T::class.java).toJson(message)
-        println("send text $toJson")
         sendMessage(toJson)
         return this
     }
@@ -313,6 +306,8 @@ class WebSocketApi(
     }
 
     fun sendMessage(toJson: String): Boolean {
+        println("send text $toJson")
+
         println("isOpened:$isOpenedSocket")
         return when {
             !isOpenedSocket -> {
@@ -349,5 +344,4 @@ class WebSocketApi(
             it.invoke(e)
         }
     }
-
 }

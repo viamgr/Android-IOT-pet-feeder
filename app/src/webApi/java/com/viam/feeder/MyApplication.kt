@@ -10,6 +10,7 @@ import com.part.binidng.views.addDefaultClassicViewTypes
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.connection.MultipleConnectionInformer
+import com.part.livetaskcore.livatask.CombinedException
 import com.viam.feeder.core.utils.toMessage
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.HiltAndroidApp
@@ -48,6 +49,11 @@ class MyApplication : MultiDexApplication() {
             .setConnectionInformer(multipleConnectionInformer)
             .setErrorMapper { exception ->
                 println("livetask setErrorMapper exception")
+                if (exception is CombinedException) {
+                    exception.exceptions.forEach {
+                        it.printStackTrace()
+                    }
+                }
                 exception.printStackTrace()
                 Exception(
                     exception.toMessage(this@MyApplication),

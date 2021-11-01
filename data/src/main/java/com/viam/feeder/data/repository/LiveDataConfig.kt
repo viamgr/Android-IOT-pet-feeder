@@ -12,18 +12,16 @@ class LiveDataConfig<T>(
 
     private val listener: (String, Any) -> Unit = { key, data ->
         if (key == name && value?.equals(data) == false) {
-            value = data as T
+            postValue(data as T)
         }
     }
 
     override fun onActive() {
         super.onActive()
         configObject.addOnChangeListener(listener)
-        postValue(
-            if (configObject.hasKey(name)) {
-                configObject.getByKey(name) as T
-            } else defaultValue
-        )
+        value = if (configObject.hasKey(name)) {
+            configObject.getByKey(name) as T
+        } else defaultValue
     }
 
     override fun onInactive() {
