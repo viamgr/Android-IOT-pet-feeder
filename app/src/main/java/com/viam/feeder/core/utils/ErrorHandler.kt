@@ -27,7 +27,7 @@ fun Throwable.toMessage(context: Context): String {
             context.getString(R.string.wrong_connected)
         }
         else -> {
-            context.getString(R.string.error_happened)
+            this.toString()
         }
     }
 }

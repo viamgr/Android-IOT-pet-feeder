@@ -21,10 +21,10 @@ import com.viam.feeder.domain.usecase.specification.ConvertUploadSound
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
-import com.viam.feeder.shared.EVENT_COMPOSITE_FEEDING
-import com.viam.feeder.shared.EVENT_FEEDING
-import com.viam.feeder.shared.EVENT_LED_TIMER
-import com.viam.feeder.shared.EVENT_PLAY_FEEDING_AUDIO
+import com.viam.feeder.shared.AUDIO_START
+import com.viam.feeder.shared.COMPOSITE_START
+import com.viam.feeder.shared.LAMP_START
+import com.viam.feeder.shared.MOTOR_START
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.InputStream
 import javax.inject.Inject
@@ -172,19 +172,19 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun sendCompositeFeedingEvent() = launchInScope {
-        sendEventTask(EVENT_COMPOSITE_FEEDING)
+        sendEventTask(COMPOSITE_START)
     }
 
     fun sendLightEvent() = launchInScope {
-        sendEventTask(EVENT_LED_TIMER)
+        sendEventTask(LAMP_START)
     }
 
     fun sendFeedingEvent() = launchInScope {
-        sendEventTask(EVENT_FEEDING)
+        sendEventTask(MOTOR_START)
     }
 
     fun sendCallingEvent() = launchInScope {
-        sendEventTask(EVENT_PLAY_FEEDING_AUDIO)
+        sendEventTask(AUDIO_START)
     }
 
     companion object {

@@ -1,25 +1,84 @@
 package com.viam.feeder.data.repository
 
+import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.model.KeyValueMessage
 import com.viam.feeder.model.WifiDevice
+import com.viam.feeder.shared.FeederConstants
+import com.viam.feeder.shared.PAIR
+import com.viam.feeder.shared.PAIR_DONE
+import com.viam.feeder.shared.PAIR_ERROR
+import com.viam.feeder.shared.SUBSCRIBE
+import com.viam.feeder.shared.SUBSCRIBE_DONE
+import com.viam.feeder.shared.SUBSCRIBE_ERROR
 import com.viam.feeder.shared.WIFI_LIST_IS
 import com.viam.resource.Resource
+import com.viam.websocket.FILE_DETAIL_CALLBACK
+import com.viam.websocket.FILE_REQUEST_ERROR
 import com.viam.websocket.WebSocketApi
+import com.viam.websocket.checkHasError
+import com.viam.websocket.model.FileDetailCallback
+import com.viam.websocket.model.FileDetailRequest
+import com.viam.websocket.model.FileRequestSlice
+import com.viam.websocket.model.SocketConnectionStatus
+import com.viam.websocket.model.SocketConnectionStatus.Configured
+import com.viam.websocket.model.SocketConnectionStatus.Configuring
+import com.viam.websocket.model.SocketConnectionStatus.Paired
+import com.viam.websocket.model.SocketConnectionStatus.Pairing
+import com.viam.websocket.model.SocketConnectionStatus.Subscribed
+import com.viam.websocket.model.SocketConnectionStatus.Subscribing
+import com.viam.websocket.model.SocketEvent
+import com.viam.websocket.model.SocketEvent.Binary
+import com.viam.websocket.model.SocketEvent.Open
+import com.viam.websocket.model.SocketEvent.Text
 import com.viam.websocket.model.SocketMessage
+import com.viam.websocket.model.SocketTransfer
+import com.viam.websocket.model.SocketTransfer.Progress
+import com.viam.websocket.model.SocketTransfer.Start
+import com.viam.websocket.model.SocketTransfer.Success
+import com.viam.websocket.model.TransferType.Download
+import com.viam.websocket.sendEventWithCallbackCheck
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.produceIn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import javax.inject.Inject
 
-class WebSocketRepositoryImpl @Inject constructor(private val webSocketApi: WebSocketApi) :
+class WebSocketRepositoryImpl @Inject constructor(
+    private val webSocketApi: WebSocketApi,
+    val moshi: Moshi
+) :
     WebSocketRepository {
+    override fun getEvents(): Flow<SocketEvent> = webSocketApi.events
     override fun sendBinary(
         remoteFilePath: String,
         inputStream: InputStream
     ) = webSocketApi.sendBinary(remoteFilePath, inputStream)
+
+    override fun sendJson(message: SocketMessage) {
+        webSocketApi.sendJson(message)
+    }
 
     override fun <T> sendJson(message: T, clazz: Class<T>) {
         webSocketApi.sendJson(message, clazz)
@@ -32,16 +91,149 @@ class WebSocketRepositoryImpl @Inject constructor(private val webSocketApi: WebS
         )
     }
 
-    override fun receiveBinary(
-        remoteFilePath: String,
-        outputStream: OutputStream
-    ) = webSocketApi.receiveBinary(remoteFilePath, outputStream)
+    override fun subscribeAndPair(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus> =
+        channelFlow {
+            var isSubscribing = false
+            val triggers = merge(flowOf(Unit), getEvents().filterIsInstance<Open>())
 
-    override fun <T : SocketMessage> onMessageReceived(key: String, clazz: Class<T>) =
-        webSocketApi.onMessageReceived(key, clazz)
+            triggers
+                .filter {
+                    !isSubscribing
+                }
+                .flatMapLatest {
+                    isSubscribing = true
+                    tryToSubscribe()
+                }
+                .onEach { send(it) }
+                .filter {
+                    it is Subscribed
+                }
+                .flatMapLatest {
+                    tryPairing()
+                }
+                .filter {
+                    send(it)
+                    it is Paired
+                }
+                .flatMapMerge {
+                    getConfigs(fileOutputStream)
+                }
+                .onEach {
+                    when (it) {
+                        is Start -> send(Configuring(0F))
+                        is Progress -> send(Configuring(it.progress))
+                    }
+                }
+                .onCompletion {
+                    isSubscribing = false
+                    send(Configured)
+                }
+                .catch { e ->
+                    send(SocketConnectionStatus.Failure(e as Exception))
+                }
+                .collect()
+
+        }
+
+    override fun download(
+        remoteFilePath: String, outputStream: OutputStream
+    ) = flow {
+        emit(Progress(0F))
+        downloadingMutex.withLock {
+            val size = requestGetDetailAndWaitForCallback(remoteFilePath).let {
+                emit(Start(it.size, Download))
+                it.size
+            }
+
+            var wrote = 0
+            do {
+                wrote += downloadAndWrite(wrote, outputStream)
+                emit(Progress(wrote.toFloat()))
+            } while (wrote < size)
+
+            emit(Success)
+        }
+    }
+
+    private suspend fun downloadAndWrite(
+        from: Int,
+        outputStream: OutputStream
+    ): Int {
+        val slice = sendSliceRequestAndWaitForCallback(from)
+        val toByteArray = slice.data.toByteArray()
+        outputStream.write(toByteArray)
+        return toByteArray.size
+    }
+
+    private suspend fun requestGetDetailAndWaitForCallback(remoteFilePath: String): FileDetailCallback =
+        coroutineScope {
+            val channel = receiveChannel()
+
+            async {
+                requestDetail(remoteFilePath)
+            }
+            val callback =
+                channel.sendEventWithCallbackCheck(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
+            moshi.adapter(FileDetailCallback::class.java).fromJson(callback.data)!!
+        }
+
+    private fun requestDetail(remoteFilePath: String) {
+        webSocketApi.sendJson(FileDetailRequest(remoteFilePath))
+    }
+
+    private suspend fun sendSliceRequestAndWaitForCallback(
+        from: Int
+    ): Binary = coroutineScope {
+        val channel = receiveChannel()
+        println("request $from")
+        async {
+            requestReceiveFile(from)
+        }
+        channel
+            .sendEventWithCallbackCheck(1000) {
+                it.checkHasError(FILE_REQUEST_ERROR)
+                it.isBinary()
+            } as Binary
+    }
+
+    private fun requestReceiveFile(from: Int) {
+        webSocketApi.sendJson(FileRequestSlice(from))
+    }
+
+    private fun SocketEvent.isBinary() = this is Binary
+
+    private fun getConfigs(fileOutputStream: FileOutputStream): Flow<SocketTransfer> {
+        return download("/${FeederConstants.CONFIG_FILE_PATH}", fileOutputStream)
+    }
+
+    override fun tryPairing(): Flow<SocketConnectionStatus> = flow {
+        val channel = receiveChannel()
+        emit(Pairing)
+        sendPairMessage()
+        channel.sendEventWithCallbackCheck(PAIR_DONE, PAIR_ERROR)
+        emit(Paired)
+    }
+
+    override fun tryToSubscribe(): Flow<SocketConnectionStatus> =
+        flow {
+            emit(Subscribing)
+            sendSubscribeMessage()
+            receiveChannel().sendEventWithCallbackCheck(SUBSCRIBE_DONE, SUBSCRIBE_ERROR)
+            emit(Subscribed)
+        }
+
+    private suspend fun receiveChannel() = getEvents().produceIn(CoroutineScope(currentCoroutineContext()))
+
+    private fun sendPairMessage() {
+        webSocketApi.sendJson(SocketMessage(PAIR))
+    }
+
+    private fun sendSubscribeMessage() {
+        webSocketApi.sendJson(SocketMessage(SUBSCRIBE))
+    }
 
     override fun onLongMessageReceived(key: String): Flow<KeyValueMessage<Long>> =
-        webSocketApi.onMessageReceived(
+        webSocketApi.waitForMessage(
             key,
             clazz = Types.newParameterizedType(
                 KeyValueMessage::class.java,
@@ -70,12 +262,16 @@ class WebSocketRepositoryImpl @Inject constructor(private val webSocketApi: WebS
                 WifiDevice::class.java
             )
         )
-        return webSocketApi.onMessageReceived<KeyValueMessage<List<WifiDevice>>>(
+        return webSocketApi.waitForMessage<KeyValueMessage<List<WifiDevice>>>(
             WIFI_LIST_IS,
             clazz = clazz
         ).map {
             Resource.Success(it.value)
         }
+    }
+
+    companion object {
+        val downloadingMutex = Mutex()
     }
 }
 

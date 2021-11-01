@@ -30,9 +30,7 @@ class ConnectionStatus @Inject constructor(
     override fun execute(parameter: NetworkOptions): Flow<Resource<DeviceConnection>> = flow {
         if (parameter.isAvailable) {
             val device = deviceRepository.getAll().firstOrNull()
-            val deviceConnection =
-                isApConnection(parameter) ?: isConnectedOverRouter(parameter, device)
-                ?: isConnectedOverServer(device)
+            val deviceConnection = isConnectedOverServer(device)
 
             if (deviceConnection != null) {
                 emit(Success(deviceConnection))

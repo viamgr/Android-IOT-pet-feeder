@@ -25,10 +25,12 @@ class ArrayConfig<T>(
     override fun onActive() {
         super.onActive()
         configObject.addOnChangeListener(listener)
-        value = if (configObject.hasKey(name)) {
-            val jsonString = configObject.getByKey(name).toString()
-            parseList(jsonString)
-        } else defaultValue
+        postValue(
+            if (configObject.hasKey(name)) {
+                val jsonString = configObject.getByKey(name).toString()
+                parseList(jsonString)
+            } else defaultValue
+        )
     }
 
     private fun parseList(jsonString: String): List<T> {

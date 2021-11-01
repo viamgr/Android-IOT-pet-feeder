@@ -5,7 +5,7 @@ import com.viam.feeder.domain.base.FlowUseCase
 import com.viam.feeder.domain.base.toResource
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.domain.repositories.system.JsonPreferences
-import com.viam.feeder.shared.EVENT_CONFIG_RESET
+import com.viam.feeder.shared.CONFIG_RESET
 import com.viam.feeder.shared.FeederConstants.Companion.CONFIG_FILE_PATH
 import com.viam.resource.Resource
 import com.viam.websocket.model.SocketTransfer
@@ -29,7 +29,7 @@ abstract class BaseSetConfig<T>(
                 .sendBinary(CONFIG_FILE_PATH, inputStream)
                 .map {
                     it.also {
-                        if (it is SocketTransfer.Success) {
+                        if (it is Success) {
                             withContext(coroutinesDispatcherProvider.main) {
                                 jsonPreferences.commitChanges()
                             }
@@ -38,7 +38,7 @@ abstract class BaseSetConfig<T>(
                 }
                 .map {
                     if (it is Success) {
-                        webSocketRepository.sendEvent(EVENT_CONFIG_RESET)
+                        webSocketRepository.sendEvent(CONFIG_RESET)
                     }
                     it
                 }

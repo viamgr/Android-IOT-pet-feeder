@@ -20,6 +20,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers.Default
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Dispatchers.Unconfined
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,9 +31,10 @@ import javax.inject.Singleton
 data class CoroutinesDispatcherProvider(
     val main: CoroutineDispatcher,
     val computation: CoroutineDispatcher,
-    val io: CoroutineDispatcher
+    val io: CoroutineDispatcher,
+    val unconfined: CoroutineDispatcher
 ) {
 
     @Inject
-    constructor() : this(Main, Default, IO)
+    constructor() : this(Main, Default, IO, Unconfined)
 }

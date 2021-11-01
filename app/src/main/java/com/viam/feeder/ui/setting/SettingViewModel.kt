@@ -15,7 +15,7 @@ import com.viam.feeder.model.Device
 import com.viam.feeder.model.WifiDevice
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
-import com.viam.feeder.shared.WIFI_LIST_WITCH
+import com.viam.feeder.shared.WIFI_LIST_GET
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -76,13 +76,13 @@ class SettingViewModel @Inject constructor(
     }
 
     private fun requestGetWifiList() = launchInScope {
-        getWifiList(WIFI_LIST_WITCH)
+        getWifiList(WIFI_LIST_GET)
         delay(2000)
-        getWifiList(WIFI_LIST_WITCH)
+        getWifiList(WIFI_LIST_GET)
         delay(5000)
 
         while (currentCoroutineContext().isActive) {
-            getWifiList(WIFI_LIST_WITCH)
+            getWifiList(WIFI_LIST_GET)
             delay(10000)
         }
     }

@@ -15,7 +15,7 @@ open class DownloadBinary(
     private val webSocketRepository: WebSocketRepository,
 ) : FlowUseCase<DownloadBinary.DownloadBinaryParams, SocketTransfer>(coroutinesDispatcherProvider.io) {
     override fun execute(parameter: DownloadBinaryParams): Flow<Resource<SocketTransfer>> {
-        return webSocketRepository.receiveBinary(parameter.remotePath, parameter.outputStream).map {
+        return webSocketRepository.download(parameter.remotePath, parameter.outputStream).map {
             it.toResource()
         }
     }

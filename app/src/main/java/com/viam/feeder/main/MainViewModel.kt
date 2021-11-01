@@ -11,22 +11,15 @@ import com.viam.feeder.domain.usecase.ConnectionStatus
 import com.viam.feeder.domain.usecase.ConnectionStatus.NetworkOptions
 import com.viam.feeder.domain.usecase.config.GetConfig
 import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
-import com.viam.feeder.domain.usecase.event.SendEvent
-import com.viam.feeder.domain.usecase.event.SendStringValue
-import com.viam.feeder.domain.usecase.event.WebSocketEvents
+import com.viam.feeder.domain.usecase.event.SocketSubscribe
 import com.viam.feeder.model.Device
 import com.viam.feeder.model.DeviceConnection
-import com.viam.feeder.model.KeyValueMessage
 import com.viam.feeder.shared.DeviceConnectionTimoutException
-import com.viam.feeder.shared.PAIR
-import com.viam.feeder.shared.SUBSCRIBE
 import com.viam.resource.dataOrNull
-import com.viam.resource.isSuccess
 import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okhttp3.Request
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,39 +32,20 @@ class MainViewModel @Inject constructor(
     private val getConfiguredDevice: GetConfiguredDevice,
     private val connectionStatus: ConnectionStatus,
     private val webSocketApi: WebSocketApi,
-    private val sendEvent: SendEvent,
-    private val subscribe: SendEvent,
-    private val sendStringValue: SendStringValue,
-    private val webSocketEvents: WebSocketEvents,
+    private val webSocketEvents: SocketSubscribe,
     private val remoteConnectionConfig: RemoteConnectionConfig,
     private val request: Provider<Request>
 ) : ViewModel() {
-    val subscribeTask = subscribe.asLiveTask {
-        onSuccess<Any> {
-            pair()
-        }
-    }
-    val pairTask = sendStringValue.asLiveTask {
-        onSuccess<Any> {
-            getConfigs()
-        }
-    }
+
     val transferFileProgress = webSocketApi.progress.asLiveData()
     var askedWifiPermissions = AtomicBoolean(false)
     var isWifiDialogShowing: Boolean = false
-    val getConfigTask = getConfig.asLiveTask {
+    val webSocketEventsTask = webSocketEvents.asLiveTask {
         cancelable(false)
         withParameter(Unit)
     }
 
     var retryTimeoutJob: Job? = null
-    private fun retryTimeout() {
-        retryTimeoutJob?.cancel()
-        retryTimeoutJob = viewModelScope.launch {
-            delay(5000)
-            networkStatusCheckerLiveTask.retry()
-        }
-    }
 
     val networkStatusCheckerLiveTask =
         connectionStatus.asLiveTask {
@@ -85,37 +59,27 @@ class MainViewModel @Inject constructor(
             }
         }
 
+    val combinedLiveTask = combine(webSocketEventsTask, networkStatusCheckerLiveTask)
+    private fun retryTimeout() {
+        retryTimeoutJob?.cancel()
+        retryTimeoutJob = viewModelScope.launch {
+            delay(5000)
+            networkStatusCheckerLiveTask.retry()
+        }
+    }
+
     init {
         watchSocketEvent()
     }
 
     private fun watchSocketEvent() = launchInScope {
-        webSocketEvents(Unit).collect {
-            if (it.isSuccess()) {
-                subscribe()
-            }
-        }
-
-    }
-
-    private fun pair() = launchInScope {
-        pairTask(KeyValueMessage(PAIR, "Feeder1"))
-    }
-
-    private fun subscribe() = launchInScope {
-        subscribeTask(SUBSCRIBE)
-    }
-
-    private fun getConfigs() = launchInScope {
-        getConfigTask.run()
+        webSocketEventsTask(Unit)
     }
 
     private fun onDeviceFound(deviceConnection: DeviceConnection) = launchInScope {
         remoteConnectionConfig.url = deviceConnection.host
         webSocketApi.openWebSocket(request.get())
     }
-
-    val combinedLiveTask = combine(getConfigTask, networkStatusCheckerLiveTask)
 
     private suspend fun getConfiguredDevice(): Device? {
         val configuredDevice = getConfiguredDevice(Unit)

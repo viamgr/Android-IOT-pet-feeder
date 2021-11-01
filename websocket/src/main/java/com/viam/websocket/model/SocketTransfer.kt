@@ -7,6 +7,16 @@ sealed class SocketTransfer {
     object Success : SocketTransfer()
 }
 
+sealed class SocketConnectionStatus {
+    data class Failure(val exception: Exception) : SocketConnectionStatus()
+    object Subscribing : SocketConnectionStatus()
+    object Subscribed : SocketConnectionStatus()
+    object Pairing : SocketConnectionStatus()
+    object Paired : SocketConnectionStatus()
+    data class Configuring(val progress: Float) : SocketConnectionStatus()
+    object Configured : SocketConnectionStatus()
+}
+
 enum class TransferType {
     Upload, Download
 }
