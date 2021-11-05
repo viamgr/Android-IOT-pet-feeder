@@ -26,7 +26,8 @@ class SocketSubscribe @Inject constructor(
 ) : FlowUseCase<Unit, SocketConnectionStatus>(coroutinesDispatcherProvider.io) {
 
     override fun execute(parameter: Unit): Flow<Resource<SocketConnectionStatus>> {
-        return webSocketRepository.subscribeAndPair(configFile.outputStream()).map {
+        return webSocketRepository.syncProcess(configFile.outputStream()).map {
+            println("map repository $it")
             when (it) {
                 is Configured -> Resource.Success(it).also {
                     savePref()

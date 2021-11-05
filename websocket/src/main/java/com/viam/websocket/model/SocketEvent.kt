@@ -5,6 +5,7 @@ import okio.ByteString
 sealed class SocketEvent {
     data class Text(val data: String) : SocketEvent()
     data class Binary(val data: ByteString) : SocketEvent()
+    object Init : SocketEvent()
     object Open : SocketEvent()
     object Closing : SocketEvent()
     object Closed : SocketEvent()

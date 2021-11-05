@@ -36,13 +36,13 @@ class WebSocketApi(
             connectionListener?.invoke(value)
         }
 
-    private val _events = MutableSharedFlow<SocketEvent>() // private mutable shared flow
+    private val _events = MutableStateFlow<SocketEvent>(SocketEvent.Init) // private mutable shared flow
     private val _progress =
         MutableSharedFlow<SocketTransfer>() // private mutable shared flow
     private var binaryCoroutineContext: CoroutineContext? = null
 
     private val errorListeners = mutableListOf<(e: Exception) -> Unit>()
-    val events: Flow<SocketEvent> = _events.asSharedFlow() // publicly exposed as read-only shared flow
+    val events: StateFlow<SocketEvent> = _events // publicly exposed as read-only shared flow
     val progress = _progress.asSharedFlow() // publicly exposed as read-only shared flow
 
     private val socketRunnerScope = CoroutineScope(IO)
@@ -344,4 +344,6 @@ class WebSocketApi(
             it.invoke(e)
         }
     }
+
+    fun isOpen() = isOpenedSocket
 }

@@ -1,26 +1,7 @@
 package com.viam.feeder.data
 
-import com.squareup.moshi.Moshi
-import com.viam.feeder.data.repository.WebSocketRepositoryImpl
-import com.viam.feeder.domain.repositories.system.JsonPreferences
-import com.viam.websocket.WebSocketApi
-import com.viam.websocket.model.SocketEvent
-import com.viam.websocket.model.SocketEvent.Closed
-import com.viam.websocket.model.SocketEvent.Open
-import com.viam.websocket.model.SocketEvent.Text
-import io.mockk.MockKAnnotations
-import io.mockk.every
-import io.mockk.impl.annotations.RelaxedMockK
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.runBlocking
-import org.junit.Assert.*
-import org.junit.Before
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.File
-import javax.inject.Named
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -28,7 +9,7 @@ import javax.inject.Named
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 class ExampleUnitTest {
-
+/*
     private val _events = MutableSharedFlow<SocketEvent>() // private mutable shared flow
 
     @RelaxedMockK
@@ -64,10 +45,10 @@ class ExampleUnitTest {
             runEvents()
             async {
                 val resource = this@ExampleUnitTest.javaClass.classLoader.getResourceAsStream("test.json")
-                /* val fileOutputStream = File(resource)
+                *//* val fileOutputStream = File(resource)
                  webSocketRepositoryImpl.subscribeAndPair(fileOutputStream.strea).collect {
                      println("finally $it")
-                 }*/
+                 }*//*
             }
 
         }
@@ -132,7 +113,7 @@ class ExampleUnitTest {
 
             _events.emit(Closed)
         }
-    }
+    }*/
 
     @Test
     fun addition_isCorrect() {

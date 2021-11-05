@@ -35,8 +35,9 @@ interface WebSocketRepository {
     fun getWifiList(): Flow<Resource<List<WifiDevice>>>
 
     //    fun events(): Flow<SocketEvent>
-    fun subscribeAndPair(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus>
+    fun subscribeAndPairAndGetConfig(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus>
     fun tryToSubscribe(): Flow<SocketConnectionStatus>
     fun tryPairing(): Flow<SocketConnectionStatus>
     fun getEvents(): Flow<SocketEvent>
+    fun syncProcess(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus>
 }

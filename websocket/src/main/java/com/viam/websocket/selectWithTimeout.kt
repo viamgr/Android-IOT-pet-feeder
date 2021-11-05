@@ -14,13 +14,21 @@ suspend fun ReceiveChannel<SocketEvent>.sendEventWithCallbackCheck(
     timeout: Int? = 5000
 ): SocketEvent {
 
-    return sendEventWithCallbackCheck(timeout) {
-        it.checkHasError(errorKey)
-        it.containsKey(successKey)
+    val sendEventWithCallbackCheck = try {
+        sendEventWithCallbackCheck(timeout) {
+            println("new event check on $successKey with $it")
+            it.checkHasError(errorKey)
+            it.containsKey(successKey)
+        }
+    } catch (e: TimeoutException) {
+        throw TimeoutException(successKey)
+    } catch (e: Exception) {
+        throw e
     }
+    return sendEventWithCallbackCheck
 }
 
-private fun SocketEvent.containsKey(key: String) = this is Text && (this.data.contains("\"key\":\"$key\""))
+fun SocketEvent.containsKey(key: String) = this is Text && (this.data.contains("\"key\":\"$key\""))
 
 fun SocketEvent.checkHasError(errorKey: String) {
     if (this is Text && this.containsKey(errorKey)) {
@@ -36,13 +44,20 @@ suspend fun ReceiveChannel<SocketEvent>.sendEventWithCallbackCheck(
     val endTime = System.currentTimeMillis() + (timeout ?: 5000)
     do {
         val event = select<SocketEvent> {
-            onTimeout(endTime - System.currentTimeMillis()) { throw TimeoutException() }
+            val timeMillis = endTime - System.currentTimeMillis()
+            onTimeout(timeMillis) {
+                println("failed to get after $timeMillis millis")
+                throw TimeoutException("after $timeMillis")
+            }
             onReceive { value ->  // this is the first select clause
+                println("this is the first select clause $value")
                 value
             }
         }
         if (takeWhile(event)) {
             return event
+        } else {
+            println("continue getting after $event")
         }
     } while (true)
 }
