@@ -40,4 +40,5 @@ interface WebSocketRepository {
     fun tryPairing(): Flow<SocketConnectionStatus>
     fun getEvents(): Flow<SocketEvent>
     fun syncProcess(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus>
+    fun upload(remoteFilePath: String, inputStream: InputStream): Flow<SocketTransfer>
 }

@@ -8,8 +8,13 @@ import com.viam.feeder.model.WifiDevice
 import com.viam.feeder.model.socket.FileDetailCallback
 import com.viam.feeder.model.socket.FileDetailRequest
 import com.viam.feeder.model.socket.FileRequestSlice
+import com.viam.feeder.model.socket.ReceiveSliceMessage
+import com.viam.feeder.model.socket.SendFileMessage
 import com.viam.feeder.shared.FILE_DETAIL_CALLBACK
 import com.viam.feeder.shared.FILE_REQUEST_ERROR
+import com.viam.feeder.shared.FILE_SEND_ERROR
+import com.viam.feeder.shared.FILE_SEND_FINISHED
+import com.viam.feeder.shared.FILE_SEND_SLICE
 import com.viam.feeder.shared.FeederConstants
 import com.viam.feeder.shared.PAIR
 import com.viam.feeder.shared.PAIR_DONE
@@ -43,8 +48,9 @@ import com.viam.websocket.model.SocketTransfer
 import com.viam.websocket.model.SocketTransfer.Progress
 import com.viam.websocket.model.SocketTransfer.Start
 import com.viam.websocket.model.SocketTransfer.Success
+import com.viam.websocket.model.TransferType
 import com.viam.websocket.model.TransferType.Download
-import com.viam.websocket.sendEventWithCallbackCheck
+import com.viam.websocket.waitForCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -60,8 +66,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.produceIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import okio.ByteString.Companion.toByteString
+import java.io.BufferedInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -75,12 +84,13 @@ class WebSocketRepositoryImpl @Inject constructor(
     val moshi: Moshi
 ) : WebSocketRepository {
     private val downloadingMutex = Mutex()
+    private val uploadingMutex = Mutex()
 
     override fun getEvents() = webSocketApi.events
     override fun sendBinary(
         remoteFilePath: String,
         inputStream: InputStream
-    ) = webSocketApi.sendBinary(remoteFilePath, inputStream)
+    ) = upload(remoteFilePath, inputStream)
 
     override fun sendJson(message: SocketMessage) {
         webSocketApi.sendParametericMessage(message)
@@ -184,6 +194,47 @@ class WebSocketRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun upload(
+        remoteFilePath: String, inputStream: InputStream
+    ) = flow {
+        emit(Progress(0F))
+        uploadingMutex.withLock {
+            val size = inputStream.available()
+            var buffered: BufferedInputStream? = null
+            emit(Start(size, TransferType.Upload))
+
+            val channel = receiveChannel()
+            webSocketApi.sendParametericMessage(SendFileMessage(remoteFilePath, size))
+
+            do {
+                val sliceMessageCallback = channel
+                    .waitForCallback(takeWhile = {
+                        it.checkHasError(FILE_SEND_ERROR)
+                        it.containsKey(FILE_SEND_SLICE) || it.containsKey(FILE_SEND_FINISHED)
+                    }) as Text
+
+                if (sliceMessageCallback.containsKey(FILE_SEND_FINISHED)) {
+                    break;
+                }
+
+                val receiveSliceMessage =
+                    moshi.adapter(ReceiveSliceMessage::class.java).fromJson(sliceMessageCallback.data)!!
+
+                val start = receiveSliceMessage.start
+                val end = receiveSliceMessage.end
+                val offset = end - start
+                if (buffered == null)
+                    buffered = inputStream.buffered(offset)
+                val buff = ByteArray(offset)
+                buffered.read(buff)
+                emit(Progress(start.toFloat() / end))
+                webSocketApi.sendByteString(buff.toByteString(0, offset))
+            } while (currentCoroutineContext().isActive)
+
+            emit(Success)
+        }
+    }
+
     override fun download(
         remoteFilePath: String, outputStream: OutputStream
     ) = flow {
@@ -198,7 +249,7 @@ class WebSocketRepositoryImpl @Inject constructor(
             do {
                 wrote += downloadAndWrite(wrote, outputStream)
                 emit(Progress(wrote.toFloat()))
-            } while (wrote < size)
+            } while (wrote < size && currentCoroutineContext().isActive)
 
             emit(Success)
         }
@@ -216,11 +267,9 @@ class WebSocketRepositoryImpl @Inject constructor(
 
     private suspend fun requestGetDetailAndWaitForCallback(remoteFilePath: String): FileDetailCallback {
         val channel = receiveChannel()
-
         requestDetail(remoteFilePath)
-
         val callback =
-            channel.sendEventWithCallbackCheck(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
+            channel.waitForCallback(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
         return moshi.adapter(FileDetailCallback::class.java).fromJson(callback.data)!!
     }
 
@@ -237,10 +286,10 @@ class WebSocketRepositoryImpl @Inject constructor(
 
         val binary = try {
             channel
-                .sendEventWithCallbackCheck(5000) {
+                .waitForCallback(takeWhile = { it ->
                     it.checkHasError(FILE_REQUEST_ERROR)
                     it.isBinary()
-                } as Binary
+                }) as Binary
         } catch (e: TimeoutException) {
             throw TimeoutException("timeout in getting binary data")
         } catch (e: Exception) {
@@ -263,7 +312,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         emit(Pairing)
         sendPairMessage()
         println("start getting pair done")
-        receiveChannel().sendEventWithCallbackCheck(PAIR_DONE, PAIR_ERROR)
+        receiveChannel().waitForCallback(PAIR_DONE, PAIR_ERROR)
         emit(Paired)
     }
 
@@ -289,7 +338,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         flow {
             emit(Subscribing)
             sendSubscribeMessage()
-            receiveChannel().sendEventWithCallbackCheck(SUBSCRIBE_DONE, SUBSCRIBE_ERROR)
+            receiveChannel().waitForCallback(SUBSCRIBE_DONE, SUBSCRIBE_ERROR)
             emit(Subscribed)
         }
 

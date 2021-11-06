@@ -8,18 +8,18 @@ import kotlinx.coroutines.selects.select
 import java.util.concurrent.TimeoutException
 
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun ReceiveChannel<SocketEvent>.sendEventWithCallbackCheck(
+suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
     successKey: String,
     errorKey: String,
     timeout: Int? = 5000
 ): SocketEvent {
 
     val sendEventWithCallbackCheck = try {
-        sendEventWithCallbackCheck(timeout) {
+        waitForCallback(timeout = timeout, takeWhile = {
             println("new event check on $successKey with $it")
             it.checkHasError(errorKey)
             it.containsKey(successKey)
-        }
+        })
     } catch (e: TimeoutException) {
         throw TimeoutException(successKey)
     } catch (e: Exception) {
@@ -37,9 +37,9 @@ fun SocketEvent.checkHasError(errorKey: String) {
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun ReceiveChannel<SocketEvent>.sendEventWithCallbackCheck(
-    timeout: Int?,
-    takeWhile: (SocketEvent) -> Boolean
+suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
+    takeWhile: (SocketEvent) -> Boolean,
+    timeout: Int? = null
 ): SocketEvent {
     val endTime = System.currentTimeMillis() + (timeout ?: 5000)
     do {
