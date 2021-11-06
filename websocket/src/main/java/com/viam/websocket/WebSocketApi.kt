@@ -173,7 +173,7 @@ class WebSocketApi(
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 super.onFailure(webSocket, t, response)
-                println("onFailure socket")
+                println("onFailure socket $t")
                 isOpenedSocket = false
                 okHttpClient.dispatcher.cancelAll()
                 okHttpClient.connectionPool.evictAll()

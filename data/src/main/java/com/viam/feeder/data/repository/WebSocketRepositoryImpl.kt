@@ -35,6 +35,7 @@ import com.viam.websocket.model.SocketConnectionStatus.Subscribing
 import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketEvent.Binary
 import com.viam.websocket.model.SocketEvent.Closed
+import com.viam.websocket.model.SocketEvent.Failure
 import com.viam.websocket.model.SocketEvent.Open
 import com.viam.websocket.model.SocketEvent.Text
 import com.viam.websocket.model.SocketMessage
@@ -45,14 +46,13 @@ import com.viam.websocket.model.SocketTransfer.Success
 import com.viam.websocket.model.TransferType.Download
 import com.viam.websocket.sendEventWithCallbackCheck
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flatMapMerge
@@ -60,9 +60,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.produceIn
-import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.FileOutputStream
@@ -101,40 +98,60 @@ class WebSocketRepositoryImpl @Inject constructor(
     }
 
     override fun syncProcess(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus> = channelFlow {
-        getEvents().transform {
-            println("transform $it")
-            if (it is Closed || (it is Text && (it.containsKey(UNPAIR) || it.containsKey(UNSUBSCRIBE)))
-            ) {
-                emit(SocketConnectionStatus.Failure(SocketCloseException()))
-            } else if (it is Open) {
-                emitAll(subscribeAndPairAndGetConfig(fileOutputStream))
-            } else if (it is Text && it.containsKey(PAIR_DONE)) {
-                emitAll(getConfigs(fileOutputStream).map { it.toConnectionStatus() })
+
+        var syncJon: Job? = null
+        var configJob: Job? = null
+
+        val invokeSync: (suspend () -> Unit) = {
+
+            if (configJob?.isActive != true) {
+                syncJon?.cancel()
+                syncJon = async {
+                    subscribeAndPairAndGetConfig(fileOutputStream).catch { e ->
+                        send(SocketConnectionStatus.Failure(e as Exception))
+                    }.collect {
+                        send(it)
+                    }
+                }
             }
-        }.retryWhen { cause, attempt ->
-            emit(SocketConnectionStatus.Failure(cause as Exception))
-            println("retrying...")
-            true
-        }.collect {
-            println("collect $it")
-            send(it)
+        }
+        val invokeConfig: (suspend () -> Unit) = {
+            if (syncJon?.isActive != true) {
+                configJob?.cancel()
+                configJob = async {
+                    getConfigs(fileOutputStream).map { it.toConnectionStatus() }.catch { e ->
+                        send(SocketConnectionStatus.Failure(e as Exception))
+                    }.collect {
+                        send(it)
+                    }
+                }
+            }
+        }
+        getEvents().collect {
+            println("collected data in sync progress: $it")
+            try {
+                if (hasErrorInSync(it)) {
+                    send(SocketConnectionStatus.Failure(SocketCloseException()))
+                    syncJon?.cancel()
+                    configJob?.cancel()
+                } else if (it is Open) {
+                    invokeSync()
+                } else if (it is Text && it.containsKey(PAIR_DONE)) {
+                    invokeConfig()
+                }
+            } catch (e: Exception) {
+                send(SocketConnectionStatus.Failure(e))
+            }
         }
     }
 
+    private fun hasErrorInSync(it: SocketEvent) =
+        it is Closed || it is Failure || (it is Text && (it.containsKey(UNPAIR) || it.containsKey(
+            UNSUBSCRIBE
+        )))
+
     override fun subscribeAndPairAndGetConfig(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus> =
         channelFlow {
-            /*   val context = currentCoroutineContext()
-               async {
-                   getEvents().collect {
-                       if (it is Closed ||
-                           (it is Text && (it.containsKey(UNPAIR) || it.containsKey(UNSUBSCRIBE)))
-                       ) {
-                           send(SocketConnectionStatus.Failure(SocketCloseException()))
-                           context.cancel()
-                       }
-                   }
-
-               }*/
             println("subscribeAndPair")
 
             tryToSubscribe()
@@ -218,11 +235,18 @@ class WebSocketRepositoryImpl @Inject constructor(
         println("request $from")
         requestReceiveFile(from)
 
-        return channel
-            .sendEventWithCallbackCheck(1000) {
-                it.checkHasError(FILE_REQUEST_ERROR)
-                it.isBinary()
-            } as Binary
+        val binary = try {
+            channel
+                .sendEventWithCallbackCheck(5000) {
+                    it.checkHasError(FILE_REQUEST_ERROR)
+                    it.isBinary()
+                } as Binary
+        } catch (e: TimeoutException) {
+            throw TimeoutException("timeout in getting binary data")
+        } catch (e: Exception) {
+            throw e
+        }
+        return binary
     }
 
     private fun requestReceiveFile(from: Int) {
@@ -243,24 +267,23 @@ class WebSocketRepositoryImpl @Inject constructor(
         emit(Paired)
     }
 
-    suspend fun wait(successKey: String, errorKey: String) = coroutineScope {
+    /* suspend fun wait(successKey: String, errorKey: String) = coroutineScope {
 
-        async {
-            delay(5000)
-            println("timeout in pair")
-            throw TimeoutException(successKey)
-        }
-        async {
-            val a = getEvents().filter {
-                println("filter in event $it ${it.containsKey(successKey)}")
-                it.checkHasError(errorKey)
-                it.containsKey(successKey)
-            }.single()
-            println("aaaaaaaa: $a")
-            a
-        }
+         async {
+             delay(5000)
+             println("timeout in pair")
+             throw TimeoutException(successKey)
+         }
+         async {
+             val a = getEvents().filter {
+                 println("filter in event $it ${it.containsKey(successKey)}")
+                 it.checkHasError(errorKey)
+                 it.containsKey(successKey)
+             }.single()
+             a
+         }
 
-    }
+     }*/
 
     override fun tryToSubscribe(): Flow<SocketConnectionStatus> =
         flow {

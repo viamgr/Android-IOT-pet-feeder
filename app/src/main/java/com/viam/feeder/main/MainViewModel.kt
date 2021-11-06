@@ -20,6 +20,7 @@ import com.viam.websocket.WebSocketApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okhttp3.Request
 import java.util.concurrent.atomic.AtomicBoolean
@@ -70,6 +71,12 @@ class MainViewModel @Inject constructor(
 
     init {
         watchSocketEvent()
+
+        launchInScope {
+            webSocketApi.events.collect {
+                println("events $it")
+            }
+        }
     }
 
     private fun watchSocketEvent() = launchInScope {

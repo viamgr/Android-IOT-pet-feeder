@@ -11,7 +11,9 @@ import com.viam.websocket.model.SocketConnectionStatus.Configured
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import org.json.JSONObject
 import java.io.File
 import javax.inject.Inject
@@ -35,7 +37,13 @@ class SocketSubscribe @Inject constructor(
                 is SocketConnectionStatus.Failure -> Resource.Error(it.exception)
                 else -> Loading(it)
             }
+        }.onCompletion {
+            println("DIEEEEEEEEEEEEEEEEEEEEEEEEE")
         }
+            .catch {
+                println("DIEEEEEEEEEEEEEEEEEEEEEEEEE")
+
+            }
     }
 
     private fun savePref() {
