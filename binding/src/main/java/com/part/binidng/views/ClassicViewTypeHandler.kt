@@ -7,12 +7,18 @@ import com.part.binidng.bindingadapter.getViewParent
 import com.part.livetask.R
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.LoadingMessageBlock
 import com.part.livetaskcore.views.ViewTypeHandler
 import kotlin.coroutines.cancellation.CancellationException
 
 abstract class ClassicViewTypeHandler : ViewTypeHandler {
     abstract val layoutId: Int
-    fun onUpdate(liveTask: LiveTask<*>?, result: Resource<*>?, view: View) {
+    fun onUpdate(
+        liveTask: LiveTask<*>?,
+        result: Resource<*>?,
+        loadingMessageBlock: LoadingMessageBlock?,
+        view: View
+    ) {
         liveTask?.let {
             result?.let {
                 val viewParent = getViewParent(view, this)
@@ -27,7 +33,14 @@ abstract class ClassicViewTypeHandler : ViewTypeHandler {
                         )
                     }
                     is Resource.Loading -> {
-                        loading(view, viewParent.view, viewParent.parent as ViewGroup, liveTask, it)
+                        loading(
+                            view,
+                            viewParent.view,
+                            viewParent.parent as ViewGroup,
+                            liveTask,
+                            it,
+                            loadingMessageBlock
+                        )
 
                     }
                     is Resource.Error -> {
@@ -44,8 +57,9 @@ abstract class ClassicViewTypeHandler : ViewTypeHandler {
         parent: ViewGroup,
         liveTask: LiveTask<*>,
         result: Resource.Loading,
+        loadingMessageBlock: LoadingMessageBlock?,
     ) {
-        onLoading(view, inflatedView, parent, liveTask, result)
+        onLoading(view, inflatedView, parent, liveTask, result, loadingMessageBlock)
     }
 
     protected open fun onLoading(
@@ -54,6 +68,7 @@ abstract class ClassicViewTypeHandler : ViewTypeHandler {
         parent: ViewGroup,
         liveTask: LiveTask<*>,
         result: Resource.Loading,
+        loadingMessageBlock: LoadingMessageBlock?,
     ) {
 
     }

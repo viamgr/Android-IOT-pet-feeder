@@ -21,6 +21,7 @@ interface LiveTask<T> {
     fun run(coroutineContext: CoroutineContext = EmptyCoroutineContext): LiveTask<T>
     fun cancel(immediately: Boolean? = true): LiveTask<T>
     fun configure()
+    fun loadingMessage(): LoadingMessageBlock?
 }
 
 interface ParametricLiveTask<P, T> : LiveTask<T> {

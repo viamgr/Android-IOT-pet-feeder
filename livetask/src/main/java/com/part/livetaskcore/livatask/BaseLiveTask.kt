@@ -14,6 +14,10 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * Contains common functions and properties of a LiveTask.
  * */
+
+typealias LoadingMessageBlock = ((Any?) -> LoadingMessage)
+
+
 //TODO find a way to remove live task from this class
 abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveData<LiveTask<T>>(),
     LiveTask<T>, LiveTaskBuilder<T> {
@@ -26,6 +30,7 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     protected var retryable: Boolean? = null
     protected var blockRunner: TaskRunner<T>? = null
     protected var onSuccessAction: (Any?) -> Unit = {}
+    protected var loadingTextBlock: LoadingMessageBlock? = null
     protected var onRunCallback: (suspend () -> Unit)? = null
     protected var onErrorAction: (Exception) -> Unit = {}
     protected var errorMapper: ErrorMapper = liveTaskManager.errorMapper
@@ -150,4 +155,10 @@ abstract class BaseLiveTask<T>(liveTaskManager: LiveTaskManager) : MediatorLiveD
     protected open fun applyResult(result: Resource<T>) {
         latestResult = result
     }
+
+    override fun setLoadingText(block: LoadingMessageBlock?) {
+        loadingTextBlock = block
+    }
+
+    override fun loadingMessage(): LoadingMessageBlock? = loadingTextBlock
 }

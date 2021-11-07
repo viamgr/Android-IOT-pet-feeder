@@ -6,6 +6,7 @@ import android.view.animation.AnimationUtils
 import com.part.binidng.R
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.LoadingMessageBlock
 import kotlinx.android.synthetic.main.loading_linear.view.*
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -27,7 +28,8 @@ class LinearViewType : ClassicViewTypeHandler() {
         inflatedView: View,
         parent: ViewGroup,
         liveTask: LiveTask<*>,
-        result: Resource.Loading
+        result: Resource.Loading,
+        loadingMessageBlock: LoadingMessageBlock?
     ) {
 
         inflatedView.apply {

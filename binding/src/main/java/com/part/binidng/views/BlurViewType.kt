@@ -9,13 +9,12 @@ import com.part.binidng.R
 import com.part.binidng.R.id
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.LoadingMessage
+import com.part.livetaskcore.livatask.LoadingMessageBlock
 import com.part.livetaskcore.views.getErrorText
 import eightbitlab.com.blurview.BlurView
 import eightbitlab.com.blurview.RenderScriptBlur
-import kotlinx.android.synthetic.main.loading_blur.view.close
-import kotlinx.android.synthetic.main.loading_blur.view.error
-import kotlinx.android.synthetic.main.loading_blur.view.progress
-import kotlinx.android.synthetic.main.loading_blur.view.retry
+import kotlinx.android.synthetic.main.loading_blur.view.*
 
 class BlurViewType : ClassicViewTypeHandler() {
     private fun View.handleCancelable(result: LiveTask<*>) {
@@ -34,12 +33,24 @@ class BlurViewType : ClassicViewTypeHandler() {
         inflatedView: View,
         parent: ViewGroup,
         liveTask: LiveTask<*>,
-        result: Resource.Loading
+        result: Resource.Loading,
+        loadingMessageBlock: LoadingMessageBlock?
     ) {
         inflatedView.apply {
             addBlur(inflatedView)
+            error.text = if (loadingMessageBlock == null) {
+                context.getString(R.string.loading)
+            } else {
+                when (val loadingMessage = loadingMessageBlock(result.data)) {
+                    is LoadingMessage.Text -> {
+                        loadingMessage.message
+                    }
+                    is LoadingMessage.Res -> {
+                        context.getString(loadingMessage.resId, loadingMessage.plurals)
+                    }
+                }
+            }
 
-            error.text = context.getString(R.string.loading)
             progress.isVisible = true
             retry.isVisible = false
             handleCancelable(liveTask)

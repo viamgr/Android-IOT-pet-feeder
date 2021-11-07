@@ -81,7 +81,7 @@ class MyApplication : MultiDexApplication() {
                 Resource.Error(exception)
             }
             is AppResource.Loading -> {
-                Resource.Loading()
+                Resource.Loading(this.data)
             }
         }
     }

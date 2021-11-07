@@ -6,13 +6,9 @@ import androidx.core.view.isVisible
 import com.part.binidng.R
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.LoadingMessageBlock
 import com.part.livetaskcore.views.getErrorText
-import kotlinx.android.synthetic.main.loading_circular.view.cl_container_circular
-import kotlinx.android.synthetic.main.loading_circular.view.cl_error_circular
-import kotlinx.android.synthetic.main.loading_circular.view.ivBtn_close_circular
-import kotlinx.android.synthetic.main.loading_circular.view.progressBar_circular
-import kotlinx.android.synthetic.main.loading_circular.view.tv_error_circular
-import kotlinx.android.synthetic.main.loading_circular.view.tv_loading_circular
+import kotlinx.android.synthetic.main.loading_circular.view.*
 
 class CircularViewType : ClassicViewTypeHandler() {
     private fun View.handleCancelable(result: LiveTask<*>) {
@@ -33,7 +29,8 @@ class CircularViewType : ClassicViewTypeHandler() {
         inflatedView: View,
         parent: ViewGroup,
         liveTask: LiveTask<*>,
-        result: Resource.Loading
+        result: Resource.Loading,
+        loadingMessageBlock: LoadingMessageBlock?
     ) {
         inflatedView.apply {
             cl_error_circular.visibility = View.GONE

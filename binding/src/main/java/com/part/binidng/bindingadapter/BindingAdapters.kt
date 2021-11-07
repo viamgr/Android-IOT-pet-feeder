@@ -9,13 +9,18 @@ import com.part.binidng.views.ClassicViewTypeHandler
 import com.part.livetaskcore.LiveTaskManager
 import com.part.livetaskcore.Resource
 import com.part.livetaskcore.livatask.LiveTask
+import com.part.livetaskcore.livatask.LoadingMessageBlock
 import com.part.livetaskcore.views.*
 
 @OptIn(ExperimentalStdlibApi::class)
-@BindingAdapter(value = ["reactToTask", "result", "liveTaskManager"], requireAll = false)
+@BindingAdapter(
+    value = ["reactToTask", "result", "loadingMessageBlock", "liveTaskManager"],
+    requireAll = false
+)
 fun View.reactToTask(
     liveTask: LiveTask<*>?,
     result: Resource<*>?,
+    loadingMessageBlock: LoadingMessageBlock? = null,
     liveTaskManager: LiveTaskManager? = LiveTaskManager.instance
 ) {
     println("reactToTask")
@@ -24,14 +29,19 @@ fun View.reactToTask(
         findViewTypeHandler<ClassicViewTypeHandler>(liveTask?.loadingViewType()).onUpdate(
             liveTask,
             result ?: liveTask?.result(),
+            loadingMessageBlock = loadingMessageBlock ?: liveTask?.loadingMessage(),
             this@reactToTask
         )
     }
 }
 
-fun View.reactToTask(liveTask: LiveTask<*>, viewLifecycleOwner: LifecycleOwner) {
+fun View.reactToTask(
+    liveTask: LiveTask<*>,
+    loadingMessageBlock: LoadingMessageBlock? = null,
+    viewLifecycleOwner: LifecycleOwner
+) {
     liveTask.asLiveData().observe(viewLifecycleOwner) {
-        reactToTask(it, it.result())
+        reactToTask(it, it.result(), loadingMessageBlock = loadingMessageBlock)
     }
 }
 

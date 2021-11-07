@@ -29,6 +29,7 @@ interface LiveTaskBuilder<T> {
     fun onError(action: (Exception) -> Unit)
     fun onLoading(action: (Any?) -> Unit)
     fun onRun(block: suspend () -> Unit)
+    fun setLoadingText(block: LoadingMessageBlock?)
 }
 
 fun interface EmitDataBlock<T> {

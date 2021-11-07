@@ -72,7 +72,8 @@ class CombinedLiveTask(
                     applyResult(Resource.Error(CancellationException()))
                 }
                 loadingCount > 0 -> {
-                    applyResult(Resource.Loading())
+                    val data: List<Resource<Any?>?> = liveTasks.map { it.result() }
+                    applyResult(Resource.Loading(data))
                 }
                 else -> {
                     applyResult(Resource.Error(CancellationException()))

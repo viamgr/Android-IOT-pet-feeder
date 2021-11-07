@@ -59,8 +59,17 @@ class MainViewModel @Inject constructor(
                 onDeviceFound(it)
             }
         }
+    val combinedLiveTask = combine(webSocketEventsTask, networkStatusCheckerLiveTask)/* {
 
-    val combinedLiveTask = combine(webSocketEventsTask, networkStatusCheckerLiveTask)
+       setLoadingText { data: Any? ->
+            LoadingMessage.Res(R.string.loading, 10, "45")
+            LoadingMessage.Res(R.string.loading)
+            LoadingMessage.Text((data as List<Resource.Loading?>).joinToString(separator = ",") {
+                it?.data.toString()
+            })
+        }
+    }*/
+
     private fun retryTimeout() {
         retryTimeoutJob?.cancel()
         retryTimeoutJob = viewModelScope.launch {

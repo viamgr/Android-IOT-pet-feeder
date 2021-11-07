@@ -9,7 +9,7 @@ buildscript {
             artifactUrls "https://nexus.partdp.ir/repository/part-android/"
             credentials {
                 username "android-user"
-                password "p9PTCB[^Z}tcM}wn:ZF4NnVNd=DXC-ML=w3/6"
+                password "EL2BB+*wkXEaydY=/2>2Kx-tV4CV-%"
             }
         }
         google()
@@ -34,7 +34,7 @@ allprojects {
             artifactUrls "https://nexus.partdp.ir/repository/part-android/"
             credentials {
                 username "android-user"
-                password "p9PTCB[^Z}tcM}wn:ZF4NnVNd=DXC-ML=w3/6"
+                password "EL2BB+*wkXEaydY=/2>2Kx-tV4CV-%"
             }
         }
         google()
