@@ -7,6 +7,9 @@ interface ConfigFields {
     fun getAlarms(): LiveData<List<String>>
     fun getSoundVolume(): LiveData<Float>
     fun getWifiSsid(): LiveData<String>
+    fun getWifiGateway(): LiveData<String>
+    fun getWifiSubnet(): LiveData<String>
+    fun getStaticIp(): LiveData<String>
     fun getWifiPassword(): LiveData<String>
     fun getFeedingDuration(): LiveData<Int>
     fun getLedState(): LiveData<Int>
@@ -22,4 +25,5 @@ interface ConfigFields {
     fun setUseDhcp(value: Int)
     fun setSubnet(value: String)
     fun setGateway(value: String)
+    fun getUseDhcp(): LiveData<Int>
 }

@@ -16,9 +16,9 @@ class ConfigFieldsImpl @Inject constructor(
     private var wifiSsid = LiveDataConfig(configObject, "wifiSsid", "")
     private var wifiPassword = LiveDataConfig(configObject, "wifiPassword", "")
     private var wifiMode = LiveDataConfig(configObject, "wifiMode", WIFI_MODE_AP.ordinal)
-    private var staticIp = LiveDataConfig(configObject, "staticIp", "")
-    private var gateway = LiveDataConfig(configObject, "gateway", "")
-    private var subnet = LiveDataConfig(configObject, "subnet", "")
+    private var staticIp = LiveDataConfig(configObject, "staticIp", "192.168.8.150")
+    private var gateway = LiveDataConfig(configObject, "gateway", "192.168.8.1")
+    private var subnet = LiveDataConfig(configObject, "subnet", "255.255.255.0")
     private var useDhcp = LiveDataConfig(configObject, "useDhcp", 1)
     private var feedingDuration = LiveDataConfig(configObject, "feedingDuration", 2000)
     private var ledState = LiveDataConfig(configObject, "ledState", 2)
@@ -70,6 +70,11 @@ class ConfigFieldsImpl @Inject constructor(
     override fun setStaticIp(value: String) {
         staticIp.store(value)
     }
+
+    override fun getStaticIp(): LiveData<String> = staticIp
+    override fun getWifiGateway(): LiveData<String> = gateway
+    override fun getWifiSubnet(): LiveData<String> = subnet
+    override fun getUseDhcp(): LiveData<Int> = useDhcp
 
     override fun setGateway(value: String) {
         gateway.store(value)

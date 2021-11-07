@@ -43,6 +43,7 @@
     <string name="scheduling">scheduling</string>
     <string name="periodic">Periodic</string>
     <string name="minute">%d Minute</string>
+    <string name="wifi_ssid">Wifi Ssid</string>
     <string name="wifi_password">Wifi Password</string>
     <string name="static_ip">Static Ip</string>
     <string name="gateway">Gateway</string>
@@ -104,4 +105,5 @@
     <string name="second_format">%d Seconds</string>
     <string name="socket_close_error">Socket is Closed!</string>
     <string name="static_ip_config">Advance static IP configuration</string>
+    <string name="submit">Submit</string>
 </resources>

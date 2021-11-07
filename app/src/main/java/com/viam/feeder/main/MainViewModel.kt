@@ -59,16 +59,16 @@ class MainViewModel @Inject constructor(
                 onDeviceFound(it)
             }
         }
-    val combinedLiveTask = combine(webSocketEventsTask, networkStatusCheckerLiveTask)/* {
-
-       setLoadingText { data: Any? ->
-            LoadingMessage.Res(R.string.loading, 10, "45")
-            LoadingMessage.Res(R.string.loading)
-            LoadingMessage.Text((data as List<Resource.Loading?>).joinToString(separator = ",") {
-                it?.data.toString()
-            })
-        }
-    }*/
+    val combinedLiveTask = combine(webSocketEventsTask, networkStatusCheckerLiveTask) {
+        cancelable(true)
+        /*setLoadingText { data: Any? ->
+             LoadingMessage.Res(R.string.loading, 10, "45")
+             LoadingMessage.Res(R.string.loading)
+             LoadingMessage.Text((data as List<Resource.Loading?>).joinToString(separator = ",") {
+                 it?.data.toString()
+             })
+         }*/
+    }
 
     private fun retryTimeout() {
         retryTimeoutJob?.cancel()

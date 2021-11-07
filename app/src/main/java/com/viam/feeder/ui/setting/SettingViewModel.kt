@@ -1,48 +1,39 @@
 package com.viam.feeder.ui.setting
 
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.datasource.RemoteConnectionConfig
-import com.viam.feeder.domain.usecase.config.SetWifiCredentials
-import com.viam.feeder.domain.usecase.config.WifiAuthentication
+import com.viam.feeder.domain.usecase.config.*
 import com.viam.feeder.domain.usecase.device.AddDevice
-import com.viam.feeder.domain.usecase.event.SendEvent
-import com.viam.feeder.domain.usecase.wifi.GetWifiList
 import com.viam.feeder.model.Device
-import com.viam.feeder.model.WifiDevice
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
-import com.viam.feeder.shared.WIFI_LIST_GET
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
-    wifiList: GetWifiList,
-    sendEvent: SendEvent,
+    getWifiSsid: GetWifiSsid,
+    getWifiIp: GetWifiIp,
+    getUseDhcp: GetUseDhcp,
+    getWifiGateway: GetWifiGateway,
+    getWifiSubnet: GetWifiSubnet,
+    getWifiPassword: GetWifiPassword,
     addDevice: AddDevice,
     setWifiCredentials: SetWifiCredentials,
     private val remoteConnectionConfig: RemoteConnectionConfig
 ) : ViewModel() {
-    val getWifiList = sendEvent.asLiveTask {
-        /* resourceMapper {
-             if (it is LiveTaskError) {
-                 LiveTaskResource.Error(it.exception)
-             } else if (result() !is LiveTaskResource.Success) {
-                 LiveTaskResource.Loading(it)
-             } else {
-                 LiveTaskResource.Success(it)
-             }
-         }*/
-    }
+
+    val useDhcp = MediatorLiveData<Boolean>()
+    val wifiSsid = getWifiSsid()
+    val wifiIp = getWifiIp()
+    val wifiGateway = getWifiGateway()
+    val wifiSubnet = getWifiSubnet()
+    val wifiPassword = getWifiPassword()
     val addDeviceTask = addDevice.asLiveTask()
-    val getWifiListTask = wifiList(Unit).asLiveData()
     val setWifiCredentialsTask = setWifiCredentials.asLiveTask {
         onSuccess<Any> {
             val parameter = getParameter()
@@ -51,13 +42,17 @@ class SettingViewModel @Inject constructor(
     }
 
     val combinedTasks = combine(
-        getWifiList,
         addDeviceTask,
         setWifiCredentialsTask
-    )
+    ) {
+        cancelable(true)
+        retryable(true)
+    }
 
     init {
-        requestGetWifiList()
+        useDhcp.addSource(getUseDhcp()) {
+            useDhcp.postValue(it != 0)
+        }
     }
 
     private fun addDevice(parameter: WifiAuthentication) = launchInScope {
@@ -75,25 +70,13 @@ class SettingViewModel @Inject constructor(
         remoteConnectionConfig.port = parameter.port ?: DEFAULT_ACCESS_POINT_PORT
     }
 
-    private fun requestGetWifiList() = launchInScope {
-        getWifiList(WIFI_LIST_GET)
-        delay(2000)
-        getWifiList(WIFI_LIST_GET)
-        delay(5000)
-
-        while (currentCoroutineContext().isActive) {
-            getWifiList(WIFI_LIST_GET)
-            delay(10000)
-        }
-    }
-
     fun onPasswordConfirmed(
-        wifiDevice: WifiDevice,
+        ssid: String,
         password: String,
         staticIp: String?,
         gateway: String?,
         subnet: String?
     ) = launchInScope {
-        setWifiCredentialsTask(WifiAuthentication(wifiDevice.ssid, password, staticIp, gateway, subnet))
+        setWifiCredentialsTask(WifiAuthentication(ssid, password, staticIp, gateway, subnet))
     }
 }
