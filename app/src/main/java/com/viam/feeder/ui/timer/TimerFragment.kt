@@ -14,7 +14,7 @@ import com.viam.feeder.core.databinding.viewBinding
 import com.viam.feeder.core.livedata.EventObserver
 import com.viam.feeder.databinding.FragmentTimerBinding
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.Date
+import java.util.*
 
 @AndroidEntryPoint
 
@@ -40,6 +40,7 @@ class TimerFragment : Fragment(R.layout.fragment_timer) {
         }
 
         viewModel.timerList.observe(viewLifecycleOwner, {
+            println("list $it")
             controller.setData(it)
         })
 

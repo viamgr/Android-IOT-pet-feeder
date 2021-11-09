@@ -19,7 +19,7 @@ import com.viam.feeder.shared.TIME_GET
 import com.viam.feeder.shared.TIME_IS
 import com.viam.feeder.shared.TIME_SET
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Date
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,6 +53,7 @@ class TimerViewModel @Inject constructor(
     )
     {
         cancelable(true)
+        retryable(true)
     }
     private val _time = MutableLiveData("0:00")
     val time: LiveData<String> = _time

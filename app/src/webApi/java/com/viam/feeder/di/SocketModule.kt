@@ -30,6 +30,7 @@ class SocketModule {
             .writeTimeout(15, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
             .connectTimeout(10, TimeUnit.SECONDS)
+            .pingInterval(15, TimeUnit.SECONDS)
             .build()
     }
 

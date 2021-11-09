@@ -13,11 +13,12 @@ suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
     errorKey: String,
     timeout: Int? = 5000
 ): SocketEvent {
-
+    println("waitForCallback $successKey")
     val sendEventWithCallbackCheck = try {
         waitForCallback(timeout = timeout, takeWhile = {
             println("new event check on $successKey with $it")
             it.checkHasError(errorKey)
+            println("result of check is ${it.containsKey(successKey)}")
             it.containsKey(successKey)
         })
     } catch (e: TimeoutException) {
@@ -28,7 +29,10 @@ suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
     return sendEventWithCallbackCheck
 }
 
-fun SocketEvent.containsKey(key: String) = this is Text && (this.data.contains("\"key\":\"$key\""))
+fun SocketEvent.containsKey(key: String): Boolean {
+    val regex = "\"key\":[\\s\\S]*\"$key\"".toRegex()
+    return this is Text && (this.data.contains(regex))
+}
 
 fun SocketEvent.checkHasError(errorKey: String) {
     if (this is Text && this.containsKey(errorKey)) {
@@ -41,7 +45,7 @@ suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
     takeWhile: (SocketEvent) -> Boolean,
     timeout: Int? = null
 ): SocketEvent {
-    val endTime = System.currentTimeMillis() + (timeout ?: 5000)
+    val endTime = System.currentTimeMillis() + (timeout ?: 50000)
     do {
         val event = select<SocketEvent> {
             val timeMillis = endTime - System.currentTimeMillis()

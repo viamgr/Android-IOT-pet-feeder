@@ -6,15 +6,14 @@ import com.viam.websocket.WebSocketApi
 import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketEvent.Closed
 import com.viam.websocket.model.SocketEvent.Open
+import com.viam.websocket.waitForCallback
 import io.mockk.MockKAnnotations
-import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
-import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.produceIn
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -40,11 +39,7 @@ class WebSocketRepositoryTest {
     @Before
     fun setup() {
         MockKAnnotations.init(this)
-        every { webSocketApi.events } returns _events
-        webSocketRepository = WebSocketRepositoryImpl(
-            webSocketApi,
-            moshi
-        )
+
     }
 
     @Test
@@ -52,6 +47,12 @@ class WebSocketRepositoryTest {
 
         async {
             async {
+                delay(1000)
+                _events.emit(Open)
+                delay(1000)
+                _events.emit(Open)
+                delay(100000)
+                _events.emit(Open)
                 delay(1000)
                 _events.emit(Open)
                 delay(1000)
@@ -72,11 +73,19 @@ class WebSocketRepositoryTest {
             }
 
             async {
-                every { webSocketApi.isOpen() } returns true
-                webSocketRepository.syncProcess(mockk(relaxed = true)).collect {
-                    println(it)
-                }
+
+                val a = _events.produceIn(this).waitForCallback(takeWhile = {
+                    it is Open
+                })
+                println("result1: $a")
+
+                val b = _events.produceIn(this).waitForCallback(takeWhile = {
+                    it is Open
+                })
+                println("result2: $b")
+
             }
+            delay(550000)
         }
 
         /* async {

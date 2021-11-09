@@ -25,6 +25,7 @@ class JsonPreferencesImpl @Inject constructor() : JsonPreferences {
     }
 
     private fun triggerChanges() {
+        println("triggerChanges")
         // TODO: 10/22/2021 check the key here
         json.keys().forEach { key ->
             changeListeners.forEach {
@@ -42,14 +43,18 @@ class JsonPreferencesImpl @Inject constructor() : JsonPreferences {
     }
 
     override fun commitChanges() {
+        println("commitChanges")
         json = JSONObject(saveJson.toString())
     }
 
     override fun getByteStream(): ByteArrayInputStream {
-        return json.toString().byteInputStream()
+        val toString = saveJson.toString()
+        println("getByteStream $toString")
+        return toString.byteInputStream()
     }
 
     override fun storeJson(jsonObject: JSONObject) {
+        println("storeJson")
         json = jsonObject
     }
 }

@@ -8,7 +8,7 @@ import com.viam.resource.Resource
 import com.viam.websocket.model.SocketTransfer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.io.OutputStream
+import java.io.File
 
 open class DownloadBinary(
     coroutinesDispatcherProvider: CoroutinesDispatcherProvider,
@@ -20,5 +20,5 @@ open class DownloadBinary(
         }
     }
 
-    data class DownloadBinaryParams(val remotePath: String, val outputStream: OutputStream)
+    data class DownloadBinaryParams(val remotePath: String, val outputStream: File)
 }

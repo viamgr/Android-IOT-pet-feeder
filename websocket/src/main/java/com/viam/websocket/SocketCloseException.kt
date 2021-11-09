@@ -1,3 +1,4 @@
 package com.viam.websocket
 
-class SocketCloseException : Exception("Socket Is Close!")
+class SocketCloseException(val text: String = "Socket is Closed", cause: Throwable? = null) :
+    Exception(text, cause)

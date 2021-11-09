@@ -2,12 +2,7 @@ package com.viam.websocket
 
 import com.squareup.moshi.Moshi
 import com.viam.websocket.model.*
-import com.viam.websocket.model.SocketEvent.Binary
-import com.viam.websocket.model.SocketEvent.Closed
-import com.viam.websocket.model.SocketEvent.Closing
-import com.viam.websocket.model.SocketEvent.Failure
-import com.viam.websocket.model.SocketEvent.Open
-import com.viam.websocket.model.SocketEvent.Text
+import com.viam.websocket.model.SocketEvent.*
 import com.viam.websocket.model.SocketTransfer.Error
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -15,7 +10,6 @@ import kotlinx.coroutines.flow.*
 import okhttp3.*
 import okio.ByteString
 import java.io.BufferedInputStream
-import java.io.InputStream
 import java.lang.reflect.ParameterizedType
 import kotlin.coroutines.CoroutineContext
 
@@ -36,13 +30,14 @@ class WebSocketApi(
             connectionListener?.invoke(value)
         }
 
-    private val _events = MutableStateFlow<SocketEvent>(SocketEvent.Init) // private mutable shared flow
+    private val _events =
+        MutableSharedFlow<SocketEvent>() // private mutable shared flow
     private val _progress =
         MutableSharedFlow<SocketTransfer>() // private mutable shared flow
     private var binaryCoroutineContext: CoroutineContext? = null
 
     private val errorListeners = mutableListOf<(e: Exception) -> Unit>()
-    val events: StateFlow<SocketEvent> = _events // publicly exposed as read-only shared flow
+    val events: SharedFlow<SocketEvent> = _events // publicly exposed as read-only shared flow
     val progress = _progress.asSharedFlow() // publicly exposed as read-only shared flow
 
     private val socketRunnerScope = CoroutineScope(IO)
@@ -77,9 +72,6 @@ class WebSocketApi(
         key: String,
         clazz: ParameterizedType
     ): Flow<T> = channelFlow {
-        if (!isOpenedSocket) {
-            throw SocketCloseException()
-        }
         events
             .filterIsInstance<Text>()
             .map {
@@ -127,6 +119,7 @@ class WebSocketApi(
         if (isOpenedSocket) {
             return
         }
+
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 super.onOpen(webSocket, response)
@@ -147,7 +140,8 @@ class WebSocketApi(
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
                 super.onMessage(webSocket, bytes)
-                println("onMessage socket $bytes")
+                val string = String(bytes.toByteArray())
+                println("onMessage socket $string")
                 launchInScope {
                     _events.emit(Binary(bytes))
                 }
@@ -156,7 +150,7 @@ class WebSocketApi(
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 super.onClosing(webSocket, code, reason)
                 isOpenedSocket = false
-                println("onClosing socket")
+                println("onClosing socket code:$code $reason")
                 launchInScope {
                     _events.emit(Closing)
                 }
@@ -191,91 +185,9 @@ class WebSocketApi(
 
     private var buffered: BufferedInputStream? = null
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun sendBinary(
-        remoteFilePath: String,
-        inputStream: InputStream,
-    ): Flow<SocketTransfer> {
-        /*var timeout: Job? = null
-        if (buffered != null) {
-            throw IllegalStateException()
-        }
-
-        fun close() {
-            buffered?.close()
-            buffered = null
-        }
-
-        fun cancelTimeout() {
-            timeout?.cancel()
-            timeout = null
-        }
-
-        suspend fun renewTimeout() {
-            cancelTimeout()
-            timeout = coroutineScope {
-                launch {
-                    delay(5000)
-                    throw TimeoutException()
-                }
-            }
-        }
-
-        val startFlow: Flow<SocketTransfer> = flow {
-            val size = inputStream.available()
-            sendJson(SendFileMessage(remoteFilePath, size), SendFileMessage::class.java)
-            emit(Start(size, TransferType.Upload))
-            renewTimeout()
-        }
-
-        val messagesFlow = events
-            .filterIsInstance<Text>()
-            .map {
-                val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)!!
-                println("socketMessage.key: ${socketMessage.key}")
-                when (socketMessage.key) {
-                    FILE_SEND_SLICE -> {
-                        cancelTimeout()
-
-                        val sliceMessage = moshi.adapter(ReceiveSliceMessage::class.java).fromJson(it.data)!!
-                        val start = sliceMessage.start
-                        val end = sliceMessage.end
-                        val offset = end - start
-                        if (buffered == null)
-                            buffered = inputStream.buffered(offset)
-                        val buff = ByteArray(offset)
-                        buffered?.read(buff)
-                        sendByteString(buff.toByteString(0, offset))
-                        renewTimeout()
-                        Progress(start.toFloat() / end)
-                    }
-                    FILE_SEND_FINISHED -> {
-                        cancelTimeout()
-                        Success
-                    }
-                    FILE_REQUEST_ERROR -> {
-                        cancelTimeout()
-                        Error(Exception())
-                    }
-                    else -> null
-                }
-            }
-
-        return startFlow
-            .flatMapLatest {
-                messagesFlow
-            }
-            .filterNotNull()
-            .onEach {
-                if (it is Error || it is Success) {
-                    close()
-                }
-            }*/
-        return flowOf()
-    }
 
     fun sendByteString(message: ByteString) {
-        println("send binary ${message.size}")
+        println("send binary $message")
         webSocket.send(message)
     }
 
@@ -311,7 +223,7 @@ class WebSocketApi(
         println("isOpened:$isOpenedSocket")
         return when {
             !isOpenedSocket -> {
-                throw SocketCloseException()
+                throw SocketCloseException("Socket is not open")
             }
             webSocket.send(toJson) -> {
                 true

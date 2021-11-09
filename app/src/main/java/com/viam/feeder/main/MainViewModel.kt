@@ -9,7 +9,6 @@ import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.datasource.RemoteConnectionConfig
 import com.viam.feeder.domain.usecase.ConnectionStatus
 import com.viam.feeder.domain.usecase.ConnectionStatus.NetworkOptions
-import com.viam.feeder.domain.usecase.config.GetConfig
 import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
 import com.viam.feeder.domain.usecase.event.SocketSubscribe
 import com.viam.feeder.model.Device
@@ -29,7 +28,6 @@ import javax.inject.Provider
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    getConfig: GetConfig,
     private val getConfiguredDevice: GetConfiguredDevice,
     private val connectionStatus: ConnectionStatus,
     private val webSocketApi: WebSocketApi,

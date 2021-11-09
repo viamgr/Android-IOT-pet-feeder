@@ -18,7 +18,7 @@ class ArrayConfig<T>(
 
     private val listener: (String, Any) -> Unit = { key, data ->
         if (key == name && value?.equals(data) == false) {
-            value = parseList(data as String)
+            postValue(parseList(data as String))
         }
     }
 

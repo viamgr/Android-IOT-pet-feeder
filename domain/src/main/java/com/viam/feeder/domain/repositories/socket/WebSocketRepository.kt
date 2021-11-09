@@ -8,23 +8,16 @@ import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketMessage
 import com.viam.websocket.model.SocketTransfer
 import kotlinx.coroutines.flow.Flow
-import java.io.FileOutputStream
+import java.io.File
 import java.io.InputStream
-import java.io.OutputStream
 
 interface WebSocketRepository {
-    fun sendBinary(
-        remoteFilePath: String,
-        inputStream: InputStream,
-    ): Flow<SocketTransfer>
+    fun sendBinary(remoteFilePath: String, inputStream: InputStream): Flow<SocketTransfer>
 
     fun sendJson(message: SocketMessage)
     fun <T> sendJson(message: T, clazz: Class<T>)
     fun sendEvent(key: String)
-    fun download(
-        remoteFilePath: String,
-        outputStream: OutputStream
-    ): Flow<SocketTransfer>
+    fun download(remoteFilePath: String, outputFile: File): Flow<SocketTransfer>
 
     fun onLongMessageReceived(
         key: String,
@@ -35,10 +28,10 @@ interface WebSocketRepository {
     fun getWifiList(): Flow<Resource<List<WifiDevice>>>
 
     //    fun events(): Flow<SocketEvent>
-    fun subscribeAndPairAndGetConfig(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus>
+    fun subscribeAndPairAndGetConfig(): Flow<SocketConnectionStatus>
     fun tryToSubscribe(): Flow<SocketConnectionStatus>
     fun tryPairing(): Flow<SocketConnectionStatus>
     fun getEvents(): Flow<SocketEvent>
-    fun syncProcess(fileOutputStream: FileOutputStream): Flow<SocketConnectionStatus>
+    fun syncProcess(): Flow<SocketConnectionStatus>
     fun upload(remoteFilePath: String, inputStream: InputStream): Flow<SocketTransfer>
 }

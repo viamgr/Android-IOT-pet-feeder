@@ -27,7 +27,7 @@ class GetConfig @Inject constructor(
 
     override fun execute(parameter: Unit): Flow<Resource<SocketTransfer>> {
         return webSocketRepository
-            .download("/$CONFIG_FILE_PATH", configFile.outputStream())
+            .download("/$CONFIG_FILE_PATH", configFile)
             .map { socketTransfer ->
                 withContext(coroutinesDispatcherProvider.main) {
                     socketTransfer.toResource().onSuccess {
