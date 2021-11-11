@@ -4,14 +4,24 @@ import com.viam.feeder.domain.base.CoroutinesDispatcherProvider
 import com.viam.feeder.domain.base.FlowUseCase
 import com.viam.feeder.domain.repositories.socket.DeviceRepository
 import com.viam.feeder.domain.usecase.ConnectionStatus.NetworkOptions
-import com.viam.feeder.model.ConnectionType.*
+import com.viam.feeder.model.ConnectionType.DIRECT_AP
+import com.viam.feeder.model.ConnectionType.OVER_ROUTER
+import com.viam.feeder.model.ConnectionType.OVER_SERVER
 import com.viam.feeder.model.Device
 import com.viam.feeder.model.DeviceConnection
-import com.viam.feeder.shared.*
+import com.viam.feeder.shared.ACCESS_POINT_SSID
+import com.viam.feeder.shared.API_IP
+import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
+import com.viam.feeder.shared.DeviceConnectionTimoutException
+import com.viam.feeder.shared.NetworkNotAvailableException
 import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
 import com.viam.resource.Resource.Success
-import kotlinx.coroutines.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import javax.inject.Inject
@@ -25,24 +35,25 @@ class ConnectionStatus @Inject constructor(
         channelFlow {
             if (parameter.isAvailable) {
                 val device = deviceRepository.getAll().firstOrNull()
+                val scope = currentCoroutineContext()
+
                 val deferred = coroutineScope {
-                    val scope = currentCoroutineContext()
                     async {
                         isApConnection(parameter)?.let {
                             send(Success(it))
-                            scope.cancelChildren()
+                            scope.cancel()
                         }
                     }
                     async {
                         isConnectedOverRouter(parameter, device)?.let {
                             send(Success(it))
-                            scope.cancelChildren()
+                            scope.cancel()
                         }
                     }
                     async {
                         isConnectedOverServer(device)?.let {
                             send(Success(it))
-                            scope.cancelChildren()
+                            scope.cancel()
                         }
                     }
                     async {
