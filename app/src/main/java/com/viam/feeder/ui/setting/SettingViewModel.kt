@@ -72,7 +72,8 @@ class SettingViewModel @Inject constructor(
                 parameter.staticIp,
                 parameter.port,
                 parameter.gateway,
-                parameter.subnet
+                parameter.subnet,
+                parameter.useStatic == false
             )
         )
         remoteConnectionConfig.url = parameter.staticIp ?: DEFAULT_ACCESS_POINT_IP

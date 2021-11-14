@@ -20,12 +20,12 @@ import com.viam.resource.Resource.Success
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.filterNot
 import javax.inject.Inject
 
 class ConnectionStatus @Inject constructor(
@@ -36,45 +36,49 @@ class ConnectionStatus @Inject constructor(
     override fun execute(parameter: NetworkOptions): Flow<Resource<DeviceConnection>> =
         channelFlow {
             if (parameter.isAvailable) {
-                val device = deviceRepository.getAll().firstOrNull()
-                val scope = currentCoroutineContext()
-
-                val deferred = coroutineScope {
-
-                    if (device == null) {
-                        async {
-                            isApConnection(parameter)?.let {
-                                send(Success(it))
-                                scope.cancel()
-                            }
-                        }
-                    }
-
-                    async {
-                        isConnectedOverRouter(parameter, device)?.let {
-                            send(Success(it))
-                            scope.cancel()
-                        }
-                    }
-                    async {
-                        isConnectedOverServer(device)?.let {
-                            send(Success(it))
-                            scope.cancel()
-                        }
-                    }
-                    async {
-                        delay(5000)
-                        send(Error(DeviceConnectionTimoutException("Can not connect to the device.")))
-                    }
+                try {
+                    getCorrectIpAddress(parameter)
+                } catch (e: CancellationException) {
+                    e.printStackTrace()
                 }
-                deferred.join()
             } else {
                 send(Error(NetworkNotAvailableException("Network is not available")))
             }
-        }.filterNot { b(it) }
+        }
 
-    private fun b(it: Resource<DeviceConnection>): Boolean {
-        return it is Error && it.exception is CancellationException
+    private suspend fun ProducerScope<Resource<DeviceConnection>>.getCorrectIpAddress(
+        parameter: NetworkOptions
+    ) {
+
+        coroutineScope {
+
+            val device = deviceRepository.getAll().firstOrNull()
+            val scope = currentCoroutineContext()
+
+            async {
+                isApConnection(parameter, device)?.let {
+                    send(Success(it))
+                    scope.cancel()
+                }
+            }
+
+            async {
+                isConnectedOverRouter(parameter, device)?.let {
+                    send(Success(it))
+                    scope.cancel()
+                }
+            }
+            async {
+                isConnectedOverServer(device)?.let {
+                    send(Success(it))
+                    scope.cancel()
+                }
+            }
+            async {
+                delay(5000)
+                send(Error(DeviceConnectionTimoutException("Can not connect to the device.")))
+            }
+        }
     }
 
     private fun isConnectedOverServer(device: Device?): DeviceConnection? {
@@ -87,15 +91,15 @@ class ConnectionStatus @Inject constructor(
         networkOptions: NetworkOptions,
         device: Device?
     ): DeviceConnection? {
-        if (device == null || !networkOptions.isWifi) return null
+        if (device == null || !networkOptions.isWifi || device.useDhcp == true) return null
         val host = device.staticIp ?: return null
         return if (hasPingFromIp(host, 5000)) DeviceConnection(host, OVER_ROUTER) else null
     }
 
-    private fun isApConnection(networkOptions: NetworkOptions): DeviceConnection? {
+    private fun isApConnection(networkOptions: NetworkOptions, device: Device?): DeviceConnection? {
         val isConnectedToAp = networkOptions.wifiName == ACCESS_POINT_SSID
         val host = networkOptions.localIp ?: DEFAULT_ACCESS_POINT_IP
-        return if (isConnectedToAp || hasPingFromIp(host, 5000)) {
+        return if (device == null && (isConnectedToAp && hasPingFromIp(host, 5000))) {
             DeviceConnection(host, DIRECT_AP)
         } else null
     }

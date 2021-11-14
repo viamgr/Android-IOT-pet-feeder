@@ -9,6 +9,7 @@ data class Device(
     val name: String,
     val staticIp: String? = null,
     val port: Int? = 80,
+    val useDhcp: Boolean? = null,
     val gateway: String? = null,
     val subnet: String? = null
 )

@@ -14,7 +14,7 @@ class DeviceRepositoryImpl @Inject constructor(private val deviceLocalDataSource
 
     override fun insertAll(vararg devices: Device) {
         val arrayOfDevices = devices.map {
-            DeviceEntity(it.id, it.name, it.staticIp, it.port, it.gateway, it.subnet)
+            DeviceEntity(it.id, it.name, it.staticIp, it.port, it.useDhcp, it.gateway, it.subnet)
         }.toTypedArray()
         deviceLocalDataSource.insertAll(*arrayOfDevices)
     }
