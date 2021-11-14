@@ -22,7 +22,7 @@ class SetWifiCredentials @Inject constructor(
         configFields.setWifiPassword(value.password)
         configFields.setWifiMode(WIFI_MODE_STA)
         val useDhcp =
-            if (value.staticIp.isNullOrEmpty() || value.staticIp.isNullOrEmpty() || value.subnet.isNullOrEmpty()) {
+            if (value.useStatic == false || value.staticIp.isNullOrEmpty() || value.staticIp.isNullOrEmpty() || value.subnet.isNullOrEmpty()) {
                 1
             } else 0
 
@@ -39,5 +39,6 @@ data class WifiAuthentication(
     val staticIp: String? = null,
     val gateway: String? = null,
     val subnet: String? = null,
-    val port: Int? = null
+    val port: Int? = null,
+    val useStatic: Boolean? = null
 )

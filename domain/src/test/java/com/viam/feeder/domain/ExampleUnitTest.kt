@@ -68,7 +68,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -89,7 +90,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -109,7 +111,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -129,7 +132,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = false,
                 isWifi = false,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -153,7 +157,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -180,7 +185,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -204,7 +210,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)
@@ -233,7 +240,8 @@ class ExampleUnitTest {
             ConnectionStatus.NetworkOptions(
                 isAvailable = true,
                 isWifi = true,
-                wifiName = "test"
+                wifiName = "test",
+                localIp = it.localIp
             )
         )
             .flowOn(coroutineDispatcher)

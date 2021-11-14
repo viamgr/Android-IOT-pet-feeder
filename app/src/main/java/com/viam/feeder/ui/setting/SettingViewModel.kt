@@ -6,7 +6,14 @@ import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.core.utility.launchInScope
 import com.viam.feeder.data.datasource.RemoteConnectionConfig
-import com.viam.feeder.domain.usecase.config.*
+import com.viam.feeder.domain.usecase.config.GetUseDhcp
+import com.viam.feeder.domain.usecase.config.GetWifiGateway
+import com.viam.feeder.domain.usecase.config.GetWifiIp
+import com.viam.feeder.domain.usecase.config.GetWifiPassword
+import com.viam.feeder.domain.usecase.config.GetWifiSsid
+import com.viam.feeder.domain.usecase.config.GetWifiSubnet
+import com.viam.feeder.domain.usecase.config.SetWifiCredentials
+import com.viam.feeder.domain.usecase.config.WifiAuthentication
 import com.viam.feeder.domain.usecase.device.AddDevice
 import com.viam.feeder.model.Device
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
@@ -33,13 +40,14 @@ class SettingViewModel @Inject constructor(
     val wifiGateway = getWifiGateway()
     val wifiSubnet = getWifiSubnet()
     val wifiPassword = getWifiPassword()
-    val addDeviceTask = addDevice.asLiveTask()
-    val setWifiCredentialsTask = setWifiCredentials.asLiveTask {
+    private val addDeviceTask = addDevice.asLiveTask {
         onSuccess<Any> {
-            val parameter = getParameter()
-            addDevice(parameter)
+            launchInScope {
+                setWifiCredentialsTask.run()
+            }
         }
     }
+    private val setWifiCredentialsTask = setWifiCredentials.asLiveTask()
 
     val combinedTasks = combine(
         addDeviceTask,
@@ -50,6 +58,7 @@ class SettingViewModel @Inject constructor(
     }
 
     init {
+        useDhcp.value = false
         useDhcp.addSource(getUseDhcp()) {
             useDhcp.postValue(it != 0)
         }
@@ -75,8 +84,20 @@ class SettingViewModel @Inject constructor(
         password: String,
         staticIp: String?,
         gateway: String?,
-        subnet: String?
+        subnet: String?,
+        useStatic: Boolean
     ) = launchInScope {
-        setWifiCredentialsTask(WifiAuthentication(ssid, password, staticIp, gateway, subnet))
+        addDevice(WifiAuthentication(ssid, password, staticIp, gateway, subnet)).also {
+            setWifiCredentialsTask.setParameter(
+                WifiAuthentication(
+                    ssid,
+                    password,
+                    staticIp,
+                    gateway,
+                    subnet,
+                    useStatic = useStatic
+                )
+            )
+        }
     }
 }

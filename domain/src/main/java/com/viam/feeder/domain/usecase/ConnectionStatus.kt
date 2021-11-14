@@ -17,6 +17,7 @@ import com.viam.feeder.shared.NetworkNotAvailableException
 import com.viam.resource.Resource
 import com.viam.resource.Resource.Error
 import com.viam.resource.Resource.Success
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
@@ -24,6 +25,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.filterNot
 import javax.inject.Inject
 
 class ConnectionStatus @Inject constructor(
@@ -38,12 +40,16 @@ class ConnectionStatus @Inject constructor(
                 val scope = currentCoroutineContext()
 
                 val deferred = coroutineScope {
-                    async {
-                        isApConnection(parameter)?.let {
-                            send(Success(it))
-                            scope.cancel()
+
+                    if (device == null) {
+                        async {
+                            isApConnection(parameter)?.let {
+                                send(Success(it))
+                                scope.cancel()
+                            }
                         }
                     }
+
                     async {
                         isConnectedOverRouter(parameter, device)?.let {
                             send(Success(it))
@@ -65,7 +71,11 @@ class ConnectionStatus @Inject constructor(
             } else {
                 send(Error(NetworkNotAvailableException("Network is not available")))
             }
-        }
+        }.filterNot { b(it) }
+
+    private fun b(it: Resource<DeviceConnection>): Boolean {
+        return it is Error && it.exception is CancellationException
+    }
 
     private fun isConnectedOverServer(device: Device?): DeviceConnection? {
 //        if (device == null) return null
@@ -82,13 +92,18 @@ class ConnectionStatus @Inject constructor(
         return if (hasPingFromIp(host, 5000)) DeviceConnection(host, OVER_ROUTER) else null
     }
 
-
     private fun isApConnection(networkOptions: NetworkOptions): DeviceConnection? {
         val isConnectedToAp = networkOptions.wifiName == ACCESS_POINT_SSID
-        return if (isConnectedToAp || hasPingFromIp(DEFAULT_ACCESS_POINT_IP, 5000)) {
-            DeviceConnection(DEFAULT_ACCESS_POINT_IP, DIRECT_AP)
+        val host = networkOptions.localIp ?: DEFAULT_ACCESS_POINT_IP
+        return if (isConnectedToAp || hasPingFromIp(host, 5000)) {
+            DeviceConnection(host, DIRECT_AP)
         } else null
     }
 
-    data class NetworkOptions(val isAvailable: Boolean, val isWifi: Boolean, val wifiName: String?)
+    data class NetworkOptions(
+        val isAvailable: Boolean,
+        val isWifi: Boolean,
+        val wifiName: String?,
+        val localIp: String?
+    )
 }

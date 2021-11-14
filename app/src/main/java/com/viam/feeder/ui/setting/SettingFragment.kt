@@ -44,6 +44,7 @@ class SettingFragment : Fragment(R.layout.dialog_wifi_password) {
                         binding.staticIp.editText?.text.toString(),
                         binding.gateway.editText?.text.toString(),
                         binding.subnet.editText?.text.toString(),
+                        binding.staticIpConfiguration.isChecked,
                     )
                 }
             }

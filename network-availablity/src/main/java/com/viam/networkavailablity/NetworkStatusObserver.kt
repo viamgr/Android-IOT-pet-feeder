@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import com.viam.networkavailablity.Connectivity.getDnsServer
+import com.viam.networkavailablity.Connectivity.getGateway
 import com.viam.networkavailablity.Connectivity.isWifiConnected
 import com.viam.permissioncontract.PermissionContract
 import com.viam.permissioncontract.permissionContract
@@ -104,7 +106,13 @@ class NetworkStatusObserver {
     private val _networkStatus = MutableLiveData<NetworkStatus>()
 
     private fun setStatus(isAvailable: Boolean) {
-        _networkStatus.postValue(NetworkStatus(isAvailable = isAvailable))
+        _networkStatus.postValue(
+            NetworkStatus(
+                isAvailable = isAvailable,
+                dnsServer = activity.getDnsServer(),
+                gateway = activity.getGateway()
+            )
+        )
     }
 
     private fun startNetworkListening() {

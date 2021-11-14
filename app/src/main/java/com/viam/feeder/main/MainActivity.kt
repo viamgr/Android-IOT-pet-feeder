@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             .observe(this) {
                 viewModel.onNetworkStatusChanged(
                     NetworkOptions(
-                        it.isAvailable, isWifiConnected(), getWifiName()
+                        it.isAvailable, isWifiConnected(), getWifiName(), it.dnsServer ?: it.gateway
                     )
                 )
                 //                AutoRetryHandler.value = it.isAvailable

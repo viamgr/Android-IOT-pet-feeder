@@ -5,8 +5,19 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
+import java.net.InetAddress
+import java.net.NetworkInterface
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 object Connectivity {
+    fun getIpv4HostAddress(): String? =
+        NetworkInterface.getNetworkInterfaces()?.toList()?.mapNotNull { networkInterface ->
+            networkInterface.inetAddresses?.toList()
+                ?.filter { !it.isLoopbackAddress && it.hostAddress.indexOf(':') < 0 }
+                ?.mapNotNull { if (it.hostAddress.isNullOrBlank()) null else it.hostAddress }
+                ?.firstOrNull { it.isNotEmpty() }
+        }?.firstOrNull()
 
     fun isConnected(context: Context?): Boolean {
         if (context == null) return false
@@ -52,6 +63,33 @@ object Connectivity {
         }
         return false
     }
+
+    fun Context.getDnsServer(): String? {
+        val wifiManager = getWifiManager()
+
+        return InetAddress.getByAddress(
+            ByteBuffer
+                .allocate(4)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(wifiManager.dhcpInfo.dns1)
+                .array()
+        ).hostAddress
+    }
+
+    fun Context.getGateway(): String? {
+        val wifiManager = getWifiManager()
+
+        return InetAddress.getByAddress(
+            ByteBuffer
+                .allocate(4)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(wifiManager.dhcpInfo.gateway)
+                .array()
+        ).hostAddress
+    }
+
+    private fun Context.getWifiManager() =
+        applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
     /**
      * Fetches Name of Current Wi-fi Access Point
