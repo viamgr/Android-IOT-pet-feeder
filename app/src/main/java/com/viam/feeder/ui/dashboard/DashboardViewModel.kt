@@ -17,7 +17,9 @@ import com.viam.feeder.domain.usecase.config.SetLedTurnOffDelay
 import com.viam.feeder.domain.usecase.config.SetSoundVolume
 import com.viam.feeder.domain.usecase.config.UploadBinary
 import com.viam.feeder.domain.usecase.event.SendEvent
+import com.viam.feeder.domain.usecase.event.SendStringValue
 import com.viam.feeder.domain.usecase.specification.ConvertUploadSound
+import com.viam.feeder.model.KeyValueMessage
 import com.viam.feeder.models.FeedVolume
 import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
@@ -39,6 +41,7 @@ class DashboardViewModel @Inject constructor(
     setFeedingDuration: SetFeedingDuration,
     setSoundVolume: SetSoundVolume,
     sendEvent: SendEvent,
+    sendStringValue: SendStringValue,
     setLedTurnOffDelay: SetLedTurnOffDelay
 ) : ViewModel() {
 
@@ -48,6 +51,7 @@ class DashboardViewModel @Inject constructor(
     private val convertUploadSoundTask = convertUploadSound.asLiveTask()
     private val setLedTurnOffDelayTask = setLedTurnOffDelay.asLiveTask()
     private val sendEventTask = sendEvent.asLiveTask()
+    private val sendStringValueTask = sendStringValue.asLiveTask()
 
     val combinedTasks = combine(
         uploadBinaryTask,
@@ -56,6 +60,7 @@ class DashboardViewModel @Inject constructor(
         convertUploadSoundTask,
         setLedTurnOffDelayTask,
         sendEventTask,
+        sendStringValueTask,
     ) {
         cancelable(true)
     }
@@ -184,7 +189,7 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun sendCallingEvent() = launchInScope {
-        sendEventTask(AUDIO_START)
+        sendStringValueTask(KeyValueMessage(AUDIO_START, "/feeding.mp3"))
     }
 
     companion object {
