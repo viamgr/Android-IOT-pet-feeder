@@ -25,7 +25,7 @@ import com.viam.feeder.models.LedTimer
 import com.viam.feeder.models.SoundVolume
 import com.viam.feeder.shared.AUDIO_START
 import com.viam.feeder.shared.COMPOSITE_START
-import com.viam.feeder.shared.LAMP_START
+import com.viam.feeder.shared.LAMP_TOGGLE
 import com.viam.feeder.shared.MOTOR_START
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.InputStream
@@ -83,6 +83,7 @@ class DashboardViewModel @Inject constructor(
     )
     private val _ledTimerList = MutableLiveData(
         listOf(
+            0,
             60000,
             120000,
             180000,
@@ -181,7 +182,7 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun sendLightEvent() = launchInScope {
-        sendEventTask(LAMP_START)
+        sendEventTask(LAMP_TOGGLE)
     }
 
     fun sendFeedingEvent() = launchInScope {
