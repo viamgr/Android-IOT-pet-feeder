@@ -82,7 +82,7 @@ open class CoroutineLiveTask<T>(
         unRegisterConnectionInformer()
         super.applyResult(result)
     }
-
+/*
     override fun onActive() {
         super.onActive()
         blockRunner?.maybeRun()
@@ -92,7 +92,7 @@ open class CoroutineLiveTask<T>(
         super.onInactive()
         println("onInactive function")
         blockRunner?.cancel(false)
-    }
+    }*/
 
     override fun retry() {
         if (context == null) {
