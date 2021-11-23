@@ -260,6 +260,11 @@ class WebSocketRepositoryImpl @Inject constructor(
     }
 
     override fun download(remoteFilePath: String, outputFile: File): Flow<SocketTransfer> = flow {
+        val tempFile = File(outputFile.parent, outputFile.name + "temp")
+
+        tempFile.deleteOnExit()
+        tempFile.createNewFile()
+
         emit(Progress(0F))
         downloadingMutex.withLock {
             val size = requestGetDetailAndWaitForCallback(remoteFilePath).let {
@@ -267,7 +272,7 @@ class WebSocketRepositoryImpl @Inject constructor(
                 it.size
             }
 
-            val outputStream = configFile.outputStream()
+            val outputStream = tempFile.outputStream()
             try {
                 var wrote = 0
                 do {
@@ -275,8 +280,10 @@ class WebSocketRepositoryImpl @Inject constructor(
                     emit(Progress(wrote.toFloat()))
                 } while (wrote < size && currentCoroutineContext().isActive)
 
+                tempFile.renameTo(configFile)
                 emit(Success)
             } catch (e: Exception) {
+                tempFile.deleteOnExit()
                 throw e
             } finally {
                 outputStream.close()
@@ -334,18 +341,18 @@ class WebSocketRepositoryImpl @Inject constructor(
     private fun SocketEvent.isBinary() = this is Binary
 
     private fun getConfigs(): Flow<SocketTransfer> {
-        return download("/${FeederConstants.CONFIG_FILE_PATH}", configFile).also {
-            if (!configFile.exists()) {
-                configFile.createNewFile()
-            }
-            configFile.readText().let {
-                val jsonObject = try {
-                    JSONObject(it)
-                } catch (e: Exception) {
-                    JSONObject()
+        return download("/${FeederConstants.CONFIG_FILE_PATH}", configFile).map {
+            if (it is Success) {
+                configFile.readText().let {
+                    val jsonObject = try {
+                        JSONObject(it)
+                    } catch (e: Exception) {
+                        JSONObject()
+                    }
+                    jsonPreferences.storeJson(jsonObject)
                 }
-                jsonPreferences.storeJson(jsonObject)
             }
+            it
         }
     }
 

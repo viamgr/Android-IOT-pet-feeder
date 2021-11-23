@@ -54,7 +54,7 @@ class JsonPreferencesImpl @Inject constructor() : JsonPreferences {
     }
 
     override fun storeJson(jsonObject: JSONObject) {
-        println("storeJson")
+        println("storeJson :${jsonObject}")
         json = jsonObject
     }
 }
