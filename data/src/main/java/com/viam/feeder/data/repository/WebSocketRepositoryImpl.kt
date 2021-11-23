@@ -112,8 +112,12 @@ class WebSocketRepositoryImpl @Inject constructor(
         )
     }
 
-    override fun syncProcess(): Flow<SocketConnectionStatus> = channelFlow {
+    private var lastStatus: SocketConnectionStatus? = null
 
+    override fun syncProcess(): Flow<SocketConnectionStatus> = channelFlow {
+        lastStatus?.let {
+            send(it)
+        }
         var syncJon: Job? = null
         var configJob: Job? = null
 
@@ -159,6 +163,9 @@ class WebSocketRepositoryImpl @Inject constructor(
             }
         }
     }
+        .onEach {
+            lastStatus = it
+        }
 
     private fun hasErrorInSync(it: SocketEvent) =
         it is Closed || it is Failure || (it is Text && (it.containsKey(UNPAIR) || it.containsKey(
@@ -364,23 +371,23 @@ class WebSocketRepositoryImpl @Inject constructor(
         emit(Paired)
     }
 
-    /* suspend fun wait(successKey: String, errorKey: String) = coroutineScope {
+/* suspend fun wait(successKey: String, errorKey: String) = coroutineScope {
 
-         async {
-             delay(5000)
-             println("timeout in pair")
-             throw TimeoutException(successKey)
-         }
-         async {
-             val a = getEvents().filter {
-                 println("filter in event $it ${it.containsKey(successKey)}")
-                 it.checkHasError(errorKey)
-                 it.containsKey(successKey)
-             }.single()
-             a
-         }
+     async {
+         delay(5000)
+         println("timeout in pair")
+         throw TimeoutException(successKey)
+     }
+     async {
+         val a = getEvents().filter {
+             println("filter in event $it ${it.containsKey(successKey)}")
+             it.checkHasError(errorKey)
+             it.containsKey(successKey)
+         }.single()
+         a
+     }
 
-     }*/
+ }*/
 
     override fun tryToSubscribe(): Flow<SocketConnectionStatus> =
         flow {

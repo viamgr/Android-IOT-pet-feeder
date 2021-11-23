@@ -23,7 +23,6 @@ fun View.reactToTask(
     loadingMessageBlock: LoadingMessageBlock? = null,
     liveTaskManager: LiveTaskManager? = LiveTaskManager.instance
 ) {
-    println("reactToTask")
     val taskManager = liveTaskManager ?: LiveTaskManager.instance
     taskManager.apply {
         findViewTypeHandler<ClassicViewTypeHandler>(liveTask?.loadingViewType()).onUpdate(

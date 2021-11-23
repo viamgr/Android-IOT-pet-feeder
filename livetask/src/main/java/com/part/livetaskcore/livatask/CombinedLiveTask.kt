@@ -59,7 +59,9 @@ class CombinedLiveTask(
                     cancelCount++
                 }
             }
-
+            println("cancelCount $cancelCount")
+            println("successCount $successCount")
+            println("loadingCount $loadingCount")
             when {
                 exceptions.isNotEmpty() -> {
                     val exception = CombinedException(exceptions)
