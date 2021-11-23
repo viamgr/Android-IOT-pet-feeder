@@ -10,12 +10,14 @@ import com.viam.feeder.data.datasource.RemoteConnectionConfig
 import com.viam.feeder.domain.usecase.ConnectionStatus
 import com.viam.feeder.domain.usecase.ConnectionStatus.NetworkOptions
 import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
+import com.viam.feeder.domain.usecase.event.GetSyncStatus
 import com.viam.feeder.domain.usecase.event.SocketSubscribe
 import com.viam.feeder.model.Device
 import com.viam.feeder.model.DeviceConnection
 import com.viam.feeder.shared.DeviceConnectionTimoutException
 import com.viam.resource.dataOrNull
 import com.viam.websocket.WebSocketApi
+import com.viam.websocket.model.SocketConnectionStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,6 +35,7 @@ class MainViewModel @Inject constructor(
     private val webSocketApi: WebSocketApi,
     private val webSocketEvents: SocketSubscribe,
     private val remoteConnectionConfig: RemoteConnectionConfig,
+    private val syncStatus: GetSyncStatus,
     private val request: Provider<Request>
 ) : ViewModel() {
 
@@ -59,6 +62,7 @@ class MainViewModel @Inject constructor(
         }
     val combinedLiveTask = combine(webSocketEventsTask, networkStatusCheckerLiveTask) {
         cancelable(true)
+        retryable(true)
         /*setLoadingText { data: Any? ->
              LoadingMessage.Res(R.string.loading, 10, "45")
              LoadingMessage.Res(R.string.loading)
@@ -87,7 +91,10 @@ class MainViewModel @Inject constructor(
     }
 
     private fun watchSocketEvent() = launchInScope {
-        webSocketEventsTask(Unit)
+        val connectionStatus = syncStatus()
+        if (connectionStatus is SocketConnectionStatus.Failure || connectionStatus == null) {
+            webSocketEventsTask(Unit)
+        }
     }
 
     private fun onDeviceFound(deviceConnection: DeviceConnection) = launchInScope {

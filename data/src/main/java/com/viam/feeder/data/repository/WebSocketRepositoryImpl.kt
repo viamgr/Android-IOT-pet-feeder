@@ -112,12 +112,12 @@ class WebSocketRepositoryImpl @Inject constructor(
         )
     }
 
-    private var lastStatus: SocketConnectionStatus? = null
+    private var currentSyncStatus: SocketConnectionStatus? = null
+
+    override fun getSyncStatus() = currentSyncStatus
 
     override fun syncProcess(): Flow<SocketConnectionStatus> = channelFlow {
-        lastStatus?.let {
-            send(it)
-        }
+
         var syncJon: Job? = null
         var configJob: Job? = null
 
@@ -134,6 +134,7 @@ class WebSocketRepositoryImpl @Inject constructor(
                 }
             }
         }
+
         val invokeConfig: (suspend () -> Unit) = {
             if (syncJon?.isActive != true) {
                 configJob?.cancel()
@@ -164,7 +165,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         }
     }
         .onEach {
-            lastStatus = it
+            currentSyncStatus = it
         }
 
     private fun hasErrorInSync(it: SocketEvent) =
