@@ -56,7 +56,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
@@ -249,7 +248,6 @@ class WebSocketRepositoryImpl @Inject constructor(
                     println("upload offset:$offset")
                     println("upload message:$message")
                     webSocketApi.sendByteString(message)
-                    delay(5000)
                 } while (currentCoroutineContext().isActive)
 
                 emit(Success)
