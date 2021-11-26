@@ -39,7 +39,6 @@ class WebSocketRepositoryTest {
     @Before
     fun setup() {
         MockKAnnotations.init(this)
-
     }
 
     @Test
@@ -47,42 +46,28 @@ class WebSocketRepositoryTest {
 
         async {
             async {
-                delay(1000)
-                _events.emit(Open)
-                delay(1000)
-                _events.emit(Open)
-                delay(100000)
-                _events.emit(Open)
-                delay(1000)
-                _events.emit(Open)
-                delay(1000)
+                delay(2000)
+                repeat(2000) {
+                    _events.emit(Open)
+                }
                 _events.emit(Closed)
-                delay(1000)
-                _events.emit(Open)
-                delay(1000)
 
-                _events.emit(Closed)
-                delay(1000)
-                _events.emit(Open)
-                delay(1000)
-
-                _events.emit(Closed)
-                delay(1000)
-                _events.emit(Open)
                 delay(100000)
             }
 
             async {
 
-                val a = _events.produceIn(this).waitForCallback(takeWhile = {
-                    it is Open
-                })
-                println("result1: $a")
-
-                val b = _events.produceIn(this).waitForCallback(takeWhile = {
-                    it is Open
-                })
-                println("result2: $b")
+                var i = 0
+                do {
+                    val a = _events.produceIn(this).waitForCallback(takeWhile = {
+                        it is Open
+                    })
+                    if (a is Closed) {
+                        break
+                    }
+                    i++
+                    println("result2: $i")
+                } while (true)
 
             }
             delay(550000)

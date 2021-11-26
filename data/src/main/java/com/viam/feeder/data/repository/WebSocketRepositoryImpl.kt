@@ -225,7 +225,7 @@ class WebSocketRepositoryImpl @Inject constructor(
             try {
                 do {
                     val sliceMessageCallback = try {
-                        receiveChannel()
+                        channel
                             .waitForCallback(takeWhile = {
                                 it.checkHasError(FILE_SEND_ERROR)
                                 it.containsKey(FILE_SEND_SLICE) || it.containsKey(FILE_SEND_FINISHED)
