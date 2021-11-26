@@ -213,6 +213,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         emit(Progress(0F))
         uploadingMutex.withLock {
             val size = inputStream.available()
+            var sent = 0
             println("upload size:$size")
 
             var buffered: BufferedInputStream? = null
@@ -224,7 +225,7 @@ class WebSocketRepositoryImpl @Inject constructor(
             try {
                 do {
                     val sliceMessageCallback = try {
-                        channel
+                        receiveChannel()
                             .waitForCallback(takeWhile = {
                                 it.checkHasError(FILE_SEND_ERROR)
                                 it.containsKey(FILE_SEND_SLICE) || it.containsKey(FILE_SEND_FINISHED)
@@ -256,6 +257,10 @@ class WebSocketRepositoryImpl @Inject constructor(
                     println("upload offset:$offset")
                     println("upload message:$message")
                     webSocketApi.sendByteString(message)
+                    sent += offset
+                    if (sent >= size) {
+                        break
+                    }
                 } while (currentCoroutineContext().isActive)
 
                 emit(Success)

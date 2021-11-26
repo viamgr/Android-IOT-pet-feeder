@@ -26,6 +26,8 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 class ConnectionStatus @Inject constructor(
@@ -44,7 +46,9 @@ class ConnectionStatus @Inject constructor(
             } else {
                 send(Error(NetworkNotAvailableException("Network is not available")))
             }
-        }
+        }.onEach {
+            println(it)
+        }.take(1)
 
     private suspend fun ProducerScope<Resource<DeviceConnection>>.getCorrectIpAddress(
         parameter: NetworkOptions
@@ -64,12 +68,15 @@ class ConnectionStatus @Inject constructor(
 
             async {
                 isConnectedOverRouter(parameter, device)?.let {
+                    println("connect to router")
+                    println(it)
                     send(Success(it))
                     scope.cancel()
                 }
             }
             async {
                 isConnectedOverServer(device)?.let {
+                    println("connect to server")
                     send(Success(it))
                     scope.cancel()
                 }

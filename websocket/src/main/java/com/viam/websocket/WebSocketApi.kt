@@ -21,6 +21,7 @@ class WebSocketApi(
     val moshi: Moshi
 ) {
     private var connectionListener: ConnectionListener? = null
+    private var lastRetry = 0L
     private var isOpenedSocket = false
         set(value) {
             field = value
@@ -41,7 +42,7 @@ class WebSocketApi(
     val progress = _progress.asSharedFlow() // publicly exposed as read-only shared flow
 
     private val socketRunnerScope = CoroutineScope(IO)
-    lateinit var webSocket: WebSocket
+    var webSocket: WebSocket? = null
     fun launchInScope(block: suspend () -> Unit): Job {
         return socketRunnerScope.launch {
             try {
@@ -83,36 +84,6 @@ class WebSocketApi(
             .filterNotNull().collect {
                 send(it)
             }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T : SocketMessage> waitForMessage(
-        key: String,
-    ): Flow<T> = flow {
-        /* events
-             .filterIsInstance<Text>()
-             .map {
-                 val socketMessage = moshi.adapter(SocketMessage::class.java).fromJson(it.data)
-                 println("waitForMessage ${socketMessage?.key}")
-
-                 return@map if (socketMessage?.key == key) {
-                     return@map moshi.adapter(clazz).fromJson(it.data) as T
-                 } else null
-             }
-             .filterNotNull().onEach {
-                 println("waitForMessage filterNotNull")
-                 timeout.cancel()
-             }
-             .catch { e ->
-                 println("waitForMessage catch")
-                 e.printStackTrace()
-
-                 throw e
-             }
-             .collect {
-                 println("waitForMessage collectcollectcollect $it")
-                 emit(it)
-             }*/
     }
 
     fun openWebSocket(request: Request) {
@@ -165,19 +136,29 @@ class WebSocketApi(
                 }
             }
 
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                super.onFailure(webSocket, t, response)
-                println("onFailure socket $t")
-                isOpenedSocket = false
-                okHttpClient.dispatcher.cancelAll()
-                okHttpClient.connectionPool.evictAll()
-                webSocket.cancel()
-                webSocket.close(1000, "Connection closed")
+            override fun onFailure(socket: WebSocket, t: Throwable, response: Response?) {
+                super.onFailure(socket, t, response)
+                synchronized(lastRetry) {
+                    if (System.currentTimeMillis() - lastRetry > 4000) {
 
-                launchInScope {
-                    _events.emit(Failure(Exception(t)))
-                    delay(5000)
-                    openWebSocket(request)
+                        lastRetry = System.currentTimeMillis()
+                        println("onFailure socket $t")
+                        isOpenedSocket = false
+
+                        socket.close(1000, null)
+                        webSocket?.close(1000, "AAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
+                        okHttpClient.dispatcher.cancelAll()
+                        okHttpClient.connectionPool.evictAll()
+                        webSocket = null
+
+                        launchInScope {
+                            _events.emit(Failure(Exception(t)))
+                            delay(5000)
+                            openWebSocket(request)
+                        }
+                    }
+
                 }
             }
         })
@@ -185,10 +166,9 @@ class WebSocketApi(
 
     private var buffered: BufferedInputStream? = null
 
-
     fun sendByteString(message: ByteString) {
         println("send binary $message")
-        webSocket.send(message)
+        webSocket?.send(message)
     }
 
     fun <T> sendJson(message: T, clazz: ParameterizedType): WebSocketApi {
@@ -225,7 +205,7 @@ class WebSocketApi(
             !isOpenedSocket -> {
                 throw SocketCloseException("Socket is not open")
             }
-            webSocket.send(toJson) -> {
+            webSocket?.send(toJson) == true -> {
                 true
             }
             else -> {

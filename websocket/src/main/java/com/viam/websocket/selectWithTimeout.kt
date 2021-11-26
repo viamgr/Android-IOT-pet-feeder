@@ -45,7 +45,7 @@ suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
     takeWhile: (SocketEvent) -> Boolean,
     timeout: Int? = null
 ): SocketEvent {
-    val endTime = System.currentTimeMillis() + (timeout ?: 50000)
+    val endTime = System.currentTimeMillis() + (timeout ?: 5000)
     do {
         val event = select<SocketEvent> {
             val timeMillis = endTime - System.currentTimeMillis()
