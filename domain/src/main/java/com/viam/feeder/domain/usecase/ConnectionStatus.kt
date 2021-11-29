@@ -104,8 +104,11 @@ class ConnectionStatus @Inject constructor(
     }
 
     private fun isApConnection(networkOptions: NetworkOptions, device: Device?): DeviceConnection? {
-        val isConnectedToAp = networkOptions.wifiName == ACCESS_POINT_SSID
-        val host = networkOptions.localIp ?: DEFAULT_ACCESS_POINT_IP
+        val isConnectedToAp = networkOptions.wifiName == ACCESS_POINT_SSID || networkOptions.wifiName == "AndroidWifi"
+        val host = if(networkOptions.wifiName == "AndroidWifi"){
+            DEFAULT_ACCESS_POINT_IP
+        } else networkOptions.localIp ?: DEFAULT_ACCESS_POINT_IP
+
         return if (/*device == null && */(isConnectedToAp && hasPingFromIp(host, 5000))) {
             DeviceConnection(host, DIRECT_AP)
         } else null

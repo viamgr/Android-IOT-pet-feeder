@@ -5,15 +5,13 @@ import com.viam.feeder.data.repository.WebSocketRepositoryImpl
 import com.viam.websocket.WebSocketApi
 import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketEvent.Closed
-import com.viam.websocket.model.SocketEvent.Open
-import com.viam.websocket.waitForCallback
+import com.viam.websocket.waitForCallbacka
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.produceIn
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -26,7 +24,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 
 class WebSocketRepositoryTest {
-    private val _events = MutableSharedFlow<SocketEvent>() // private mutable shared flow
+    private val _events = MutableStateFlow<SocketEvent?>(null) // private mutable shared flow
 
     lateinit var webSocketRepository: WebSocketRepositoryImpl
 
@@ -46,9 +44,11 @@ class WebSocketRepositoryTest {
 
         async {
             async {
-                delay(2000)
-                repeat(2000) {
-                    _events.emit(Open)
+//                delay(2000)
+                repeat(200) {
+                    println("emitting $it")
+                    _events.emit(SocketEvent.Text(it.toString()))
+                    delay(3000)
                 }
                 _events.emit(Closed)
 
@@ -57,18 +57,12 @@ class WebSocketRepositoryTest {
 
             async {
 
-                var i = 0
-                do {
-                    val a = _events.produceIn(this).waitForCallback(takeWhile = {
-                        it is Open
-                    })
-                    if (a is Closed) {
-                        break
-                    }
-                    i++
-                    println("result2: $i")
-                } while (true)
+                val a = _events.waitForCallbacka(takeWhile = {
+                    println("checking $it")
+                    it is SocketEvent.Text
+                })
 
+                println("a $a")
             }
             delay(550000)
         }

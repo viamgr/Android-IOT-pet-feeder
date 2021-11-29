@@ -2,31 +2,26 @@ package com.viam.websocket
 
 import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketEvent.Text
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.TimeoutException
 
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
+suspend fun StateFlow<SocketEvent>.waitForCallbacka(
     successKey: String,
     errorKey: String,
-    timeout: Int? = 5000
+    timeout: Long? = 5000
 ): SocketEvent {
     println("waitForCallback $successKey")
-    val sendEventWithCallbackCheck = try {
-        waitForCallback(timeout = timeout, takeWhile = {
-            println("new event check on $successKey with $it")
-            it.checkHasError(errorKey)
-            println("result of check is ${it.containsKey(successKey)}")
-            it.containsKey(successKey)
-        })
-    } catch (e: TimeoutException) {
-        throw TimeoutException(successKey)
-    } catch (e: Exception) {
-        throw e
-    }
-    return sendEventWithCallbackCheck
+    return waitForCallbacka(timeout = timeout, takeWhile = {
+        println("new event check on $successKey with $it")
+        it.checkHasError(errorKey)
+        println("result of check is ${it.containsKey(successKey)}")
+        it.containsKey(successKey)
+    })
 }
 
 fun SocketEvent.containsKey(key: String): Boolean {
@@ -45,13 +40,15 @@ suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
     takeWhile: (SocketEvent) -> Boolean,
     timeout: Int? = null
 ): SocketEvent {
-    val endTime = System.currentTimeMillis() + (timeout ?: 5000)
+    val timeoutValue = timeout ?: 5000
+    val endTime = System.currentTimeMillis() + timeoutValue
+
     do {
         val event = select<SocketEvent> {
             val timeMillis = endTime - System.currentTimeMillis()
             onTimeout(timeMillis) {
                 println("failed to get after $timeMillis millis")
-                throw TimeoutException("after $timeMillis")
+                throw TimeoutException("after $timeoutValue")
             }
             onReceive { value ->  // this is the first select clause
                 println("this is the first select clause $value")
@@ -64,4 +61,26 @@ suspend fun ReceiveChannel<SocketEvent>.waitForCallback(
             println("continue getting after $event")
         }
     } while (true)
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+suspend fun StateFlow<SocketEvent?>.waitForCallbacka(
+    takeWhile: (SocketEvent) -> Boolean,
+    timeout: Long? = null
+): SocketEvent = coroutineScope {
+    val currentTime = System.currentTimeMillis()
+
+    var lastCheckedEvent = value.hashCode()
+    do {
+        if (lastCheckedEvent.hashCode() != value.hashCode()) {
+
+            val take = takeWhile(value!!)
+            if (take) {
+                println("waitForCallback result $value")
+                return@coroutineScope value!!
+            }
+        }
+    } while (System.currentTimeMillis() - currentTime < (timeout ?: 10000))
+
+    throw TimeoutException()
 }

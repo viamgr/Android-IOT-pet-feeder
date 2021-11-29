@@ -27,10 +27,7 @@ import com.viam.feeder.shared.UNPAIR
 import com.viam.feeder.shared.UNSUBSCRIBE
 import com.viam.feeder.shared.WIFI_LIST_IS
 import com.viam.resource.Resource
-import com.viam.websocket.SocketCloseException
-import com.viam.websocket.WebSocketApi
-import com.viam.websocket.checkHasError
-import com.viam.websocket.containsKey
+import com.viam.websocket.*
 import com.viam.websocket.model.SocketConnectionStatus
 import com.viam.websocket.model.SocketConnectionStatus.Configured
 import com.viam.websocket.model.SocketConnectionStatus.Configuring
@@ -51,7 +48,6 @@ import com.viam.websocket.model.SocketTransfer.Start
 import com.viam.websocket.model.SocketTransfer.Success
 import com.viam.websocket.model.TransferType
 import com.viam.websocket.model.TransferType.Download
-import com.viam.websocket.waitForCallback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -225,8 +221,8 @@ class WebSocketRepositoryImpl @Inject constructor(
             try {
                 do {
                     val sliceMessageCallback = try {
-                        channel
-                            .waitForCallback(takeWhile = {
+                        getEvents()
+                            .waitForCallbacka(takeWhile = {
                                 it.checkHasError(FILE_SEND_ERROR)
                                 it.containsKey(FILE_SEND_SLICE) || it.containsKey(FILE_SEND_FINISHED)
                             }) as Text
@@ -264,10 +260,10 @@ class WebSocketRepositoryImpl @Inject constructor(
                 } while (currentCoroutineContext().isActive)
 
                 emit(Success)
+
+                inputStream.close()
             } catch (e: Exception) {
                 throw e
-            } finally {
-                inputStream.close()
             }
         }
     }
@@ -309,7 +305,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         outputStream: OutputStream
     ): Int {
         val slice = sendSliceRequestAndWaitForCallback(from)
-        val toByteArray = slice.data.toByteArray()
+        val toByteArray = slice.data
         outputStream.write(toByteArray)
         return toByteArray.size
     }
@@ -318,7 +314,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         val channel = receiveChannel()
         requestDetail(remoteFilePath)
         val callback =
-            channel.waitForCallback(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
+            getEvents().waitForCallbacka(FILE_DETAIL_CALLBACK, FILE_REQUEST_ERROR) as Text
         return moshi.adapter(FileDetailCallback::class.java).fromJson(callback.data)!!
     }
 
@@ -329,22 +325,15 @@ class WebSocketRepositoryImpl @Inject constructor(
     private suspend fun sendSliceRequestAndWaitForCallback(
         from: Int
     ): Binary {
-        val channel = receiveChannel()
         println("request $from")
         requestReceiveFile(from)
 
-        val binary = try {
-            channel
-                .waitForCallback(takeWhile = { it ->
-                    it.checkHasError(FILE_REQUEST_ERROR)
-                    it.isBinary()
-                }) as Binary
-        } catch (e: TimeoutException) {
-            throw TimeoutException("timeout in getting binary data")
-        } catch (e: Exception) {
-            throw e
-        }
-        return binary
+        return getEvents()
+            .waitForCallbacka(takeWhile = { it ->
+                println("checking $it")
+                it.checkHasError(FILE_REQUEST_ERROR)
+                it.isBinary()
+            }) as Binary
     }
 
     private fun requestReceiveFile(from: Int) {
@@ -373,7 +362,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         emit(Pairing)
         sendPairMessage()
         println("start getting pair done")
-        receiveChannel().waitForCallback(PAIR_DONE, PAIR_ERROR)
+        getEvents().waitForCallbacka(PAIR_DONE, PAIR_ERROR)
         emit(Paired)
     }
 
@@ -399,7 +388,7 @@ class WebSocketRepositoryImpl @Inject constructor(
         flow {
             emit(Subscribing)
             sendSubscribeMessage()
-            receiveChannel().waitForCallback(SUBSCRIBE_DONE, SUBSCRIBE_ERROR)
+            getEvents().waitForCallbacka(SUBSCRIBE_DONE, SUBSCRIBE_ERROR)
             emit(Subscribed)
         }
 

@@ -32,13 +32,13 @@ class WebSocketApi(
         }
 
     private val _events =
-        MutableSharedFlow<SocketEvent>() // private mutable shared flow
+        MutableStateFlow<SocketEvent>(SocketEvent.Init) // private mutable shared flow
     private val _progress =
         MutableSharedFlow<SocketTransfer>() // private mutable shared flow
     private var binaryCoroutineContext: CoroutineContext? = null
 
     private val errorListeners = mutableListOf<(e: Exception) -> Unit>()
-    val events: SharedFlow<SocketEvent> = _events // publicly exposed as read-only shared flow
+    val events: StateFlow<SocketEvent> = _events // publicly exposed as read-only shared flow
     val progress = _progress.asSharedFlow() // publicly exposed as read-only shared flow
 
     private val socketRunnerScope = CoroutineScope(IO)
@@ -112,9 +112,12 @@ class WebSocketApi(
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
                 super.onMessage(webSocket, bytes)
                 val string = String(bytes.toByteArray())
-                println("onMessage socket $string")
+
+                println("onMessage binary $string")
                 launchInScope {
-                    _events.emit(Binary(bytes))
+                    val value = Binary(bytes.toByteArray())
+                    println("onMessage socketaaaaa ${value.hashCode()}")
+                    _events.emit(value)
                 }
             }
 

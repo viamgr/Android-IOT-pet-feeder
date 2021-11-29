@@ -45,7 +45,9 @@ class DashboardViewModel @Inject constructor(
     setLedTurnOffDelay: SetLedTurnOffDelay
 ) : ViewModel() {
 
-    private val uploadBinaryTask = uploadBinary.asLiveTask()
+    private val uploadBinaryTask = uploadBinary.asLiveTask{
+        retryable(true)
+    }
     private val feedingDurationTask = setFeedingDuration.asLiveTask()
     private val soundLiveTask = setSoundVolume.asLiveTask()
     private val convertUploadSoundTask = convertUploadSound.asLiveTask()
