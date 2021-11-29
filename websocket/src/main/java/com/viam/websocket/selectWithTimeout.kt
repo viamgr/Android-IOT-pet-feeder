@@ -79,6 +79,7 @@ suspend fun StateFlow<SocketEvent?>.waitForCallbacka(
                 println("waitForCallback result $value")
                 return@coroutineScope value!!
             }
+            lastCheckedEvent = value.hashCode()
         }
     } while (System.currentTimeMillis() - currentTime < (timeout ?: 10000))
 
