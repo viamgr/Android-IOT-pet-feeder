@@ -123,6 +123,7 @@ class NetworkStatusObserver {
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             val networkRequest = Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
                 .build()
 
             connectivityManager.registerNetworkCallback(
