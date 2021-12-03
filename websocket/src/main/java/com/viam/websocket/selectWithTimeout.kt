@@ -4,7 +4,6 @@ import com.viam.websocket.model.SocketEvent
 import com.viam.websocket.model.SocketEvent.Text
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.selects.select
 import java.util.concurrent.TimeoutException
@@ -13,7 +12,7 @@ import java.util.concurrent.TimeoutException
 suspend fun StateFlow<SocketEvent>.waitForCallbacka(
     successKey: String,
     errorKey: String,
-    timeout: Long? = 5000
+    timeout: Long? = 15000
 ): SocketEvent {
     println("waitForCallback $successKey")
     return waitForCallbacka(timeout = timeout, takeWhile = {

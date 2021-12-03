@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import com.part.livetaskcore.Resource.Loading
+import com.part.livetaskcore.livatask.LoadingMessage
 import com.part.livetaskcore.livatask.combine
 import com.part.livetaskcore.usecases.asLiveTask
 import com.viam.feeder.R
@@ -65,6 +67,21 @@ class DashboardViewModel @Inject constructor(
         sendStringValueTask,
     ) {
         cancelable(true)
+        setLoadingText { data ->
+            if (data is List<*>) {
+                val message = data.filterIsInstance(Loading::class.java).filter { it.data != null }
+                    .joinToString(separator = ",") {
+                        it.data.toString()
+                    }
+                if (message.isNotEmpty()) {
+                    LoadingMessage.Text(message)
+                } else {
+                    LoadingMessage.Res(R.string.loading)
+                }
+            } else {
+                LoadingMessage.Res(R.string.loading)
+            }
+        }
     }
 
     private val _feedSounds = MutableLiveData(

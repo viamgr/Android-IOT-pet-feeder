@@ -20,7 +20,6 @@ import com.viam.websocket.WebSocketApi
 import com.viam.websocket.model.SocketConnectionStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import okhttp3.Request
@@ -75,7 +74,6 @@ class MainViewModel @Inject constructor(
     private fun retryTimeout() {
         retryTimeoutJob?.cancel()
         retryTimeoutJob = viewModelScope.launch {
-            delay(5000)
             networkStatusCheckerLiveTask.retry()
         }
     }
