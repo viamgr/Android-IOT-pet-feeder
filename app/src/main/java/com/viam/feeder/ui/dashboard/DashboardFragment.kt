@@ -104,7 +104,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 requireContext(),
                 android.R.layout.simple_list_item_1,
                 list.map {
-                    (it.value / 1000).toLong().convertSeconds(requireContext())
+                    val convertSeconds = (it.value / 1000).toLong().convertSeconds(requireContext())
+                    if (convertSeconds.isEmpty()) getString(R.string.always_off) else convertSeconds
                 }
             ).also { adapter ->
                 binding.ledTimerDropDown.setAdapter(adapter)
@@ -127,10 +128,8 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
                 result?.let {
                     viewModel.onSoundFilePicked(result)
                 }
-
             }
         }
-
     }
 
     private fun copyFileToAppData(uri: Uri) {
@@ -152,5 +151,4 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard) {
     private fun openChooseIntent() {
         getContent.launch("audio/mpeg")
     }
-
 }

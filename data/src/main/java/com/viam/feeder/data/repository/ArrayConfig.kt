@@ -18,7 +18,7 @@ class ArrayConfig<T>(
 
     private val listener: (String, Any) -> Unit = { key, data ->
         if (key == name && value?.equals(data) == false) {
-            postValue(parseList(data as String))
+            postValue(parseList(data.toString()))
         }
     }
 
@@ -50,11 +50,10 @@ class ArrayConfig<T>(
     }
 
     fun store(value: List<T>) {
-        val type = Types.newParameterizedType(
-            List::class.java,
-            type
-        )
-        val adapter: JsonAdapter<List<*>> = moshi.adapter(type)
-        configObject.store(name, JSONArray(adapter.toJson(value)).toString())
+        val jsonArray = JSONArray()
+        value.forEach {
+            jsonArray.put(it)
+        }
+        configObject.store(name, jsonArray)
     }
 }
