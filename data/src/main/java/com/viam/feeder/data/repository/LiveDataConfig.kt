@@ -19,9 +19,11 @@ class LiveDataConfig<T>(
     override fun onActive() {
         super.onActive()
         configObject.addOnChangeListener(listener)
-        value = if (configObject.hasKey(name)) {
+        val newValue: T? = if (configObject.hasKey(name)) {
             configObject.getByKey(name) as T
         } else defaultValue
+        if (newValue?.equals(value) == false)
+            value = newValue
     }
 
     override fun onInactive() {

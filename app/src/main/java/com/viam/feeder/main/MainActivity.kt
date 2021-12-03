@@ -115,6 +115,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.fragment_setting
             )
         )
+        binding.bottomNav.setOnItemReselectedListener {
+            // Do nothing
+        }
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
 }

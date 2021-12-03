@@ -82,8 +82,9 @@ class ConnectionStatus @Inject constructor(
                 }
             }
             async {
-                delay(5000)
+                delay(15000)
                 send(Error(DeviceConnectionTimoutException("Can not connect to the device.")))
+                scope.cancel()
             }
         }
     }
