@@ -28,11 +28,11 @@ interface WebSocketRepository {
     fun getWifiList(): Flow<Resource<List<WifiDevice>>>
 
     //    fun events(): Flow<SocketEvent>
-    fun subscribeAndPairAndGetConfig(): Flow<SocketConnectionStatus>
+    fun subscribeAndPairAndGetConfig(deviceName: String): Flow<SocketConnectionStatus>
     fun tryToSubscribe(): Flow<SocketConnectionStatus>
-    fun tryPairing(): Flow<SocketConnectionStatus>
+    fun tryPairing(deviceName: String): Flow<SocketConnectionStatus>
     fun getEvents(): Flow<SocketEvent>
-    fun syncProcess(): Flow<SocketConnectionStatus>
+    fun syncProcess(deviceName: String): Flow<SocketConnectionStatus>
     fun upload(remoteFilePath: String, inputStream: InputStream): Flow<SocketTransfer>
     fun getSyncStatus(): SocketConnectionStatus?
 }

@@ -4,6 +4,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import com.viam.feeder.domain.repositories.socket.WebSocketRepository
 import com.viam.feeder.domain.repositories.system.JsonPreferences
+import com.viam.feeder.model.KeyValue
 import com.viam.feeder.model.KeyValueMessage
 import com.viam.feeder.model.WifiDevice
 import com.viam.feeder.model.socket.FileDetailCallback
@@ -27,7 +28,10 @@ import com.viam.feeder.shared.UNPAIR
 import com.viam.feeder.shared.UNSUBSCRIBE
 import com.viam.feeder.shared.WIFI_LIST_IS
 import com.viam.resource.Resource
-import com.viam.websocket.*
+import com.viam.websocket.SocketCloseException
+import com.viam.websocket.WebSocketApi
+import com.viam.websocket.checkHasError
+import com.viam.websocket.containsKey
 import com.viam.websocket.model.SocketConnectionStatus
 import com.viam.websocket.model.SocketConnectionStatus.Configured
 import com.viam.websocket.model.SocketConnectionStatus.Configuring
@@ -48,6 +52,7 @@ import com.viam.websocket.model.SocketTransfer.Start
 import com.viam.websocket.model.SocketTransfer.Success
 import com.viam.websocket.model.TransferType
 import com.viam.websocket.model.TransferType.Download
+import com.viam.websocket.waitForCallbacka
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -112,7 +117,7 @@ class WebSocketRepositoryImpl @Inject constructor(
 
     override fun getSyncStatus() = currentSyncStatus
 
-    override fun syncProcess(): Flow<SocketConnectionStatus> = channelFlow {
+    override fun syncProcess(deviceName: String): Flow<SocketConnectionStatus> = channelFlow {
 
         var syncJon: Job? = null
         var configJob: Job? = null
@@ -122,7 +127,7 @@ class WebSocketRepositoryImpl @Inject constructor(
             if (configJob?.isActive != true) {
                 syncJon?.cancel()
                 syncJon = async {
-                    subscribeAndPairAndGetConfig().catch { e ->
+                    subscribeAndPairAndGetConfig(deviceName).catch { e ->
                         send(SocketConnectionStatus.Failure(e as Exception))
                     }.collect {
                         send(it)
@@ -169,7 +174,7 @@ class WebSocketRepositoryImpl @Inject constructor(
             UNSUBSCRIBE
         )))
 
-    override fun subscribeAndPairAndGetConfig(): Flow<SocketConnectionStatus> =
+    override fun subscribeAndPairAndGetConfig(deviceName: String): Flow<SocketConnectionStatus> =
         channelFlow {
             println("subscribeAndPair")
 
@@ -179,7 +184,7 @@ class WebSocketRepositoryImpl @Inject constructor(
                     it is Subscribed
                 }
                 .flatMapLatest {
-                    tryPairing()
+                    tryPairing(deviceName)
                 }
                 .filter {
                     send(it)
@@ -358,12 +363,16 @@ class WebSocketRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun tryPairing(): Flow<SocketConnectionStatus> = flow {
+    override fun tryPairing(deviceName: String): Flow<SocketConnectionStatus> = flow {
         emit(Pairing)
-        sendPairMessage()
+        sendPairMessage(deviceName)
         println("start getting pair done")
-        getEvents().waitForCallbacka(PAIR_DONE, PAIR_ERROR)
-        emit(Paired)
+        val pairEvent = getEvents().waitForCallbacka(PAIR_DONE, PAIR_ERROR) as Text
+
+        val pairMessage =
+            moshi.adapter(KeyValue::class.java).fromJson(pairEvent.data)!!
+
+        emit(Paired(pairMessage.value as String))
     }
 
 /* suspend fun wait(successKey: String, errorKey: String) = coroutineScope {
@@ -395,17 +404,13 @@ class WebSocketRepositoryImpl @Inject constructor(
     private suspend fun receiveChannel() =
         getEvents().produceIn(CoroutineScope(currentCoroutineContext()))
 
-    private fun sendPairMessage() {
-        // TODO: 11/1/2021 get Feeder1 from other place
+    private fun sendPairMessage(deviceName: String) {
 
         val newParameterizedType = Types.newParameterizedType(
             KeyValueMessage::class.java,
             String::class.java
         )
-        webSocketApi.sendJson(
-            KeyValueMessage(PAIR, "Feeder1"),
-            newParameterizedType
-        )
+        webSocketApi.sendJson(KeyValueMessage(PAIR, deviceName), newParameterizedType)
     }
 
     private fun sendSubscribeMessage() {

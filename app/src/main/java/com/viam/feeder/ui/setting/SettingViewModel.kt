@@ -15,6 +15,7 @@ import com.viam.feeder.domain.usecase.config.GetWifiSubnet
 import com.viam.feeder.domain.usecase.config.SetWifiCredentials
 import com.viam.feeder.domain.usecase.config.WifiAuthentication
 import com.viam.feeder.domain.usecase.device.AddDevice
+import com.viam.feeder.domain.usecase.device.GetConfiguredDevice
 import com.viam.feeder.model.Device
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_IP
 import com.viam.feeder.shared.DEFAULT_ACCESS_POINT_PORT
@@ -30,6 +31,7 @@ class SettingViewModel @Inject constructor(
     getWifiSubnet: GetWifiSubnet,
     getWifiPassword: GetWifiPassword,
     addDevice: AddDevice,
+    getConfiguredDevice: GetConfiguredDevice,
     setWifiCredentials: SetWifiCredentials,
     private val remoteConnectionConfig: RemoteConnectionConfig
 ) : ViewModel() {

@@ -12,7 +12,7 @@ sealed class SocketConnectionStatus {
     object Subscribing : SocketConnectionStatus()
     object Subscribed : SocketConnectionStatus()
     object Pairing : SocketConnectionStatus()
-    object Paired : SocketConnectionStatus()
+    data class Paired(val deviceName: String) : SocketConnectionStatus()
     data class Configuring(val progress: Float) : SocketConnectionStatus()
     object Configured : SocketConnectionStatus()
 }
