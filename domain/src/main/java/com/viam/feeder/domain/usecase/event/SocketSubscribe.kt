@@ -12,6 +12,8 @@ import com.viam.websocket.model.SocketConnectionStatus.Configured
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -22,9 +24,9 @@ class SocketSubscribe @Inject constructor(
     private val webSocketRepository: WebSocketRepository,
 ) : FlowUseCase<Unit, SocketConnectionStatus>(coroutinesDispatcherProvider.io) {
 
-    override fun execute(parameter: Unit): Flow<Resource<SocketConnectionStatus>> {
+    override fun execute(parameter: Unit): Flow<Resource<SocketConnectionStatus>> = flow {
         val device = deviceRepository.getAll().firstOrNull() ?: Device(name = "UnknownDevice")
-        return webSocketRepository.syncProcess(device.name).map {
+        emitAll(webSocketRepository.syncProcess(device.name).map {
             println("map repository $it")
             when (it) {
                 is Configured -> Resource.Success(it)
@@ -37,6 +39,6 @@ class SocketSubscribe @Inject constructor(
                 }
                 else -> Loading(it)
             }
-        }
+        })
     }
 }
